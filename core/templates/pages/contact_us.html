@@ -1,0 +1,104 @@
+{% extends 'pages_base.html' %}
+{% load static %}
+{% block title %} Contact us{% endblock %}
+
+{% block content %}
+
+
+    <div class="map-content">
+        <div id="map"></div>
+    </div>
+    <section class="section border-bottom">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-md-4 text-center border-right">
+                    <h6 class="text-uppercase mb-2 font-weight-bold fs-13">MESSAGE US</h6>
+
+                    <div class="mb-5 mb-md-0">
+                        <a href="#!" class="h4">Start a chat!</a>
+                    </div>
+
+                </div>
+                <div class="col-12 col-md-4 text-center border-right">
+                    <h6 class="text-uppercase mb-2 font-weight-bold fs-13">mobile</h6>
+
+                    <div class="mb-5 mb-md-0">
+                        <a href="#!" class="h4">
+                            01840998765 </a>
+                    </div>
+
+                </div>
+                <div class="col-12 col-md-4 text-center">
+                    <h6 class="text-uppercase mb-2 font-weight-bold fs-13">Email</h6>
+
+                    <a href="#!" class="h4">
+                        <span class="__cf_email__" data-cfemail="6c05020a032c08090103420f0301">[email&#160;protected]</span> </a>
+
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="section section-about">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-10 offset-md-1">
+                    <div class="section-title text-center mb-5 col-middle">
+                        <h2 class="block-title fs-25 mb-2 font-weight-bold">Let us hear from you directly! </h2>
+                        <div class="sub-title fs-18">
+                            Our guests always travel the world in style. Mention @Kempinski on Instagram for a chance to be featured! </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-md-12 col-lg-8">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 mb-5 mb-md-0">
+                            <div class="contact-info">
+                                <div class="mb-4">
+                                    <h3 class="info-title link-title fs-18 mb-3 font-weight-600 position-relative">
+                                        Address</h3>
+                                    <address class="mb-4">
+                                        Plot-7, Road-02, Hotel Motel Zone, San Francisco Road, United States of America </address>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h3 class="info-title link-title fs-18 mb-3 font-weight-600 position-relative">
+                                        Phone &amp; WhatsApp Number</h3>
+                                    0892 555 983445 </div>
+
+                                <div class="mb-4">
+                                    <h3 class="info-title link-title fs-18 mb-3 font-weight-600 position-relative">
+                                        Email</h3>
+                                    <a href="https://hotel.bdtask-demo.com/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f69f989099b692939b99d895999b">[email&#160;protected]</a> </div>
+
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <form action="https://hotel.bdtask-demo.com/xainhotel/sendemail" method="post" accept-charset="utf-8">
+                                <input type="hidden" name="csrf_test_name" value="5b87edff149692a421d64b3ae92c2151" />
+                                <div class="form-group">
+                                    <input type="text" class="form-control" id="firstname" name="firstname" placeholder="Full name" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="email" class="form-control" id="email" name="email" placeholder="hello@domain.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="number" class="form-control" id="phone" name="phone" placeholder="Telephone">
+                                </div>
+                                <div class="form-group">
+                                    <textarea class="form-control" id="comments" rows="5" name="comments" placeholder="Tell us what we can help you with!"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label" for="captcha"><img id="Imageid" src="{% static 'frontpage/assets/img/captcha/1724847644.1646.jpg' %}" style="width: 350px; height: 64px; border: 0;" alt=" " /></label>
+                                    <input type="captcha" placeholder="Captcha" name="captcha" id="captcha" class="form-control fs-16px" autocomplete="off">
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">Send message</button>
+                            </form> </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

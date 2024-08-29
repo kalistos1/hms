@@ -1,0 +1,50 @@
+{% extends 'pages_base.html' %}
+{% load static %}
+{% block title %} signin {% endblock %}
+
+{% block content %}
+
+    <div class="section bg-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-10 col-lg-8 text-center">
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="form-wrapper m-auto">
+                    <div class="form-container my-4">
+                        <div class="panel">
+                            <div class="panel-header text-center mb-3">
+                                <h3 class="fs-24">Sign into your account!</h3>
+                                <p class="text-muted text-center mb-0">Nice to see you! Please log in with your account.</p>
+                            </div>
+                            {% if form %}
+                            <form action="" method="post" accept-charset="utf-8">
+                                {%  csrf_token %}
+                                <input type="hidden" name="csrf_test_name" value="12915a6050b21283d01046f8816ab66a" />
+                                <div class="form-group">
+                                   {{form.username}}
+                                    <div class="invalid-feedback">Enter your valid email</div>
+                                </div>
+                                <div class="form-group">
+                                    {{form.password}}
+                                </div>
+                                <a href=""><p class="text-right fs-12 text-success">Forgot Password</p></a>
+                                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                            </form> 
+                            {% endif %}
+                        </div>
+                        <span class="facebook-span"></span>
+                        <div>
+                            <p class="fs-20 text-center">Do not have an account <a class="text-red" href="{% url 'authentication:signup' %}">Register</a></p><a>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
