@@ -2,12 +2,12 @@
 {% load static %}
 <!-- ================================navbar======================================= -->
 <!-- use this as the navbar.html -->
-<nav class="navbar navbar-expand-lg navbar-light header-sticky shadow-sm">
-    <a class="navbar-brand" href="index.html"><img src="assets/img/boutique hotel.png" alt width="80px"></a>
+<nav class="navbar navbar-expand-lg navbar-light header-sticky shadow-sm bg-dark">
+    <a class="navbar-brand" href="index.html"><img src="{% static 'frontpage/assets/img/boutiquehotel.png' %}" alt width="80px"></a>
     <div class="d-flex order-lg-last">
         <ul class="navbar-right d-flex align-items-center list-unstyled mb-0">
             <li class="nav-item login">
-                <a class="nav-link" href="{% url 'signin' %}"><i class="far fa-user-circle d-lg-none"></i><span class="d-none d-lg-block">Sign In</span></a>
+                <a class="nav-link" href="{% url 'signin' %}"><i class="far fa-user-circle d-lg-none"></i><span class="d-none d-lg-block text-light">Sign In</span></a>
             </li>
             <li class="nav-item dropdown search-icon">
                 <div class="dropdown-menu search-dropdown dropdown-menu-right animate slideIn" aria-labelledby="navbarDropdown1">
@@ -19,7 +19,7 @@
                 <div class="">
                     <a href="">
                         <button  class="border-0 d-none d-lg-inline-block nav-link" style="background-color: #fee277; color:#000; font-weight:600;">
-                            <i class="far fa-calendar-alt mr-2"></i><span>Book Now</span>
+                            <i class="far fa-calendar-alt mr-2 text-light"></i><span>Book Now</span>
                         </button>
                     </a>
                 </div>
@@ -33,27 +33,27 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item  active">
-                <a class="nav-link " href="{% url 'core:index' %}">Home</a>
+                <a class="nav-link text-light " href="{% url 'core:index' %}">Home</a>
                 <div class="dropdown-menu animate slideIn" aria-labelledby="navbarDropdown2">
                 </div>
             </li>
             <li class="nav-item  ">
-                <a class="nav-link " href="{% url 'core:about' %}">About Us</a>
+                <a class="nav-link text-light " href="{% url 'core:about' %}">About Us</a>
                 <div class="dropdown-menu animate slideIn" aria-labelledby="navbarDropdown2">
                 </div>
             </li>
             <li class="nav-item  ">
-                <a class="nav-link " href="{% url 'core:contact' %}">Contact Us</a>
+                <a class="nav-link text-light " href="{% url 'core:contact' %}">Contact Us</a>
                 <div class="dropdown-menu animate slideIn" aria-labelledby="navbarDropdown2">
                 </div>
             </li>
             <li class="nav-item  ">
-                <a class="nav-link " href="{% url 'core:gallery' %}">Gallery</a>
+                <a class="nav-link text-light " href="{% url 'core:gallery' %}">Gallery</a>
                 <div class="dropdown-menu animate slideIn" aria-labelledby="navbarDropdown2">
                 </div>
             </li>
             <li class="nav-item  ">
-                <a class="nav-link " href="index.html">My Profile</a>
+                <a class="nav-link text-light " href="index.html">My Profile</a>
                 <div class="dropdown-menu animate slideIn" aria-labelledby="navbarDropdown2">
                 </div>
             </li>
