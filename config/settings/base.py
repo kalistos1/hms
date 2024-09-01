@@ -35,7 +35,6 @@ INSTALLED_APPS = [
     'crm',
     'dashboard',
     'hotel',
-    'humanresource',
     'inventory',
     'pages',
     'pos',
