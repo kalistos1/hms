@@ -33,13 +33,6 @@ SERVICES_TYPES = (
     ('Technical', 'Technical'),
 )
 
-HOTEL_STATUS = (
-    ("Draft", "Draft"),
-    ("Disabled", "Disabled"),
-    ("Rejected", "Rejected"),
-    ("In Review", "In Review"),
-    ("Live", "Live"),
-)
 
 GENDER = (
     ("Male", "Male"),
@@ -89,7 +82,7 @@ class Hotel(models.Model):
     address = models.CharField(max_length=200)
     mobile = models.CharField(max_length=20)
     email = models.CharField(max_length=20)
-    status = models.CharField(choices=HOTEL_STATUS, max_length=10, default="published", null=True, blank=True)
+    status = models.CharField( max_length=10, default="Live", null=True, blank=True)
 
     tags = TaggableManager(blank=True)
     views = models.PositiveIntegerField(default=0)
@@ -169,19 +162,29 @@ class HotelFAQs(models.Model):
     
     class Meta:
         verbose_name_plural = "Hotel FAQs"
+        
+class RoomAmenity(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+        
 
 class RoomType(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
+    banner_img =models.ImageField(upload_to="room_type", null=True, blank=True)
     type = models.CharField(max_length=10)
     price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     number_of_beds = models.PositiveIntegerField(default=0)
     room_capacity = models.PositiveIntegerField(default=0)
+    amenities = models.ManyToManyField(RoomAmenity, blank=True)  
     rtid = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
     slug = models.SlugField(null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.type} - {self.hotel.name} - {self.price}"
+        return f"{self.type}"
 
     def rooms_count(self):
         return Room.objects.filter(room_type=self).count()
@@ -198,6 +201,7 @@ class RoomType(models.Model):
 class Room(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
     room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE)
+    banner_img =models.ImageField(upload_to="rooms", null=True, blank=True)
     room_number = models.CharField(max_length=10)
     is_available = models.BooleanField(default=True)
     rid = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
@@ -309,7 +313,7 @@ class RoomServices(models.Model):
     booking = models.ForeignKey(Booking, null=True, on_delete=models.CASCADE)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
-    service_type = models.CharField(max_length=20, choices=SERVICES_TYPES)
+    service_type = models.CharField(max_length=20, null=True, blank=True)
     price = models.DecimalField(decimal_places=2, max_digits=12, default=0.00)
 
     def str(self):

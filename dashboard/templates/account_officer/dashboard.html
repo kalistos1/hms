@@ -1,0 +1,30 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+{% block title %} Contact us{% endblock %}
+
+{% block content %}
+    <main class="container-fluid px-0">
+    {% comment %} sidebar here {% endcomment %}
+        {% include '../partials/menubars/frontdesk_sidebar.html' %}
+    {% comment %} sidebar ends {% endcomment %}
+
+        <div class="content">
+
+
+   {% comment %} top header starts {% endcomment %}
+            {% include '../partials/top_header.html' %}
+   {% comment %} top header ends {% endcomment %}
+
+
+
+   {% comment %} body content starts {% endcomment %}
+
+            <div class="px-xl-5 px-lg-4 px-3 py-3 page-body">
+
+            </div>
+   {% comment %} body content ends {% endcomment %}
+
+
+        </div>
+    </main>
+{% endblock %}

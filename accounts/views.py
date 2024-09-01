@@ -11,31 +11,30 @@ from django.contrib import messages
 
 
 
+
+
 def signin(request):
     if request.user.is_authenticated:
-        user = request.user
-        return redirect(get_dashboard_url(user))  # Pass the user object to get_dashboard_url
+        return redirect(get_dashboard_url(request.user))
 
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
             user = authenticate(request, username=cd['username'], password=cd['password'])
+            
             if user is not None:
                 login(request, user)
-                # Redirect to the appropriate dashboard based on the user's boolean fields
                 return redirect(get_dashboard_url(user))
+            
             else:
                 messages.error(request, 'Invalid login details')
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f'{field.capitalize()}: {error}')
+            messages.error(request, 'Invalid login details')
     else:
         form = LoginForm()
 
-    return render(request, "pages/signin.html", {'form': form})
-
+    return render(request, 'pages/signin.html', {'form': form})
 
 
 # sign up view
@@ -90,21 +89,24 @@ def sign_up(request):
    
 
 
-def get_dashboard_url(user):
-    if user.is_admin:
-        return 'dashboard:conference_dashboard'
-    elif user.is_supervisor:
-        return 'dashboard:district_dashboard'
-    elif user.is_account_officer:
-        return 'dashboard:church_dashboard'
-    elif user.is_frontdesk_officer:
-        return 'dashboard:frontdesk_dashboard'
-    else:
-        return 'dashboard:default_dashboard'
 
-   
 
 @login_required
 def signout(request):
     logout(request)
     return redirect('core:index')
+
+
+
+def get_dashboard_url(user):
+    if user.is_admin:
+        return 'dashboard:admin_dashboard'
+    elif user.is_supervisor:
+        return 'dashboard:supervisor_dashboard'
+    elif user.is_account_officer:
+        return 'dashboard:account_dashboard'
+    elif user.is_frontdesk_officer:
+        return 'dashboard:frontdesk_dashboard'
+    else:
+        return 'core:index'
+    

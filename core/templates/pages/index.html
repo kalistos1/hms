@@ -195,103 +195,26 @@
 
                 </div>
             </div>
-            <div class="row">
-                <div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 box-shadow rounded-0 mb-4">
-                        <a href="#" class="card-img position-relative">
-                            <img src="{% static 'frontpage/assets/img/banner/2021-02-01/s.jpg' %}" class="img-fluid wd_xs_100" alt="...">
-                            <button type="button" class="position-absolute btn btn-primary btn-sm">Book Now</button>
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title mb-0 weeklyoffer-title"><a href="#" class="text-dark">Enjoy the eye catching and wonderful sunset comfortably from your room window.</a></h5>
-                        </div>
-                    </div>
+            <div class="row justify-content-center">
 
-                </div>
-                <div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 box-shadow rounded-0 mb-4">
-                        <a href="#" class="card-img position-relative">
-                            <img src="{% static 'frontpage/assets/img/banner/2019-06-15/o1.jpg' %}" class="img-fluid wd_xs_100" alt="...">
-                            <button type="button" class="position-absolute btn btn-primary btn-sm">Book Now</button>
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title mb-0 weeklyoffer-title"><a href="#" class="text-dark">Lorem Ipsum since the 1500 Usd offer</a></h5>
-                        </div>
-                    </div>
+                {% if room_types %}
+                    {% for room_type in room_types %}
 
-                </div>
-                <div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 box-shadow rounded-0 mb-4">
-                        <a href="#" class="card-img position-relative">
-                            <img src="{% static 'frontpage/assets/img/banner/2019-06-15/o2.jpg' %}" class="img-fluid wd_xs_100" alt="...">
-                            <button type="button" class="position-absolute btn btn-primary btn-sm">Book Now</button>
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title mb-0 weeklyoffer-title"><a href="#" class="text-dark">Credit card that&#039;s right for you. 200 usd</a></h5>
+                        <div class="col-lg-4 col-md-4 col-sm-6">
+                            <div class="card border-0 box-shadow rounded-0 mb-4">
+                                <a href="{% url 'core:room_type_list' room_type.slug %}" class="card-img position-relative">
+                                    <img src="{{ room_type.banner_img.url }}" class="img-fluid wd_xs_100" alt="...">
+                                    <button type="button" class="position-absolute btn btn-primary btn-sm">Book Now</button>
+                                </a>
+                                <div class="card-body">
+                                    <h3 class="text-center card-title mb-0 weeklyoffer-title  "><a href="#" class="text-dark fw-bolder">{{ room_type.type }}</a></h3>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                </div>
-                <div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 box-shadow rounded-0 mb-4">
-                        <a href="#" class="card-img position-relative">
-                            <img src="{% static 'frontpage/assets/img/banner/2019-06-15/o3.jpg' %}" class="img-fluid wd_xs_100" alt="...">
-                            <button type="button" class="position-absolute btn btn-primary btn-sm">Book Now</button>
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title mb-0 weeklyoffer-title"><a href="#" class="text-dark">In some form, by injected humor</a></h5>
-                        </div>
-                    </div>
+                    {% endfor %}
+                {% endif %}
 
-                </div>
-                <div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 box-shadow rounded-0 mb-4">
-                        <a href="#" class="card-img position-relative">
-                            <img src="{% static 'frontpage/assets/img/banner/2019-06-15/o4.jpg'%}" class="img-fluid wd_xs_100" alt="...">
-                            <button type="button" class="position-absolute btn btn-primary btn-sm">Book Now</button>
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title mb-0 weeklyoffer-title"><a href="#" class="text-dark">Many desktop publishing 50 USD</a></h5>
-                        </div>
-                    </div>
-
-                </div>
-                <div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 box-shadow rounded-0 mb-4">
-                        <a href="#" class="card-img position-relative">
-                            <img src="{% static 'frontpage/assets/img/banner/2019-06-15/o5.jpg' %}" class="img-fluid wd_xs_100" alt="...">
-                            <button type="button" class="position-absolute btn btn-primary btn-sm">Book Now</button>
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title mb-0 weeklyoffer-title"><a href="#" class="text-dark">The point of using 400 USD</a></h5>
-                        </div>
-                    </div>
-
-                </div>
-                <div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 box-shadow rounded-0 mb-4">
-                        <a href="#" class="card-img position-relative">
-                            <img src="{% static 'frontpage/assets/img/banner/2021-02-22/b4.jpg' %}" class="img-fluid wd_xs_100" alt="...">
-                            <button type="button" class="position-absolute btn btn-primary btn-sm">Book Now</button>
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title mb-0 weeklyoffer-title"><a href="#" class="text-dark">Printer simply dummy 500 USD</a></h5>
-                        </div>
-                    </div>
-
-                </div>
-                <div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 box-shadow rounded-0 mb-4">
-                        <a href="#" class="card-img position-relative">
-                            <img src="{% static 'frontpage/assets/img/banner/2021-02-22/h2.jpg' %}" class="img-fluid wd_xs_100" alt="...">
-                            <button type="button" class="position-absolute btn btn-primary btn-sm">Book Now</button>
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title mb-0 weeklyoffer-title"><a href="#" class="text-dark">Lorem Ipsum is simply dummy 100 usd</a></h5>
-                        </div>
-                    </div>
-
-                </div>
             </div>
         </div>
     </div>

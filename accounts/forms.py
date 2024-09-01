@@ -8,13 +8,18 @@ class DateInput(forms.DateInput):
 
 
 
-class LoginForm(AuthenticationForm):
-    username = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Enter Email or Username', 
-                                                    'class':'form form-control px-5', 'name':'email', 'id':'your_name'}))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder':'Password', 
-                                                    'class':'form form-control px-5', 'id':'your_pass'}))
-
-
+# login form
+class LoginForm(forms.Form):    
+        
+    username = forms.CharField(
+                 widget=forms.TextInput(attrs={ 
+                                                    'class':'form-control'}))
+    password = forms.CharField(
+                 widget=forms.PasswordInput(attrs={
+                                                   'class':'form-control'}))
+                                                   
+    
+    
 
 class SignUpForm(forms.ModelForm):
     email = forms.EmailField(required=True)

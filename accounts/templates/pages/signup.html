@@ -3,11 +3,11 @@
 {% block title %} Sign up {% endblock %}
 
 {% block content %}
- <style>
-    .custom-control-label::after{
-        display:hidden;
-    }
- </style>
+    <style>
+        .custom-control-label::after{
+            display:hidden;
+        }
+    </style>
 
     <div class="section bg-white">
         <div class="container">
@@ -25,48 +25,48 @@
                                 <h3 class="fs-24">Sign up for your account!</h3>
                             </div>
                             {% if form %}
-                            <form action="" method="post" accept-charset="utf-8">
-                                {% csrf_token %}
+                                <form action="" method="post" accept-charset="utf-8">
+                                    {% csrf_token %}
 
-                                <input type="hidden" name="csrf_test_name" value="12915a6050b21283d01046f8816ab66a" />
-                                <div class="form-group">
-                                   {{form.first_name}}
-                                </div>
-                                <div class="form-group">
-                                   {{form.last_name}}
-                                </div>
-                                <div class="form-group">
-                                    {{form.username}}
-                                 </div>
-                                <div class="form-group">
-                                    {{form.phone}}
-                                    <small class="form-text text-muted">Note : Add prefix without + sign Example: (234)0840997***</small>
-                                </div>
-                                <div class="form-group">
-                                  {{form.email}}
-                                    <div class="invalid-feedback">Enter your valid email</div>
-                                </div>
-                                <div class="form-group">
-                                  {{form.password}}
-                                </div>
-                                <div class="form-group">
-                                    {{form.password2}}
-                                  </div>
-                                <div class="">
-                                   {{ form.t_and_c }}
-                                    <label class="">By signing up, you agree to the <a href="#">terms of service</a></label>
-                                </div>
-                                <style>
-                                    .custom-control-label::after{
-                                        display:hidden;
-                                    }
-                                 </style>
-                                <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
-                                <p class="text-muted text-center mt-3 mb-0">
-                                    By signing up, you agree to our <a class="external">terms of use</a>.
-                                </p>
-                            </form> 
-                        {% endif %}
+                                    <input type="hidden" name="csrf_test_name" value="12915a6050b21283d01046f8816ab66a" />
+                                    <div class="form-group">
+                                        {{form.first_name}}
+                                    </div>
+                                    <div class="form-group">
+                                        {{form.last_name}}
+                                    </div>
+                                    <div class="form-group">
+                                        {{form.username}}
+                                    </div>
+                                    <div class="form-group">
+                                        {{form.phone}}
+                                        <small class="form-text text-muted">Note : Add prefix without + sign Example: (234)0840997***</small>
+                                    </div>
+                                    <div class="form-group">
+                                        {{form.email}}
+                                        <div class="invalid-feedback">Enter your valid email</div>
+                                    </div>
+                                    <div class="form-group">
+                                        {{form.password}}
+                                    </div>
+                                    <div class="form-group">
+                                        {{form.password2}}
+                                    </div>
+                                    <div class="">
+                                        {{ form.t_and_c }}
+                                        <label class="">By signing up, you agree to the <a href="#">terms of service</a></label>
+                                    </div>
+                                    <style>
+                                        .custom-control-label::after{
+                                            display:hidden;
+                                        }
+                                    </style>
+                                    <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+                                    <p class="text-muted text-center mt-3 mb-0">
+                                        By signing up, you agree to our <a class="external">terms of use</a>.
+                                    </p>
+                                </form>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

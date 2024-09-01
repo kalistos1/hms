@@ -21,24 +21,38 @@
                                 <p class="text-muted text-center mb-0">Nice to see you! Please log in with your account.</p>
                             </div>
                             {% if form %}
-                            <form action="" method="post" accept-charset="utf-8">
-                                {%  csrf_token %}
-                                <input type="hidden" name="csrf_test_name" value="12915a6050b21283d01046f8816ab66a" />
-                                <div class="form-group">
-                                   {{form.username}}
-                                    <div class="invalid-feedback">Enter your valid email</div>
-                                </div>
-                                <div class="form-group">
-                                    {{form.password}}
-                                </div>
-                                <a href=""><p class="text-right fs-12 text-success">Forgot Password</p></a>
-                                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
-                            </form> 
+                                <form action="" method="post">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        {{ form.username.label_tag }}
+                                        {{ form.username }}
+                                        {% if form.username.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.username.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.password.label_tag }}
+                                        {{ form.password }}
+                                        {% if form.password.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.password.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <a href=""><p class="text-right fs-12 text-success">Forgot Password</p></a>
+                                    <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                                </form>
                             {% endif %}
                         </div>
                         <span class="facebook-span"></span>
                         <div>
-                            <p class="fs-20 text-center">Do not have an account <a class="text-red" href="{% url 'authentication:signup' %}">Register</a></p><a>
+                            <p class="fs-20 text-center">Do not have an account <a class="text-red" href="{% url 'signup' %}">Register</a></p><a>
                             </a>
                         </div>
                     </div>

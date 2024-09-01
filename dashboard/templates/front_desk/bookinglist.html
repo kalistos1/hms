@@ -1,0 +1,171 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+{% block title %} Contact us{% endblock %}
+
+{% block content %}
+    <main class="container-fluid px-0">
+    {% comment %} sidebar here {% endcomment %}
+        {% include '../partials/menubars/frontdesk_sidebar.html' %}
+    {% comment %} sidebar ends {% endcomment %}
+
+        <div class="content">
+
+
+   {% comment %} top header starts {% endcomment %}
+            {% include '../partials/top_header.html' %}
+   {% comment %} top header ends {% endcomment %}
+
+
+
+   {% comment %} body content starts {% endcomment %}
+
+            <div class="px-xl-5 px-lg-4 px-3 py-3 page-body">
+                <div class="row g-3">
+                    <div class="col-sm-12">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap">
+                            <h3 class="fw-bold mb-0">Room Booking List</h3>
+                            <div class="col-auto d-flex w-sm-100">
+                                <a href="room-booking.html" class="btn btn-dark btn-set-task w-sm-100">Room Book</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <table class="table dataTable align-middle table-hover table-body" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Room Type</th>
+                                            <th>Check In</th>
+                                            <th>Check Out</th>
+                                            <th>Paid Amount</th>
+                                            <th>Due Amount</th>
+                                            <th>Payment Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                Frank Baker
+                                            </td>
+                                            <td>Single</td>
+                                            <td>12/03/2021</td>
+                                            <td>14/03/2021</td>
+                                            <td>0.00</td>
+                                            <td>$230</td>
+                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Rya Randall
+                                            </td>
+                                            <td>Deluxe</td>
+                                            <td>11/04/2021</td>
+                                            <td>12/04/2021</td>
+                                            <td>0.00</td>
+                                            <td>$430</td>
+                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Phil Glover
+                                            </td>
+                                            <td>Studio</td>
+                                            <td>11/04/2021</td>
+                                            <td>12/04/2021</td>
+                                            <td>0.00</td>
+                                            <td>$4450</td>
+                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Victor Rampling
+                                            </td>
+                                            <td>Junior Suite</td>
+                                            <td>28/04/2021</td>
+                                            <td>30/04/2021</td>
+                                            <td>0.00</td>
+                                            <td>$530</td>
+                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Sally Graham
+                                            </td>
+                                            <td>Queen</td>
+                                            <td>01/05/2021</td>
+                                            <td>06/05/2021</td>
+                                            <td>$1550</td>
+                                            <td>0.00</td>
+                                            <td><span class="badge text-bg-success">Success</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Robert Anderson
+                                            </td>
+                                            <td>Cabana</td>
+                                            <td>03/05/2021</td>
+                                            <td>06/05/2021</td>
+                                            <td>0.00</td>
+                                            <td>$1230</td>
+                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Ryan Stewart
+                                            </td>
+                                            <td>Connecting</td>
+                                            <td>10/07/2021</td>
+                                            <td>18/08/2021</td>
+                                            <td>0.00</td>
+                                            <td>$1780</td>
+                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Joan Dyer
+                                            </td>
+                                            <td>Queen</td>
+                                            <td>12/03/2021</td>
+                                            <td>14/03/2021</td>
+                                            <td>0.00</td>
+                                            <td>$2230</td>
+                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Liam Berry
+                                            </td>
+                                            <td>King</td>
+                                            <td>11/04/2021</td>
+                                            <td>12/04/2021</td>
+                                            <td>0.00</td>
+                                            <td>$400</td>
+                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Dean Otto
+                                            </td>
+                                            <td>Quad</td>
+                                            <td>11/04/2021</td>
+                                            <td>12/04/2021</td>
+                                            <td>$950</td>
+                                            <td>0.00</td>
+                                            <td><span class="badge text-bg-success">Success</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- Row End -->
+
+            </div>
+   {% comment %} body content ends {% endcomment %}
+
+
+        </div>
+    </main>
+{% endblock %}

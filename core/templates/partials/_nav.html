@@ -7,7 +7,7 @@
     <div class="d-flex order-lg-last">
         <ul class="navbar-right d-flex align-items-center list-unstyled mb-0">
             <li class="nav-item login">
-                <a class="nav-link" href="{% url 'authentication:signin' %}"><i class="far fa-user-circle d-lg-none"></i><span class="d-none d-lg-block">Sign In</span></a>
+                <a class="nav-link" href="{% url 'signin' %}"><i class="far fa-user-circle d-lg-none"></i><span class="d-none d-lg-block">Sign In</span></a>
             </li>
             <li class="nav-item dropdown search-icon">
                 <div class="dropdown-menu search-dropdown dropdown-menu-right animate slideIn" aria-labelledby="navbarDropdown1">
@@ -15,41 +15,16 @@
                 </div>
             </li>
             <li class="nav-item nav-btn">
-                <form action="" method="post" accept-charset="utf-8">
-                    <div class="row no-gutters custom-search-input-2 search-form-content">
-                        <div class="search-option col-12 col-sm-6 col-lg-3" hidden>
-                            <label>Check In <i class="ti-calendar"></i></label>
-                            <input id="daterangepickers" class="form-control" type="text" name="checkin" value>
-                        </div>
-                        <div class="search-option col-12 col-sm-6 col-lg-3" hidden>
-                            <label>Check Out <i class="ti-calendar"></i></label>
-                            <input id="daterangepickers2" class="form-control" type="text" name="checkout" value>
-                        </div>
-                        <div class="search-option col-12 col-sm-6 col-lg-3" hidden>
-                            <div class="d-flex align-items-center justify-content-between h-50 border-bottom w-100 px-lg-3 px-xl-4">
-                                <div class="search-title fs-13 text-uppercase">Adults</div>
-                                <div class="d-flex justify-content-center align-items-center number-spinner">
-                                    <a class=" btn-pm" data-dir="dwn"><span class="ti-minus"></span></a>
-                                    <input type="text" class="spinner" name="adults" value="2">
-                                    <a class=" btn-pm" data-dir="up"><span class="ti-plus"></span></a>
-                                </div>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between h-50 w-100 px-lg-3 px-xl-4">
-                                <div class="search-title fs-13 text-uppercase">Children</div>
-                                <div class="d-flex justify-content-center align-items-center children">
-                                    <a class=" btn-pm" data-dir="dwn"><span class="ti-minus"></span></a>
-                                    <input type="text" class="spinner" name="children" value="0">
-                                    <a class=" btn-pm" data-dir="up"><span class="ti-plus"></span></a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="">
-                            <button type="submit" class="border-0 d-none d-lg-inline-block nav-link" style="background-color: #fee277; color:#000; font-weight:600;">
-                                <i class="far fa-calendar-alt mr-2"></i><span>Book Now</span>
-                            </button>
-                        </div>
-                    </div>
-                </form> </li>
+
+                <div class="">
+                    <a href="">
+                        <button  class="border-0 d-none d-lg-inline-block nav-link" style="background-color: #fee277; color:#000; font-weight:600;">
+                            <i class="far fa-calendar-alt mr-2"></i><span>Book Now</span>
+                        </button>
+                    </a>
+                </div>
+
+            </li>
         </ul>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
