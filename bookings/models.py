@@ -58,6 +58,21 @@ PAYMENT_STATUS = (
     ("expired", 'expired'),
 )
 
+PAYMENT_MODE = (
+    ("cash", "card"),
+    ("transfer", "transfer"),
+ 
+)
+
+BOOKING_TYPE = (
+    ("Advance", "Advance"),
+    ("Instant", "Instant"),
+    ("Groups", "Groups"),
+    ("Allocation", "Allocation"),
+    ("Business_Seminar","Business_Seminar"),
+    ("Wedding","Wedding"),
+ 
+)
 
 
 NOTIFICATION_TYPE = (
@@ -199,10 +214,17 @@ class RoomType(models.Model):
     
 
 class Room(models.Model):
+    FLOOR =(
+        ('ground_floor','ground_floor'),
+        ('first_floor','first_floor'),
+        ('second_floor','second_floor'),
+        
+    )
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
     room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE)
     banner_img =models.ImageField(upload_to="rooms", null=True, blank=True)
     room_number = models.CharField(max_length=10)
+    floor = models.CharField(max_length=20, choices= FLOOR, default='ground_floor')
     is_available = models.BooleanField(default=True)
     rid = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
     date = models.DateTimeField(auto_now_add=True)
@@ -219,31 +241,41 @@ class Room(models.Model):
 
 
 class Booking(models.Model):
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_customers')
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     payment_status = models.CharField(max_length=100, choices=PAYMENT_STATUS, default="initiated")
-
+    payment_mode = models.CharField(max_length=100, choices=PAYMENT_MODE, default="cash")
     full_name = models.CharField(max_length=1000, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
     phone = models.CharField(max_length=1000, null=True, blank=True)
     
+    
     hotel = models.ForeignKey(Hotel, on_delete=models.SET_NULL, null=True)
+    booking_type = models.CharField(max_length=100, choices=BOOKING_TYPE, default="Instant")
+    
     room_type = models.ForeignKey(RoomType, on_delete=models.SET_NULL, null=True)
     room = models.ManyToManyField(Room)
+    discount_type = models.CharField(max_length=1000, null=True, blank=True)
+    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     before_discount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    advance_amount =  models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     saved = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     check_in_date = models.DateField()
     check_out_date = models.DateField()
     total_days = models.PositiveIntegerField(default=0)
     num_adults = models.PositiveIntegerField(default=1)
     num_children = models.PositiveIntegerField(default=0)
+    arrival_from = models.CharField(max_length=1000, null=True, blank=True)
     checked_in = models.BooleanField(default=False)
     checked_out = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     checked_in_tracker = models.BooleanField(default=False, help_text="DO NOT CHECK THIS BOX")
     checked_out_tracker = models.BooleanField(default=False, help_text="DO NOT CHECK THIS BOX")
     date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    coupons = models.ManyToManyField("bookings.Coupon", blank=True)
+    coupons = models.ManyToManyField("bookings.Coupon",null=True, blank=True)
+    vip = models.BooleanField(default=False)
     stripe_payment_intent = models.CharField(max_length=200,null=True, blank=True)
     success_id = ShortUUIDField(length=300, max_length=505, alphabet="abcdefghijklmnopqrstuvxyz1234567890")
     booking_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")

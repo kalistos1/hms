@@ -10,22 +10,6 @@ from PIL import Image
 from shortuuid.django_fields import ShortUUIDField
 import os 
 
-IDENTITY_TYPE = (
-    ("national_id_card", "National ID Card"),
-    ("drivers_licence", "Drives Licence"),
-    ("international_passport", "International Passport")
-)
-
-GENDER = (
-    ("female", "Female"),
-    ("male", "Male"),
-)
-
-TITLE = (
-    ("Mr", "Mr"),
-    ("Mrs", "Mrs"),
-    ("Miss", "Miss"),
-)
 
 
 def user_directory_path(instance, filename):
@@ -49,21 +33,39 @@ class User(AbstractUser):
 
 
 class Profile(models.Model):
+    GENDER = (
+        ("female", "Female"),
+       ("male", "Male"),
+    )
+
+    IDENTITY_TYPE = (
+        ("national_id_card", "National ID Card"),
+        ("drivers_licence", "Drives Licence"),
+        ("international_passport", "International Passport")
+    )
+
+
     pid = ShortUUIDField(length=7, max_length=25, alphabet="abcdefghijklmnopqrstuvxyz123")
+    title = models.CharField(max_length=100, null=True, blank=True)
+    surname = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(upload_to=user_directory_path, default="default.jpg", null=True, blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=1000, null=True, blank=True)
     phone = models.CharField(max_length=100, null=True, blank=True)
     gender = models.CharField(max_length=100, choices=GENDER, null=True, blank=True)
-
+    date_of_birth =models.DateField(null=True, blank=True)
 
     country = CountryField(blank_label='(select country)', null=True, blank=True)
+    nationality=CountryField(blank_label='(select country)', null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)
     address = models.CharField(max_length=1000, null=True, blank=True)
+    occupation = models.CharField(max_length=1000, null=True, blank=True)
     
+    id_no =  models.CharField(max_length=1000, null=True, blank=True)
+
     identity_type = models.CharField(choices=IDENTITY_TYPE, default="national_id_card", max_length=100, null=True, blank=True)
-    identity_image = models.ImageField(upload_to=user_directory_path, default="id.jpg", null=True, blank=True)
+    identity_image_front = models.ImageField(upload_to=user_directory_path, default="id.jpg", null=True, blank=True)
+    identity_image_back = models.ImageField(upload_to=user_directory_path, default="id.jpg", null=True, blank=True)
 
     facebook = models.URLField(default="https://facebook.com/", null=True, blank=True)
     twitter = models.URLField(default="https://twitter.com/", null=True, blank=True)
@@ -75,17 +77,12 @@ class Profile(models.Model):
         ordering = ["-date"]
 
     def __str__(self):
-        if self.full_name:
-            return f"{self.full_name}"
+        if self.pid:
+            return f"{self.pid}"
         else:
             return f"{self.user.username}"
         
-    def save(self, *args, **kwargs):
-        if self.full_name == "" or self.full_name == None:
-            self.full_name = self.user.username
-            
-        super(Profile, self).save(*args, **kwargs) 
-    
+
     def thumbnail(self):
         return mark_safe('<img src="/media/%s" width="50" height="50" object-fit:"cover" />' % (self.image))
 

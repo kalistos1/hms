@@ -1,6 +1,6 @@
 {% extends 'dashboard_base.html' %}
 {% load static %}
-{% block title %} Contact us{% endblock %}
+{% block title %} Frontdesk | Room Status{% endblock %}
 
 {% block content %}
     <main class="container-fluid px-0">
@@ -40,69 +40,16 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        {% for status in room_status %}
                                         <tr>
-                                            <td>A-1101</td>
-                                            <td>Deluxe</td>
-                                            <td>First Floor</td>
+                                            <td>{{status.room_number}}</td>
+                                            <td>{{status.room_type}}</td>
+                                            <td>{{status.floor}}</td>
                                             <td>12/04/2021</td>
-                                            <td><span class="badge text-bg-warning">Checkin</span></td>
+                                            <td>{% if status.is_available  == False %} <span class="badge text-bg-warning">Is Not Available </span> {% else %}<span class="badge text-bg-success"> is Available {% endif %}</span></td>
                                         </tr>
-                                        <tr>
-                                            <td>A-1102</td>
-                                            <td>Studio</td>
-                                            <td>First Floor</td>
-                                            <td>None</td>
-                                            <td><span class="badge text-bg-success">Available</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>H-1001</td>
-                                            <td>King</td>
-                                            <td>Eighth Floor</td>
-                                            <td>None</td>
-                                            <td><span class="badge text-bg-success">Available</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>B-1201</td>
-                                            <td>Queen</td>
-                                            <td>Nineth Floor</td>
-                                            <td>None</td>
-                                            <td><span class="badge text-bg-success">Available</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>B-1202</td>
-                                            <td>Queen</td>
-                                            <td>Nineth Floor</td>
-                                            <td>None</td>
-                                            <td><span class="badge text-bg-success">Available</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>B-1203</td>
-                                            <td>Queen</td>
-                                            <td>Nineth Floor</td>
-                                            <td>None</td>
-                                            <td><span class="badge text-bg-success">Available</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>B-1204</td>
-                                            <td>Queen</td>
-                                            <td>Nineth Floor</td>
-                                            <td>None</td>
-                                            <td><span class="badge text-bg-success">Available</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>B-1201</td>
-                                            <td>Queen</td>
-                                            <td>Nineth Floor</td>
-                                            <td>None</td>
-                                            <td><span class="badge text-bg-success">Available</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>B-1205</td>
-                                            <td>Queen</td>
-                                            <td>Nineth Floor</td>
-                                            <td>None</td>
-                                            <td><span class="badge text-bg-success">Available</span></td>
-                                        </tr>
+                                        {% endfor%}
+    
                                     </tbody>
                                 </table>
                             </div>

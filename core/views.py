@@ -35,7 +35,6 @@ def index(request):
 
 
 
-
 #about view
 def about_us(request):
     template ='pages/about.html'

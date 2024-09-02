@@ -18,8 +18,7 @@ class LoginForm(forms.Form):
                  widget=forms.PasswordInput(attrs={
                                                    'class':'form-control'}))
                                                    
-    
-    
+
 
 class SignUpForm(forms.ModelForm):
     email = forms.EmailField(required=True)
@@ -28,7 +27,7 @@ class SignUpForm(forms.ModelForm):
     password2 = forms.CharField(required = True)
     t_and_c = forms.BooleanField(required=True)
 
-   
+
 
     class Meta:
         model = get_user_model()
@@ -39,8 +38,7 @@ class SignUpForm(forms.ModelForm):
             'email',
             'password',
             't_and_c',
-          
-            
+                 
         )
 
     def __init__(self, *args, **kwargs):
