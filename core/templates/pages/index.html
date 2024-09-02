@@ -95,6 +95,7 @@
                         <a href="#" class="search-title fs-13 text-uppercase">Select Room Type</a>
                         <br>
                         <select  style="width:150px; border:5px solid black; padding:5px;" class=" border" name="room-type" required>
+                            <option class ="form-control" value="">Room Type</option>
                             {% for r in hotel.hotel_room_types %}
                                 <option class ="form-control" value="{{r.slug}}">{{r.type}}</option>
                             {% endfor %}

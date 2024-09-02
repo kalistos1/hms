@@ -10,9 +10,7 @@ from django.conf import settings
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
-
 from bookings.models import Coupon, CouponUsers, Hotel, Room, Booking, RoomServices, HotelGallery, HotelFeatures, RoomType, Notification, Bookmark, Review
-
 from datetime import datetime
 from decimal import Decimal
 import stripe
@@ -60,11 +58,12 @@ def gallery(request):
 def all_rooms(request):
     
     template ='pages/roomlist.html'
+    hotel = Hotel.objects.filter(status='Live').first()
     
     rooms = Room.objects.all()
-
     context = {
-     'rooms': rooms,
+    'hotel':hotel,
+    'rooms': rooms,
      }
     
     return render(request, template, context)
@@ -74,13 +73,16 @@ def all_rooms(request):
 def room_list(request,slug):
     
     template ='pages/roomlist.html'
-    
+     
+    hotel = Hotel.objects.filter(status='Live').first()
+   
     room_type = get_object_or_404(RoomType, slug=slug)
     rooms = Room.objects.filter(room_type=room_type)
     amenities = room_type.amenities.all()
   
     
     context = {
+     'hotel':hotel,
      'room_type': room_type,
      'rooms': rooms,
      'amenities': amenities
