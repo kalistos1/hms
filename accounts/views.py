@@ -11,8 +11,6 @@ from django.contrib import messages
 
 
 
-
-
 def signin(request):
     if request.user.is_authenticated:
         return redirect(get_dashboard_url(request.user))
@@ -35,6 +33,7 @@ def signin(request):
         form = LoginForm()
 
     return render(request, 'pages/signin.html', {'form': form})
+
 
 
 # sign up view
@@ -87,8 +86,6 @@ def sign_up(request):
         }
     return render(request, template, context)
    
-
-
 
 
 @login_required

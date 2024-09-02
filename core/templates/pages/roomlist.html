@@ -46,6 +46,8 @@
                 </div>
             </form> </div>
     </div>
+
+
     <div class="section">
         <div class="container">
 
@@ -105,7 +107,7 @@
                                                 <input type="hidden" name="csrf_test_name" value="daededbb46ee5511e0ee2dd97371f607" />
                                                 <input name="roomid" type="hidden" value="1" />
                                                 <div>
-                                                    {% if room.is_available == Tkrue %}
+                                                    {% if room.is_available == True %}
                                                         <input name="send" type="submit" value="Select" class="btn btn-primary" />
                                                     {% else %}
                                                         <input value="unvailable" class="btn btn-warning" disabled />

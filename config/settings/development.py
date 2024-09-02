@@ -194,3 +194,12 @@ CKEDITOR_5_CONFIGS = {
     },
 }
 
+
+STRIPE_PUBLIC_KEY = ""
+STRIPE_PRIVATE_KEY = ""
+
+
+# Flutterwave
+FLUTTERWAVE_PUBLIC = ""
+# Website Address
+WEBSITE_ADDRESS =""

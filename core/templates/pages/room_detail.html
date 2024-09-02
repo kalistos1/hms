@@ -1,0 +1,168 @@
+{% extends 'pages_base.html' %}
+{% load static %}
+{% block title %}Room List  {% endblock %}
+
+{% block content %}
+    <style>
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* Adjust the opacity here */
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 20px;
+            color: white; /* Ensures text is white */
+        }
+
+        .background {
+            width: 100%;
+            height: 30vh;
+            position: relative;
+        }
+    </style>
+    <div class="py-5 bg-gray background" style="background-image: url('{{ room_type.banner_img.url }}'); background-size: cover; background-position: center;" >
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="content text-center text-light">
+                <h2 style="color:white;">{{room_type.type}} Room</h2>
+                <p>{{rooms.count}} Available Rooms</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="container">
+
+
+            {% if rooms %}
+                {% for room in rooms %}
+                    <div class="row">
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-6">
+                            <div class="room-list card shadow-xs rounded-0 p-0 mb-4">
+                                <div class="card-body">
+                                    <div class="media d-block d-md-flex">
+                                        <div class="position-relative mr-md-4 mb-3 mb-md-0">
+                                            <a href="{{ room.banner_img.url }}" class="room-img position-relative d-block" data-fancybox data-caption="Twin Room">
+                                                <img src="{{ room.banner_img.url}}" alt class="img-fluid img-fluid-custome width_200 w-sm-100" width="320">
+                                            </a>
+                                            <div class="icon-content position-absolute d-flex">
+                                                <a class="zoom-icon mr-2" href="https://hotel.bdtask-demo.com/xainhotel/application/modules/room_setting/assets/images/2021-02-24/b1.jpg" data-fancybox data-caption="Twin Room"><i class="fas fa-search-plus"></i></a>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="media-body">
+                                            <div class="d-md-flex justify-content-between">
+                                                <div class="item-overview">
+                                                    <h5 class="item-title font-weight-bold mt-0">{{room.room_type}} // {{ room.room_number}}</h5>
+
+                                                    <p class="item-description mb-3">Non-refundable, Breakfast included </p>
+
+                                                    <div class="star-rating d-flex fs-13 mb-2">
+                                                        <div class="star-rating_container text-warning">
+                                                        </div>
+                                                        <div class="review-numbers ml-2">
+                                                            <span class="fas fa-star star_colour"></span><span class="fas fa-star star_colour"></span><span class="fas fa-star star_colour"></span><span class="fas fa-star star_colour"></span><span class="fas fa-star star_colour"></span> <span class="reviews-stats">(5)</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="room-size fs-16 font-weight-bold mr-2">{{ room.room_type.room_capacity }} 6&nbsp;<span>Adults</span> &nbsp;<span></span></div>
+                                                    <div class="room-content d-flex align-items-center mb-3">
+                                                        <div class="room-size fs-16 font-weight-bold mr-2">{{room.room_type.number_of_beds}}&nbsp;<span>Beds</span></div>
+                                                    </div>
+
+                                                    <a class="btn btn-gray mb-2 mb-lg-0 mr-2" data-toggle="collapse" href="#details0" role="button" aria-controls="details0">Details<i class="ti-angle-down ml-2"></i></a>
+                                    {% comment %} <button class="btn btn-gray mb-2 mb-lg-0" type="button" data-toggle="collapse" data-target="#conditions0" aria-controls="conditions0">Reserve Condition<i class="ti-angle-down ml-2"></i> </button>
+                                 {% endcomment %}
+                                                </div>
+
+                                                <div class="item-info position-relative">
+                                                    <div class="item-price">
+                                                        <div class="d-flex justify-content-md-end">
+                                                            <span class="h4 mb-0">$</span>
+                                                            <span class="price h2 font-weight-600 text-danger mb-0" data-annual="29" data-monthly="49">{{room.room_type.price}}</span>
+                                                            <span class="h6 align-self-end mb-1">/Night</span>
+                                                        </div>
+                                                        <div class="price-refundable">
+                                                            <span>Free cancellation</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <input type="hidden" class="room_id_{{room.id}}" value="{{room.id}}" id="room_id">
+                                                        <input type="hidden" class="room_number_{{room.id}}" value="{{room.room_number}}" id="room_number">
+                                                        <button class="btn btn-info button border add-to-selection" data-index="{{room.id}}"><i class="fas fa-shopping-cart"></i> Add To Selection</button>
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="collapse multi-collapse" id="details0">
+                                        <div class="card card-body rounded-0 mt-3">
+                                            <h3 class="fs-18 font-weight-bold mb-3">Included Amenities</h3>
+                                            <ul class="list-unstyled list-articles mb-3">
+                                                {% for amenity in amenities %}
+                                                    <li><a href="#"><i class="fas fa-gift mr-2"></i> {{amenity.name}}</a></li>
+                                                {% endfor %}
+                                            </ul>
+                                            <h3 class="fs-18 font-weight-bold mb-3">Equipment</h3>
+                                            <ul class="list-unstyled list-style-2 list-articles mb-0">
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                    {% comment %} <div class="collapse multi-collapse" id="conditions0">
+                        <div class="card card-body rounded-0 mt-3">
+                            <p>For cancellations made up to 4 days before the date of arrival, no additional fee will be charged.
+                                For cancellations within 3 days prior to arrival, 100% of the total booking will be charged.
+                                Full payment will be made directly at the accommodation. A credit card is required to make a reservation. In order to verify that the credit card is valid, a temporary hold of 0.11 € is placed on the card.</p>
+                        </div>
+                    </div> {% endcomment %}
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <input type="hidden" value="{{hotel.id}}" id="id">
+            <input type="hidden" value="{{hotel.name}}" id="hotel_name">
+            <input type="hidden" value="{{room_type.type}}" id="room_name">
+            <input type="hidden" value="{{room_type.price}}" id="room_price">
+            <input type="hidden" value="{{room_type.number_of_beds}}" id="number_of_beds">
+            <input type="hidden" value="{{room_type.id}}" id="room_type">
+            <input type="hidden" value="{{checkin}}" id="checkin">
+            <input type="hidden" value="{{checkout}}" id="checkout">
+            <input type="hidden" value="{{adult}}" id="adult">
+            <input type="hidden" value="{{children}}" id="children">
+
+
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function(){
+
+            var dateInput = $('#checkout_date');
+
+            dateInput.on('change', function() {
+                var selectedDate = dateInput.val();
+                console.log('Selected date:', selectedDate);
+            });
+        })
+    </script>
+{% endblock %}

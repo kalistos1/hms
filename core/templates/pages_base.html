@@ -8,6 +8,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link rel="shortcut icon" href="assets/img/boutique hotel .png" type="image/x-icon">
 
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://unpkg.com/sweetalert2@7.8.2/dist/sweetalert2.all.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
         <link href="{% static 'frontpage/website_assets/css/animate.min.css' %}" rel="stylesheet">
         <link href="{% static 'frontpage/website_assets/plugins/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
         <link href="{% static 'frontpage/website_assets/plugins/themify/themify-icons.css' %}" rel="stylesheet">
@@ -38,6 +43,30 @@
 
         {% include 'partials/_footer.html' %}
 
+         {% comment %} plugins thirdparty {% endcomment %}
+        <script src="{% static 'frontpage/plugins/scripts/custom.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/jquery-3.4.1.min.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/chosen.min.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/slick.min.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/rangeslider.min.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/magnific-popup.min.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/jquery-ui.min.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/bootstrap-select.min.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/mmenu.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/tooltips.min.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/color_switcher.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/jquery_custom.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/typed.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/infobox.min.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/markerclusterer.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/datedropper.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/quantityButtons.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/moment.min.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/daterangepicker.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/moment.min.js' %}"></script>
+        <script src="{% static 'frontpage/plugins/scripts/daterangepicker.js' %}"></script>
+
+
 
         <script src="{% static 'frontpage/website_assets/plugins/bootstrap/js/popper.min.js' %}"></script>
         <script src="{% static 'frontpage/website_assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
@@ -53,6 +82,65 @@
         <script src="{% static 'frontpage/assets/sweetalert/sweetalert.min.js" type="text/javascript' %}"></script>
         <script src="{% static 'frontpage/website_assets/js/script.js' %}"></script>
         <script src="{% static 'frontpage/website_assets/js/subscriber_email.js' %}"></script>
+
+
+
+        <script>
+            function initAutocomplete() {
+                var input = document.getElementById('autocomplete-input');
+                var autocomplete = new google.maps.places.Autocomplete(input);
+
+                autocomplete.addListener('place_changed', function() {
+                    var place = autocomplete.getPlace();
+                    if (!place.geometry) {
+                        window.alert("No details available for input: '" + place.name + "'");
+                        return;
+                    }
+                });
+
+                if ($('.main-search-input-item')[0]) {
+                    setTimeout(function() {
+                        $(".pac-container").prependTo("#autocomplete-container");
+                    }, 300);
+                }
+            }
+        </script>
+        <script>
+            $(function() {
+
+                var start = moment().subtract(0, 'days');
+                var end = moment().add(2, 'days');
+
+                function cb(start, end) {
+                    $('#booking-date-search').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+                }
+                cb(start, end);
+                $('#booking-date-search').daterangepicker({
+                    "opens": "right",
+                    "autoUpdateInput": true,
+                    "alwaysShowCalendars": true,
+                    startDate: start,
+                    endDate: end
+                }, cb);
+
+                cb(start, end);
+
+            });
+
+            // Calendar animation and visual settings
+            $('#booking-date-search').on('show.daterangepicker', function(ev, picker) {
+                $('.daterangepicker').addClass('calendar-visible calendar-animated bordered-style');
+                $('.daterangepicker').removeClass('calendar-hidden');
+            });
+            $('#booking-date-search').on('hide.daterangepicker', function(ev, picker) {
+                $('.daterangepicker').removeClass('calendar-visible');
+                $('.daterangepicker').addClass('calendar-hidden');
+            });
+
+            $(window).on('load', function() {
+                $('#booking-date-search').val('');
+            });
+        </script>
     </body>
 
 </html>
