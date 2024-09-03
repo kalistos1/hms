@@ -144,3 +144,9 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' 
+
+
+
+LOGIN_REDIRECT_URL = 'dashboard:frontdesk_dashboard'
+LOGIN_URL = '/auth/signin/'
+LOGOUT_URL = '/'

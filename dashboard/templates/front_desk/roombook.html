@@ -5,7 +5,20 @@
 {% block content %}
     <main class="container-fluid px-0">
     {% comment %} sidebar here {% endcomment %}
-        {% include '../partials/menubars/frontdesk_sidebar.html' %}
+        {% if request.user.is_admin %}
+            {% include '../partials/menubars/admin_sidebar.html' %}
+
+        {% elif request.user.is_supervisor %}
+            {% include '../partials/menubars/supervisor_sidebar.html' %}
+
+        {% elif request.user.is_account_officer %}
+            {% include '../partials/menubars/accounting_sidebar.html' %}
+
+        {% else %}
+            {% include '../partials/menubars/frontdesk_sidebar.html' %}
+
+        {% endif %}
+
     {% comment %} sidebar ends {% endcomment %}
 
         <div class="content">
@@ -185,7 +198,7 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <div class="col-md-12 mb-3">
                                                             <div class="form-group">
                                                                 <label class="form-label text-muted">Address</label>
@@ -311,7 +324,7 @@
                                                     {{booking_form.booking_type}}
                                                 </div>
                                             </div>
-                                        </div> 
+                                        </div>
 
                                     </div>
                                 </div>
@@ -344,7 +357,7 @@
                                                 <div class="input-group">
                                                     <span class="input-group-text" ><i class="bi bi-people"></i></span>
                                                     {{booking_form.num_adults}}
-                                                 
+
                                                 </div>
                                             </div>
                                         </div>
@@ -360,7 +373,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                         </div>
 
                         <div class="col-md-12 col-lg-6">
@@ -439,7 +452,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="col-sm-12 text-end">
                             <button type="submit" class="btn btn-info">Save Details</button>
                         </div>

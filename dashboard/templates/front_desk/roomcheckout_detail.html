@@ -5,7 +5,20 @@
 {% block content %}
     <main class="container-fluid px-0">
     {% comment %} sidebar here {% endcomment %}
-        {% include '../partials/menubars/frontdesk_sidebar.html' %}
+        {% if request.user.is_admin %}
+            {% include '../partials/menubars/admin_sidebar.html' %}
+
+        {% elif request.user.is_supervisor %}
+            {% include '../partials/menubars/supervisor_sidebar.html' %}
+
+        {% elif request.user.is_account_officer %}
+            {% include '../partials/menubars/accounting_sidebar.html' %}
+
+        {% else %}
+            {% include '../partials/menubars/frontdesk_sidebar.html' %}
+
+        {% endif %}
+
     {% comment %} sidebar ends {% endcomment %}
 
         <div class="content">

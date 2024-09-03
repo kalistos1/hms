@@ -1,11 +1,24 @@
 {% extends 'dashboard_base.html' %}
 {% load static %}
-{% block title %} Contact us{% endblock %}
+{% block title %} Frontdesk | Booking List{% endblock %}
 
 {% block content %}
     <main class="container-fluid px-0">
     {% comment %} sidebar here {% endcomment %}
-        {% include '../partials/menubars/frontdesk_sidebar.html' %}
+        {% if request.user.is_admin %}
+            {% include '../partials/menubars/admin_sidebar.html' %}
+
+        {% elif request.user.is_supervisor %}
+            {% include '../partials/menubars/supervisor_sidebar.html' %}
+
+        {% elif request.user.is_account_officer %}
+            {% include '../partials/menubars/accounting_sidebar.html' %}
+
+        {% else %}
+            {% include '../partials/menubars/frontdesk_sidebar.html' %}
+
+        {% endif %}
+
     {% comment %} sidebar ends {% endcomment %}
 
         <div class="content">
@@ -40,26 +53,26 @@
                                             <th>Check In</th>
                                             <th>Check Out</th>
                                             <th>Paid Amount</th>
-                                           
+
                                             <th>Payment Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                    {% for booking in bookings %}
-                                        <tr>
-                                            <td>
-                                                {{booking.user.first_name}}  {{booking.user.last_name}}
-                                            </td>
-                                            <td>{{booking.room_type}}</td>
-                                            <td>{{booking.check_in_date}}</td>
-                                            <td>{{booking.check_out_date}}</td>
-                                            <td>{{booking.total}}</td>
-                                           
-                                            <td><span class="badge text-bg-warning">{{booking.payment_status}}</span></td>
-                                        </tr>
+                                        {% for booking in bookings %}
+                                            <tr>
+                                                <td>
+                                                    {{booking.user.first_name}}  {{booking.user.last_name}}
+                                                </td>
+                                                <td>{{booking.room_type}}</td>
+                                                <td>{{booking.check_in_date}}</td>
+                                                <td>{{booking.check_out_date}}</td>
+                                                <td>{{booking.total}}</td>
+
+                                                <td><span class="badge text-bg-warning">{{booking.payment_status}}</span></td>
+                                            </tr>
                                         {% endfor %}
-                                        
-                                        
+
+
                                     </tbody>
                                 </table>
                             </div>
