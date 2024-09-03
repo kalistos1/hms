@@ -1,5 +1,5 @@
 from django import forms
-from bookings.models import  Booking, Room
+from bookings.models import *
 from accounts.models import  User, Profile
 from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
@@ -53,7 +53,6 @@ class CustomerForm(forms.ModelForm):
         self.fields['image'].widget.attrs.update({'class': 'form-control-file', 'placeholder': 'Upload profile image'})
 
 
-
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
@@ -105,3 +104,64 @@ class BookingForm(forms.ModelForm):
         self.fields['total'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Total Amount payable'})
         self.fields['advance_amount'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Advance Amount'})
         self.fields['vip'].widget.attrs.update({})
+        
+        
+class RoomAmenityForm(forms.ModelForm):
+    class Meta:
+        model = RoomAmenity
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(RoomAmenityForm, self).__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Amenity Name'})
+        self.fields['description'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Description'})
+        
+        
+
+
+class RoomTypeForm(forms.ModelForm):
+    class Meta:
+        model = RoomType
+        fields = ['banner_img','type','price', 'number_of_beds', 'room_capacity','amenities']
+
+    def __init__(self, *args, **kwargs):
+        super(RoomTypeForm, self).__init__(*args, **kwargs)
+      
+        self.fields['banner_img'].widget.attrs.update({'class': 'form-control-file'})
+        self.fields['type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Type'})
+        self.fields['price'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Price'})
+        self.fields['number_of_beds'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Beds'})
+        self.fields['room_capacity'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Capacity'})
+        self.fields['amenities'].widget.attrs.update({'class': 'form-control select2'})
+        
+        
+        
+        
+
+class RoomForm(forms.ModelForm):
+    class Meta:
+        model = Room
+        fields = ['room_type','banner_img','room_number','floor']
+
+    def __init__(self, *args, **kwargs):
+        super(RoomForm, self).__init__(*args, **kwargs)
+     
+        self.fields['room_type'].widget.attrs.update({'class': 'form-control'})
+        self.fields['banner_img'].widget.attrs.update({'class': 'form-control-file'})
+        self.fields['room_number'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Number'})
+        self.fields['floor'].widget.attrs.update({'class': 'form-control'})
+       
+
+
+
+class RoomServicesForm(forms.ModelForm):
+    class Meta:
+        model = RoomServices
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(RoomServicesForm, self).__init__(*args, **kwargs)
+        self.fields['booking'].widget.attrs.update({'class': 'form-control'})
+        self.fields['room'].widget.attrs.update({'class': 'form-control'})
+        self.fields['service_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Service Type'})
+        self.fields['price'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Price'})
