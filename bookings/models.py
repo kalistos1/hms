@@ -279,7 +279,14 @@ class Booking(models.Model):
     stripe_payment_intent = models.CharField(max_length=200,null=True, blank=True)
     success_id = ShortUUIDField(length=300, max_length=505, alphabet="abcdefghijklmnopqrstuvxyz1234567890")
     booking_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
-
+    
+    def save(self, *args, **kwargs):
+        if self.check_in_date and self.check_out_date:
+            # Calculate the total number of days
+            self.total_days = (self.check_out_date - self.check_in_date).days
+        else:
+            self.total_days = 0
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.booking_id}"

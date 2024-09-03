@@ -54,23 +54,48 @@ class CustomerForm(forms.ModelForm):
 
 
 
-
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        fields = ['booking_type', 'room_type','room','check_in_date', 'check_out_date', 'num_adults', 'num_children', 'advance_amount','discount_type','discount_amount','payment_mode', 'vip', 'total', 'payment_status','total','arrival_from']
+        fields = [
+            'booking_type', 'room_type', 'room', 'check_in_date', 'check_out_date', 
+            'num_adults', 'num_children', 'advance_amount', 'discount_type', 
+            'discount_amount', 'payment_mode', 'vip', 'total', 'payment_status', 
+            'total', 'arrival_from'
+        ]
 
-    room = forms.ModelMultipleChoiceField(queryset=Room.objects.filter(is_available=True), required=True)
+        room = forms.ModelMultipleChoiceField(
+            queryset=Room.objects.filter(is_available=True), 
+            required=True,
+            widget=forms.CheckboxSelectMultiple,  
+        )
 
     def __init__(self, *args, **kwargs):
         super(BookingForm, self).__init__(*args, **kwargs)
+        
        
+        available_rooms = Room.objects.filter(
+            is_available=True
+        ).exclude(
+            id__in=Booking.objects.filter(is_active=False).values_list('room__id', flat=True)
+        )
+        self.fields['room'].queryset = available_rooms
+        
+        # Check if there are any available rooms
+        if not available_rooms.exists():
+            self.fields['room'].widget.attrs['placeholder'] = 'No available room'
+            self.fields['room'].widget = forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'No available room'
+            })
+        else:
+            self.fields['room'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room'})
+        
         self.fields['check_in_date'].widget = DateInput(attrs={'class': 'form-control','placeholder': 'Check-In Date'})
         self.fields['check_out_date'].widget = DateInput(attrs={'class': 'form-control','placeholder': 'Check-Out Date'})
         self.fields['booking_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Booking Type'})
         self.fields['arrival_from'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Arrival From'})
         self.fields['room_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Type'})
-        self.fields['room'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room'})
         self.fields['num_adults'].widget.attrs.update({'class': 'form-control', 'placeholder': 'No. Adults'})
         self.fields['num_children'].widget.attrs.update({'class': 'form-control', 'placeholder': 'No. Children'})
         self.fields['discount_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'discount type'})
@@ -80,5 +105,3 @@ class BookingForm(forms.ModelForm):
         self.fields['total'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Total Amount payable'})
         self.fields['advance_amount'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Advance Amount'})
         self.fields['vip'].widget.attrs.update({})
-
-
