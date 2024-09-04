@@ -178,13 +178,13 @@
                                         <li><a href="{% url 'dashboard:admin_list_room_amenities' %}" aria-label="Bed List">Room Amenity</a></li>
                                         <li><a href="{% url 'dashboard:admin_list_room_types' %}" aria-label="Bed List">Room Types</a></li>
                                         <li><a href="{% url 'dashboard:admin_list_room' %}" aria-label="Room List">Room List</a></li>
-                                        <li><a href="" aria-label="Room List">Room Services</a></li>
+                                        {% comment %} <li><a href="" aria-label="Room List">Room Services</a></li> {% endcomment %}
                                         {% comment %} <li><a href="booking-type-list(Admin).html" aria-label="Booking Type List">Booking Type List</a></li> {% endcomment %}
                                         
                                         {% comment %} <li><a href="complementary-list(Admin).html" aria-label="Complementary">Complementary List</a></li>
                                         <li><a href="floor-plan-list(Admin).html" aria-label="Floor Plan List">Floor Plan List</a></li> {% endcomment %}
                                         {% comment %} <li><a href="room-image(Admin).html" aria-label="Room Images">Room Images</a></li> {% endcomment %}
-                                        <li><a href="" aria-label="Promocode List">coupon code List</a></li>
+                                        <li><a href="{% url 'dashboard:admin_list_coupon' %}" aria-label="Promocode List">coupon code List</a></li>
                                         <li><a href="" aria-label="Booking Commission ">Booking Commission </a></li>
                                     </ul>
                                 </li>

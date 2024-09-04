@@ -248,17 +248,13 @@ class Booking(models.Model):
     full_name = models.CharField(max_length=1000, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
     phone = models.CharField(max_length=1000, null=True, blank=True)
-    
-    
     hotel = models.ForeignKey(Hotel, on_delete=models.SET_NULL, null=True)
     booking_type = models.CharField(max_length=100, choices=BOOKING_TYPE, default="Instant")
-    
     room_type = models.ForeignKey(RoomType, on_delete=models.SET_NULL, null=True)
     room = models.ManyToManyField(Room)
     discount_type = models.CharField(max_length=1000, null=True, blank=True)
     discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     before_discount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     advance_amount =  models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     saved = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
@@ -336,7 +332,6 @@ class Coupon(models.Model):
 class CouponUsers(models.Model):
     coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE)
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
-    
     full_name = models.CharField(max_length=1000)
     email = models.CharField(max_length=1000)
     mobile = models.CharField(max_length=1000)

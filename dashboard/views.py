@@ -11,7 +11,6 @@ from .forms import *
 from django.db.models import Count
 
 
-
 # admin view s start
 def admin_dashboard(request):
     template = "admin_user/dashboard.html"
@@ -19,11 +18,10 @@ def admin_dashboard(request):
     return render (request,template)
 
 
-
 # Amenities
 def admin_create_room_amenity(request):
     if request.method == 'POST':
-        form = RoomAmenityForm(request.POST)
+        form = RoomAmenityForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, 'Room Amenity created successfully!')
@@ -40,8 +38,7 @@ def admin_create_room_amenity(request):
 
 def admin_list_room_amenities(request):
     amenities = RoomAmenity.objects.all()
-    form = RoomAmenityForm()
-    
+    form = RoomAmenityForm()   
     context = {
         'amenities': amenities,
         'form':form,
@@ -78,12 +75,11 @@ def admin_delete_room_amenity(request, pk):
     return redirect('dashboard:admin_list_room_amenities')
 
 
-
 #rooms
 def admin_create_room(request):
     hotel = Hotel.objects.filter(status='Live').first()
     if request.method == 'POST':
-        form = RoomForm(request.POST)
+        form = RoomForm(request.POST, request.FILES)
         if form.is_valid():
             room = form.save(commit=False)
             room.hotel = hotel
@@ -131,8 +127,7 @@ def admin_update_room(request, pk):
 
 
 
-def admin_delete_room(request, pk):
-    
+def admin_delete_room(request, pk):    
     room = get_object_or_404(Room, pk=pk)
     if request.method == 'GET':
         room.delete()
@@ -146,7 +141,7 @@ def admin_delete_room(request, pk):
 def admin_create_room_type(request):
     hotel = Hotel.objects.filter(status='Live').first()
     if request.method == 'POST':
-        form =  RoomTypeForm(request.POST)
+        form =  RoomTypeForm(request.POST, request.FILES)
         if form.is_valid():
             room_type = form.save(commit=False)
             room_type.hotel = hotel
@@ -193,8 +188,7 @@ def admin_update_room_type(request, pk):
 
 
 
-def admin_delete_room_type(request, pk):
-    
+def admin_delete_room_type(request, pk):   
     room_type = get_object_or_404(RoomType, pk=pk)
     if request.method == 'GET':
         room_type.delete()
@@ -205,20 +199,78 @@ def admin_delete_room_type(request, pk):
 
 
 
+#coupons
+def admin_create_coupon(request):
+    hotel = Hotel.objects.filter(status='Live').first()
+    if request.method == 'POST':
+        form =  CreateCouponForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Room Type created successfully!')
+            return redirect('dashboard:admin_list_coupon')  
+        else:
+            messages.error(request, 'Error creating Room Type. Please correct the errors below.')
+            return redirect('dashboard:admin_list_coupon')  
+            
+    else:
+        messages.error(request, 'Something Went Wrong. Try Again.')
+        return redirect('dashboard:admin_list_coupon') 
+    
+
+
+def admin_list_coupon(request):
+    coupons = Coupon.objects.all()
+    form = CreateCouponForm()
+    
+    context = {
+        'coupons': coupons,
+        'form':form,
+        }
+    return render(request, 'admin_user/coupon_list.html',context)
+
+
+
+def admin_update_coupon(request, pk):
+    amenity = get_object_or_404(Coupon, pk=pk)
+    if request.method == 'POST':
+        form = CreateCouponForm(request.POST, instance=amenity)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Room Amenity updated successfully!')
+            return redirect('dashboard:admin_list_coupon')
+        else:
+            messages.error(request, 'Error updating Room Amenity. Please correct the errors below.')
+    else:
+        form = CreateCouponForm(instance=amenity)
+
+    return render(request, {'form': form})
+
+
+
+def admin_delete_coupon(request, pk):
+    
+    room_type = get_object_or_404(Coupon, pk=pk)
+    if request.method == 'GET':
+        room_type.delete()
+        messages.success(request, 'Room Amenity deleted successfully!')
+        return redirect('dashboard:admin_list_coupon')
+    
+    return redirect('dashboard:admin_list_coupon')
+
+
+
 #admin views end here
 
 
 
 
 def supervisor_dashboard(request):
-    template = "supervisor/dashboard.html"
-    
+    template = "supervisor/dashboard.html"    
     return render (request,template)
 
 
 def account_dashboard(request):
-    template = "account_officer/dashboard.html"
-    
+    template = "account_officer/dashboard.html"    
     return render (request,template)
 
 

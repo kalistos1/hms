@@ -30,7 +30,15 @@ urlpatterns = [
     path('admin/room/create/', views.admin_create_room, name='admin_create_room'),
     path('admin/room/update/<int:pk>/', views.admin_update_room, name='admin_update_room'),
     path('admin/room/delete/<int:pk>/', views.admin_delete_room, name='admin_delete_room'),
-   
+    
+    
+       #coupon
+    path('admin/coupons/', views.admin_list_coupon, name='admin_list_coupon'),
+    path('admin/couponcreate/', views.admin_create_coupon, name='admin_create_coupon'),
+    path('admin/coupon/update/<int:pk>/', views.admin_update_coupon, name='admin_update_coupon'),
+    path('admin/coupon/delete/<int:pk>/', views.admin_delete_coupon, name='admin_delete_coupon'),
+    
+
 
     #frontdesk
     path('front_desk/room_status/',views.frontdesk_room_status, name ="frontdesk_room_status"),

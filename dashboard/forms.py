@@ -165,3 +165,23 @@ class RoomServicesForm(forms.ModelForm):
         self.fields['room'].widget.attrs.update({'class': 'form-control'})
         self.fields['service_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Service Type'})
         self.fields['price'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Price'})
+        
+        
+        
+        
+class CreateCouponForm(forms.ModelForm):
+    class Meta:
+        model = Coupon
+        fields =[ 'code', 'type','discount','redemption','active', 'make_public', 'valid_from', 'valid_to']
+        
+    def __init__(self, *args, **kwargs):
+        super(CreateCouponForm, self).__init__(*args, **kwargs)
+        self.fields['code'].widget.attrs.update({'class': 'form-control', 'placeholder': 'coupon code'})
+        self.fields['type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Coupon Type'})
+        self.fields['discount'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Discount value'})
+        self.fields['redemption'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Redemption'})  
+        self.fields['active'].widget.attrs.update({'class': 'form-control', 'placeholder': 'active'})   
+        self.fields['make_public'].widget.attrs.update({'class': 'form-control', 'placeholder': 'make Public'})     
+        self.fields['valid_from'].widget.attrs.update({'class': 'form-control', 'placeholder': 'valid from'})   
+        self.fields['valid_to'].widget.attrs.update({'class': 'form-control', 'placeholder': ' valid to'})   
+
