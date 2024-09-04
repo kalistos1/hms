@@ -9,6 +9,7 @@ from bookings.models import *
 import string
 from .forms import *
 from django.db.models import Count
+from accounts.forms import *
 
 
 # admin view s start
@@ -198,7 +199,6 @@ def admin_delete_room_type(request, pk):
     return redirect('dashboard:admin_list_room_types')
 
 
-
 #coupons
 def admin_create_coupon(request):
     hotel = Hotel.objects.filter(status='Live').first()
@@ -256,6 +256,116 @@ def admin_delete_coupon(request, pk):
         return redirect('dashboard:admin_list_coupon')
     
     return redirect('dashboard:admin_list_coupon')
+
+
+# Privilaged Users
+# ================================================================================================================
+
+def admin_users_list(request):
+    template ="admin_user/admin_user.html"
+  
+    admin_form = AddAdminForm()
+    supervisor_form = AddSupervisorForm()
+    frontdesk_form = AddFrontdeskForm()
+    pos_officer_form = AddPosOfficerForm()
+    account_officer_form = AddAccountOfficerForm()
+    
+    privilage_users = User.objects.filter(
+                            is_admin=True
+                        ) | User.objects.filter(
+                            is_supervisor=True
+                        ) | User.objects.filter(
+                            is_account_officer=True
+                        ) | User.objects.filter(
+                            is_frontdesk_officer=True
+                        ) | User.objects.filter(
+                            is_pos_officer=True
+                )
+    
+    
+    context = {
+        'privilage_users':privilage_users,
+        'admin_form':admin_form,
+        'supervisor_form':supervisor_form,
+        'frontdesk_form':frontdesk_form,
+        'pos_officer_form':pos_officer_form,  
+        'account_officer_form':account_officer_form       
+    }
+    return render(request, template, context)
+
+
+
+def add_admin_privilaged_user(request):
+    
+    admin_form = AddAdminForm()
+    supervisor_form = AddSupervisorForm()
+    frontdesk_form = AddFrontdeskForm()
+    pos_officer_form = AddPosOfficerForm()
+    account_officer_form = AddAccountOfficerForm()
+
+    if request.method == "POST":
+        # Determine which form was submitted based on form data
+        if 'admin_submit' in request.POST:
+            admin_form = AddAdminForm(request.POST)
+            if admin_form.is_valid():
+                user = admin_form.save(commit=False)
+                user.set_password(admin_form.cleaned_data['password'])
+                user.save()
+                messages.success(request, f"Admin user {user.username} was created successfully")
+                return redirect('dashboard:admin_users_list')
+        
+        elif 'supervisor_submit' in request.POST:
+            supervisor_form = AddSupervisorForm(request.POST)
+            if supervisor_form.is_valid():
+                user = supervisor_form.save(commit=False)
+                user.set_password(supervisor_form.cleaned_data['password'])
+                user.save()
+                messages.success(request, f"Supervisor {user.username} was created successfully")
+                return redirect('dashboard:admin_users_list')
+
+        elif 'frontdesk_submit' in request.POST:
+            frontdesk_form = AddFrontdeskForm(request.POST)
+            if frontdesk_form.is_valid():
+                user = frontdesk_form.save(commit=False)
+                user.set_password(frontdesk_form.cleaned_data['password'])
+                user.save()
+                messages.success(request, f"Frontdesk Officer {user.username} was created successfully")
+                return redirect('dashboard:admin_users_list')
+
+        elif 'pos_officer_submit' in request.POST:
+            pos_officer_form = AddPosOfficerForm(request.POST)
+            if pos_officer_form.is_valid():
+                user = pos_officer_form.save(commit=False)
+                user.set_password(pos_officer_form.cleaned_data['password'])
+                user.save()
+                messages.success(request, f"POS Officer {user.username} was created successfully")
+                return redirect('dashboard:admin_users_list')
+
+        elif 'account_officer_submit' in request.POST:
+            account_officer_form = AddAccountOfficerForm(request.POST)
+            if account_officer_form.is_valid():
+                user = account_officer_form.save(commit=False)
+                user.set_password(account_officer_form.cleaned_data['password'])
+                user.save()
+                messages.success(request, f"Account Officer {user.username} was created successfully")
+                return redirect('dashboard:admin_users_list')
+
+    messages.error(request, f"Something Went Wrong, Account Officer was not created!")
+    return redirect('dashboard:admin_users_list')
+
+
+
+
+
+def admin_delete_privilaged_user(request, pk):
+    
+    room_type = get_object_or_404(User, pk=pk)
+    if request.method == 'GET':
+        room_type.delete()
+        messages.success(request, 'user deleted successfully!')
+        return redirect('dashboard:admin_users_list')
+    
+    return redirect('dashboard:admin_users_list')
 
 
 

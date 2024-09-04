@@ -163,6 +163,24 @@
                                     </ul>
                                 </li>
 
+
+                                <li class="py-2 mt-2">
+                                    <a href="#WorkersMenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24"  viewBox="0 0 24 24"  stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 8m-5 0a5 5 0 1 0 10 0a5 5 0 1 0 -10 0" />
+                                            <path d="M8 11a5 5 0 1 0 3.998 1.997" />
+                                            <path d="M12.002 19.003a5 5 0 1 0 3.998 -8.003" />
+                                        </svg>
+                                        <span class="mx-3">Manage Workers</span>
+                                    </a>
+
+                                    <ul class="collapse list-unstyled" id ="WorkersMenu">
+                                        <li><a href="{% url 'dashboard:admin_users_list' %}" aria-label="Booking Reports">Workers List</a></li>
+
+                                    </ul>
+                                </li>
+
                                 <li class="py-2 mt-2">
                                     <a href="#Roomsettings" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24"  viewBox="0 0 24 24"  stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -180,7 +198,7 @@
                                         <li><a href="{% url 'dashboard:admin_list_room' %}" aria-label="Room List">Room List</a></li>
                                         {% comment %} <li><a href="" aria-label="Room List">Room Services</a></li> {% endcomment %}
                                         {% comment %} <li><a href="booking-type-list(Admin).html" aria-label="Booking Type List">Booking Type List</a></li> {% endcomment %}
-                                        
+
                                         {% comment %} <li><a href="complementary-list(Admin).html" aria-label="Complementary">Complementary List</a></li>
                                         <li><a href="floor-plan-list(Admin).html" aria-label="Floor Plan List">Floor Plan List</a></li> {% endcomment %}
                                         {% comment %} <li><a href="room-image(Admin).html" aria-label="Room Images">Room Images</a></li> {% endcomment %}

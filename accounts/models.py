@@ -25,6 +25,8 @@ class User(AbstractUser):
     is_supervisor = models.BooleanField(default=False)
     is_account_officer = models.BooleanField(default=False)
     is_frontdesk_officer = models.BooleanField(default=False)
+    is_pos_officer = models.BooleanField(default=False)
+    active_status = models.BooleanField(default=False)
     t_and_c = models.BooleanField(default=False)
 
     def __str__(self):

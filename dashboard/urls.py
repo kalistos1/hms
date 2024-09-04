@@ -38,6 +38,10 @@ urlpatterns = [
     path('admin/coupon/update/<int:pk>/', views.admin_update_coupon, name='admin_update_coupon'),
     path('admin/coupon/delete/<int:pk>/', views.admin_delete_coupon, name='admin_delete_coupon'),
     
+    #Admin users
+    path('admin/privilaged_users/list/', views.admin_users_list, name='admin_users_list'),
+    path('admin/privilaged_user/create/', views.add_admin_privilaged_user, name='add_admin_privilaged_user'),
+    path('admin/privilaged_user/delete/<int:pk>/', views.admin_delete_privilaged_user, name='admin_delete_privilaged_user'),
 
 
     #frontdesk

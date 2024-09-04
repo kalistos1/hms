@@ -1,0 +1,342 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+{% block title %} Admin | Privilaged Users {% endblock %}
+
+{% block content %}
+    <main class="container-fluid px-0">
+    {% comment %} sidebar here {% endcomment %}
+        {% if request.user.is_admin %}
+            {% include '../partials/menubars/admin_sidebar.html' %}
+
+        {% elif request.user.is_supervisor %}
+            {% include '../partials/menubars/supervisor_sidebar.html' %}
+
+        {% elif request.user.is_account_officer %}
+            {% include '../partials/menubars/accounting_sidebar.html' %}
+
+        {% else %}
+            {% include '../partials/menubars/frontdesk_sidebar.html' %}
+
+        {% endif %}
+
+    {% comment %} sidebar ends {% endcomment %}
+
+        <div class="content">
+
+
+   {% comment %} top header starts {% endcomment %}
+            {% include '../partials/top_header.html' %}
+   {% comment %} top header ends {% endcomment %}
+
+   {% comment %} body content starts {% endcomment %}
+<!-- start: page body area -->
+            <div class="px-xl-5 px-lg-4 px-3 py-3 mt-5 page-body">
+                <div class="row g-3">
+                    <div class="col-sm-12">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap">
+                            <h3 class="fw-bold mb-0">Privilaged Users List</h3>
+                            <div class="col-auto d-flex flex-wrap gap-2 w-sm-100">
+                                <button type="button" class="btn btn-warning" data-bs-toggle="offcanvas" data-bs-target="#add-admin" aria-controls="add-admin">Create Admin</button>
+                                <button type="button" class="btn btn-warning" data-bs-toggle="offcanvas" data-bs-target="#add-supervisor" aria-controls="add-supervisor">Create Supervisor</button>
+                                <button type="button" class="btn btn-warning" data-bs-toggle="offcanvas" data-bs-target="#add-accountant" aria-controls="add-accountant">Create Accountant</button>
+                                <button type="button" class="btn btn-warning" data-bs-toggle="offcanvas" data-bs-target="#add-frontdesk" aria-controls="add-frontdesk">Create Front-Desk </button>
+                                <button type="button" class="btn btn-warning me-2" data-bs-toggle="offcanvas" data-bs-target="#add-pos" aria-controls="add-pos">Create POS</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <table class="table dataTable align-middle table-hover table-body" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>First Name</th>
+                                            <th>Last Name</th>
+                                            <th>Username </th>
+                                            <th>Active Status</th>
+                                            <th>Role</th>
+                                            <th>Date Added</th>
+                                            <th>image</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if privilage_users  %}
+                                            {% for user in privilage_users %}
+                                                <tr>
+                                                    <td>{{ user.first_name }}</td>
+                                                    <td>{{ user.last_name }}</td>
+                                                    <td>{{ user.username }}</td>
+                                                    <td>{% if user.active_status == True  %} <button class="btn btn-success"> Active</button> {% else %}<button class="btn btn-danger"> Inactive</button> {% endif %}</td>
+                                                    <td>
+                                                        {% if user.is_admin %}
+                                                            <button class="btn btn-info"> ADMIN USER</button>
+                                                        {% elif user.is_supervisor %}
+                                                            <button class="btn btn-info"> SUPERVISOR</button>
+                                                        {% elif user.is_frontdesk_officer %}
+                                                            <button class="btn btn-info"> FRONT-DESK OFFICER</button>
+                                                        {% elif user.is_account_officer %}
+                                                            <button class="btn btn-info"> ACCOUNTING OFFICER</button>
+                                                        {% else %}
+                                                            <button class="btn btn-info"> POS OFFICER</button>
+                                                        {% endif %}
+
+                                                    </td>
+                                                    <td>{{ user.date_joined }}</td>
+                                                    {% if user.profile.image %}
+                                                        <td>
+                                                            <img src="{{ user.profile.image.url }}" alt="User Image" class="image-fluid" style="width: 100px; height: auto;">
+                                                        </td>
+                                                    {% else %}
+                                                        <td>
+                                                            No Photo
+                                                        </td>
+                                                    {% endif %}
+
+
+
+                                                    <td>
+                                                        <button type="button" class="btn" data-bs-toggle="offcanvas" data-bs-target="#edit-room" aria-controls="edit-room"><i class="fa fa-pencil-square fa-2x"></i></button>
+                                                        <a href="#" data-url="{% url 'dashboard:admin_delete_privilaged_user' 0 %}" onclick="deleteUser(event, {{ user.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="text-center">
+                                                <h4> No Privilaged created yet! </h4>
+                                            </div>
+                                        {% endif %}
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- Row End -->
+            </div>
+
+
+
+<!-- Add: Admin -->
+            <div
+                class="offcanvas offcanvas-end"
+                tabindex="-1"
+                id="add-admin"
+                aria-labelledby="add-admin"
+            >
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">Add Admin</h5>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="offcanvas"
+                        aria-label="Close"
+                    ></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form action ="{% url 'dashboard:add_admin_privilaged_user' %}" method ="post" >
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            
+                            {{admin_form.as_p}}
+
+                        </div>
+                       
+
+                        <div class="d-flex">
+                            <button type="button" class="btn w-100 me-1 py-2 btn-primary">
+                                Clear
+                            </button>
+                            <button type="submit" name="admin_submit"  class="btn w-100 ms-1 py-2 btn-dark">
+                                Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+
+<!-- Add: Accountant -->
+<div
+class="offcanvas offcanvas-end"
+tabindex="-1"
+id="add-accountant"
+aria-labelledby="add-accountant"
+>
+<div class="offcanvas-header">
+    <h5 class="offcanvas-title">Add Account Officer </h5>
+    <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+    ></button>
+</div>
+<div class="offcanvas-body">
+    <form action ="{% url 'dashboard:add_admin_privilaged_user' %}" method ="post" >
+        {% csrf_token %}
+
+        <div class="form-group mb-3">
+            
+            {{account_officer_form.as_p}}
+
+        </div>
+        
+        <div class="d-flex">
+            <button type="button" class="btn w-100 me-1 py-2 btn-primary">
+                Clear
+            </button>
+            <button type="submit"name="account_officer_submit" class="btn w-100 ms-1 py-2 btn-dark">
+                Save
+            </button>
+        </div>
+    </form>
+</div>
+</div>
+
+
+
+<!-- Add: Supervisor -->
+            <div
+                class="offcanvas offcanvas-end"
+                tabindex="-1"
+                id="add-supervisor"
+                aria-labelledby="add-supervisor"
+            >
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">Add Supervisor</h5>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="offcanvas"
+                        aria-label="Close"
+                    ></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form action ="{% url 'dashboard:add_admin_privilaged_user' %}" method ="post" >
+                        {% csrf_token %}
+
+                        <div class="form-group mb-3">
+                            
+                            {{supervisor_form.as_p}}
+
+                        </div>
+                        
+                        <div class="d-flex">
+                            <button type="button" class="btn w-100 me-1 py-2 btn-primary">
+                                Clear
+                            </button>
+                            <button type="submit" name="supervisor_submit" class="btn w-100 ms-1 py-2 btn-dark">
+                                Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+<!-- Add: Front desk -->
+            <div
+                class="offcanvas offcanvas-end"
+                tabindex="-1"
+                id="add-frontdesk"
+                aria-labelledby="add-frontdesk"
+            >
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">Add Front-Desk Officer</h5>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="offcanvas"
+                        aria-label="Close"
+                    ></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form action ="{% url 'dashboard:add_admin_privilaged_user' %}" method ="post" >
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                           
+                            {{frontdesk_form.as_p}}
+
+                        </div>
+                    
+                        <div class="d-flex">
+                            <button type="button" class="btn w-100 me-1 py-2 btn-primary">
+                                Clear
+                            </button>
+                            <button type="submit" name="frontdesk_submit" class="btn w-100 ms-1 py-2 btn-dark">
+                                Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+<!-- Add: Pos officer -->
+            <div
+                class="offcanvas offcanvas-end"
+                tabindex="-1"
+                id="add-pos"
+                aria-labelledby="add-pos"
+            >
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">Add POS officer</h5>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="offcanvas"
+                        aria-label="Close"
+                    ></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form action ="{% url 'dashboard:add_admin_privilaged_user' %}" method ="post" >
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                           
+                            {{ pos_officer_form.as_p }}
+
+                        </div>
+                        <div class="d-flex">
+                            <button type="button" class="btn w-100 me-1 py-2 btn-primary">
+                                Clear
+                            </button>
+                            <button type="submit" name="pos_officer_submit" class="btn w-100 ms-1 py-2 btn-dark">
+                                Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+        <script>
+            function deleteUser(event, amenityId) {
+                event.preventDefault(); // Prevent the default link behavior
+
+            // Get the URL template from the data attribute and replace the placeholder
+                var url = document.querySelector('[data-url]').getAttribute('data-url').replace('0', amenityId);
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'Do you want to delete this User?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'No, cancel!',
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                    // Redirect to the URL to perform the delete operation
+                        window.location.href = url;
+                    }
+                });
+            }
+        </script>
+
+    </main>
+{% endblock %}

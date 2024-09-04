@@ -47,7 +47,7 @@
                                 <table class="table dataTable align-middle table-hover table-body" style="width: 100%;">
                                     <thead>
                                         <tr>
-                                          
+
                                             <th>Coupon Code</th>
                                             <th>Type</th>
                                             <th>Discount Value</th>
@@ -60,11 +60,11 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                     
+
                                         {% if coupons %}
                                             {% for coupon in coupons %}
                                                 <tr>
-                                                    
+
                                                     <td>{{ coupon.code}}</td>
                                                     <td>{{ coupon.type  }}</td>
                                                     <td>{{coupon.discount }}</td>
@@ -82,7 +82,7 @@
                                             {% endfor %}
                                         {% else %}
                                             <div class="text-center">
-                                                <h4> No coupon Added Yet! </h4> 
+                                                <h4> No coupon Added Yet! </h4>
 
                                             </div>
                                         {% endif %}
@@ -115,13 +115,13 @@
                                 <button
                                     type="button"
                                     class="btn-close"
-                                    data-bs-dismiss="modal" <td>{{amenity.valid_from }}</td>
+                                    data-bs-dismiss="modal"
                                     aria-label="Close"
                                 ></button>
                             </div>
                             <div class="modal-body">
 
-                                'code', 'type','discount','redemption','active', 'make_public', 'valid_from', 'valid_to'
+
                                 {% csrf_token %}
                                 <div class="form-group">
                                     <label class="form-label text-muted">Coupon Code</label>
@@ -142,14 +142,19 @@
                                     <label class="form-label text-muted">Coupon Redemption</label>
                                     {{form.redemption}}
                                 </div>
+
+                                <br>
                                 <div class="form-group">
                                     <label class="form-label text-muted">Coupon Active</label>
                                     {{form.active}}
                                 </div>
+
+                                <br>
                                 <div class="form-group">
                                     <label class="form-label text-muted">Coupon Make Public</label>
                                     {{form.make_public}}
                                 </div>
+                                <br>
                                 <div class="form-group">
                                     <label class="form-label text-muted">Coupon Valid From</label>
                                     {{form.valid_from}}

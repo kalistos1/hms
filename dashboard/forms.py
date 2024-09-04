@@ -180,8 +180,8 @@ class CreateCouponForm(forms.ModelForm):
         self.fields['type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Coupon Type'})
         self.fields['discount'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Discount value'})
         self.fields['redemption'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Redemption'})  
-        self.fields['active'].widget.attrs.update({'class': 'form-control', 'placeholder': 'active'})   
-        self.fields['make_public'].widget.attrs.update({'class': 'form-control', 'placeholder': 'make Public'})     
-        self.fields['valid_from'].widget.attrs.update({'class': 'form-control', 'placeholder': 'valid from'})   
-        self.fields['valid_to'].widget.attrs.update({'class': 'form-control', 'placeholder': ' valid to'})   
+        self.fields['active'].widget.attrs.update({})   
+        self.fields['make_public'].widget.attrs.update({})     
+        self.fields['valid_from'].widget= DateInput(attrs={'class': 'form-control','placeholder': 'Valid From'}) 
+        self.fields['valid_to'].widget=DateInput(attrs={'class': 'form-control','placeholder': 'Valid To'}) 
 
