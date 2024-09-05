@@ -1,0 +1,160 @@
+		<!-- start: page menu link -->
+<aside class="ps-xl-5 ps-lg-4 ps-3 pe-2 py-3 sidebar sticky-top" data-bs-theme="none">
+    <nav class="navbar navbar-expand-xl py-0">
+        <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvas_Navbar">
+            <div class="offcanvas-header">
+                <span class="fw-bold fs-5 text-gradient border-3">X-Empire</span>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body flex-column custom_scroll ps-4 ps-xl-0">
+                <div class="d-flex align-items-start mb-4">
+                    <img class="avatar lg rounded-circle border border-3" src="assets/images/profile_av.png" alt="avatar">
+                    <div class="ms-3 mt-1">
+                        <h4 class="mb-0 text-gradient title-font">MR Supervisor</h4>
+                        <span class="text-muted"> Supervisor</span>
+                    </div>
+                </div>
+
+                                <!-- start: Menu tab -->
+                <ul class="nav nav-tabs tab-dynamic px-0 mb-4 " role="tablist" style="--dynamic-color: var(--accent-color)">
+                    <li class="nav-item" role="presentation"><a class="ps-2 pe-3 nav-link active" data-bs-toggle="tab" href="#tab_hotels" role="tab" aria-selected="false" tabindex="-1">HOTELS</a></li>
+
+                                <!-- start: Menu content -->
+                    <div class="tab-content">
+                                    <!-- start: Hotel tab-->
+                        <div class="tab-pane fade active show" id="tab_hotels" role="tabpanel">
+                            <h6 class="fl-title title-font ps-2 small text-uppercase text-muted py-3" style="--dynamic-color: var(--theme-color1)">Universal</h6>
+                            <ul class="list-unstyled mb-4 menu-list">
+                                <li>
+                                    <a class="active" href="index(Admin).html" aria-label="Hotel Dashboard">
+                                        <svg class="svg-stroke" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                            <path d="M5 12l-2 0l9 -9l9 9l-2 0"></path>
+                                            <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"></path>
+                                            <path d="M10 12h4v4h-4z"></path>
+                                        </svg>
+                                        <span class="mx-3">Dashboard</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="Hotel(Admin).html" aria-label="Hotel Front">
+                                        <svg class="svg-stroke" xmlns="http://www.w3.org/2000/svg" width="24"  viewBox="0 0 24 24"  stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M3 21l18 0" />
+                                            <path d="M4 21v-11l2.5 -4.5l5.5 -2.5l5.5 2.5l2.5 4.5v11" />
+                                            <path d="M12 9m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                                            <path d="M9 21v-5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v5" />
+                                        </svg>
+                                        <span class="mx-3">Reports</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="transaction(Admin).html" aria-label="Transaction list">
+                                        <svg class="svg-stroke" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                            <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12"></path>
+                                            <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4"></path>
+                                        </svg>
+                                        <span class="mx-3">Transaction</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#RoomMenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M14 12v.01" />
+                                            <path d="M3 21h18" />
+                                            <path d="M6 21v-16a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v16" />
+                                        </svg>
+                                        <span class="mx-3">Room Book</span>
+                                    </a>
+                                    <ul class="collapse list-unstyled" id="RoomMenu">
+                                        <li><a href="room-booking-list.html" aria-label="Booking List">Booking List</a></li>
+                                        <li><a href="checkin-out.html" aria-label="Room Checkout">Room Checkout</a></li>
+                                        <li><a href="room-status.html" aria-label="Room Status">Room Status</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="#RoomFacilitesMenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M12 10m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                                            <path d="M7 3m0 2a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2z" />
+                                            <path d="M12 3v2" />
+                                            <path d="M10 15v.01" />
+                                            <path d="M10 18v.01" />
+                                            <path d="M14 18v.01" />
+                                            <path d="M14 15v.01" />
+                                        </svg>
+                                        <span class="mx-3">Room Facilites</span>
+                                    </a>
+                                    <ul class="collapse list-unstyled" id="RoomFacilitesMenu">
+                                        <li><a href="room-facilites-list.html" aria-label="Facilites List">Facilites List</a></li>
+                                        <li><a href="facilites-details.html" aria-label="Facilites Details">Facilites Details</a></li>
+                                        <li><a href="room-size.html" aria-label="Room Size">Room Size</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="#HousekeepingMenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M8.5 10a1.5 1.5 0 0 1 -1.5 -1.5a5.5 5.5 0 0 1 11 0v10.5a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-2c0 -1.38 .71 -2.444 1.88 -3.175l4.424 -2.765c1.055 -.66 1.696 -1.316 1.696 -2.56a2.5 2.5 0 1 0 -5 0a1.5 1.5 0 0 1 -1.5 1.5z" />
+                                        </svg>
+                                        <span class="mx-3">House keeping</span>
+                                    </a>
+                                    <ul class="collapse list-unstyled" id="HousekeepingMenu">
+                                        <li><a href="housekeeping-assign-room.html" aria-label="Housekeeping All">Assign Room</a></li>
+
+                                        <li><a href="housekeeping-roomcleaning.html" aria-label="Housekeeping Cleaning">Room Cleaning</a></li>
+                                        <li><a href="housekeeping-Checklist.html" aria-label="Housekeeping Checklist">Checklist</a></li>
+                                        <li><a href="housekeeping-qrlist.html" aria-label="Housekeeping QR">QR List</a></li>
+                                        <li><a href="housekeeping-report.html" aria-label="Housekeeping Reports">Cleaning Report</a></li>
+                                    </ul>
+                                </li>
+
+                                <li>
+                                    <a href="#ItemsManageMenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M13 5h8" />
+                                            <path d="M13 9h5" />
+                                            <path d="M13 15h8" />
+                                            <path d="M13 19h5" />
+                                            <path d="M3 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
+                                            <path d="M3 14m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
+                                        </svg>
+                                        <span class="mx-3">Items Manage</span>
+                                    </a>
+                                    <ul class="collapse list-unstyled" id="ItemsManageMenu">
+                                        <li><a href="items-unit-list.html" aria-label="Items Unit List">Items Unit List</a></li>
+                                        <li><a href="items-list.html" aria-label="Items List">Items List</a></li>
+                                        <li><a href="items-destroyed-list.html" aria-label="Items Destroyed">Items Destroyed</a></li>
+                                        <li><a href="items-category-list.html" aria-label="Items Category">Items Category</a></li>
+                                        <li><a href="items-suppliers-list.html" aria-label="Items Suppliers">Items Suppliers</a></li>
+                                    </ul>
+                                </li>
+
+                                <li class="py-2 mt-2">
+                                    <h6 class="fl-title title-font ps-2 small text-uppercase text-muted" style="--dynamic-color: var(--theme-color1)">Rooms Settings</h6>
+                                    <ul class="list-unstyled">
+                                        <li><a href="bed-list(Admin).html" aria-label="Bed List">Bed List</a></li>
+                                        <li><a href="booking-type-list(Admin).html" aria-label="Booking Type List">Booking Type List</a></li>
+                                        <li><a href="commission-list(Admin).html" aria-label="Booking Commission ">Booking Commission </a></li>
+                                        <li><a href="complementary-list(Admin).html" aria-label="Complementary">Complementary List</a></li><li><a href="floor-plan-list(Admin).html" aria-label="Floor Plan List">Floor Plan List</a></li>
+                                        <li><a href="room-list(Admin).html" aria-label="Room List">Room List</a></li>
+                                        <li><a href="room-image(Admin).html" aria-label="Room Images">Room Images</a></li>
+                                        <li><a href="promocode-list(Admin).html" aria-label="Promocode List">Promocode List</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </nav>
+</aside>
