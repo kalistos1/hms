@@ -7,11 +7,14 @@ from django.utils.text import slugify
 from shortuuid.django_fields import ShortUUIDField
 from django.utils.html import mark_safe
 from django.core.validators import MinValueValidator, MaxValueValidator
-
 from accounts.models import User
-
+from django.utils import timezone
+from django_countries.fields import CountryField
 import shortuuid
 from taggit.managers import TaggableManager
+from django.core.exceptions import ValidationError
+from django.db import transaction
+
 
 
 ICON_TPYE = (
@@ -98,7 +101,6 @@ class Hotel(models.Model):
     mobile = models.CharField(max_length=20)
     email = models.CharField(max_length=20)
     status = models.CharField( max_length=10, default="Live", null=True, blank=True)
-
     tags = TaggableManager(blank=True)
     views = models.PositiveIntegerField(default=0)
     featured = models.BooleanField(default=False)
@@ -139,6 +141,8 @@ class Hotel(models.Model):
     def rating_count(self):
         rating_count = Review.objects.filter(hotel=self, active=True).count()
         return rating_count
+ 
+ 
     
 class HotelGallery(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
@@ -152,6 +156,7 @@ class HotelGallery(models.Model):
         verbose_name_plural = "Hotel Gallery"
     
 
+
 class HotelFeatures(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
     icon_type = models.CharField(max_length=100, null=True, blank=True, choices=ICON_TPYE)
@@ -164,6 +169,8 @@ class HotelFeatures(models.Model):
     
     class Meta:
         verbose_name_plural = "Hotel Features"
+  
+  
     
 class HotelFAQs(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
@@ -177,6 +184,7 @@ class HotelFAQs(models.Model):
     
     class Meta:
         verbose_name_plural = "Hotel FAQs"
+     
         
 class RoomAmenity(models.Model):
     name = models.CharField(max_length=255)
@@ -184,16 +192,15 @@ class RoomAmenity(models.Model):
 
     def __str__(self):
         return self.name
+       
         
-
 class RoomType(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
-    banner_img =models.ImageField(upload_to="room_type", null=True, blank=True)
+    banner_img = models.ImageField(upload_to="room_type", null=True, blank=True)
     type = models.CharField(max_length=10)
-    price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    base_price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     number_of_beds = models.PositiveIntegerField(default=0)
     room_capacity = models.PositiveIntegerField(default=0)
-    amenities = models.ManyToManyField(RoomAmenity, blank=True)  
     rtid = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
     slug = models.SlugField(null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
@@ -203,130 +210,300 @@ class RoomType(models.Model):
 
     def rooms_count(self):
         return Room.objects.filter(room_type=self).count()
-    
+
     def save(self, *args, **kwargs):
-        if self.slug == "" or self.slug == None:
+        if not self.slug:
             uuid_key = shortuuid.uuid()
             uniqueid = uuid_key[:4]
             self.slug = slugify(self.type) + "-" + str(uniqueid.lower())
-            
-        super(RoomType, self).save(*args, **kwargs) 
-    
-
-class Room(models.Model):
-    FLOOR =(
-        ('ground_floor','ground_floor'),
-        ('first_floor','first_floor'),
-        ('second_floor','second_floor'),
+        super(RoomType, self).save(*args, **kwargs)
         
+        
+        
+        
+class Room(models.Model):
+    FLOOR = (
+        ('ground_floor', 'Ground Floor'),
+        ('first_floor', 'First Floor'),
+        ('second_floor', 'Second Floor'),
     )
+    
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
     room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE)
-    banner_img =models.ImageField(upload_to="rooms", null=True, blank=True)
+    banner_img = models.ImageField(upload_to="rooms", null=True, blank=True)
     room_number = models.CharField(max_length=10)
-    floor = models.CharField(max_length=20, choices= FLOOR, default='ground_floor')
+    floor = models.CharField(max_length=20, choices=FLOOR, default='ground_floor')
+    price_override = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     is_available = models.BooleanField(default=True)
     rid = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
     date = models.DateTimeField(auto_now_add=True)
+    amenities = models.ManyToManyField(RoomAmenity, blank=True)  # Added field
 
     def __str__(self):
-        return f"{self.hotel.name} - {self.room_type.type} -  Room {self.room_number}"
+        return f"{self.hotel.name} - {self.room_type.type} - Room {self.room_number}"
 
     def price(self):
-        return self.room_type.price
-    
+        """Return the room's price, falling back to the base price from RoomType if no override."""
+        return self.price_override if self.price_override is not None else self.room_type.base_price
+
     def number_of_beds(self):
         return self.room_type.number_of_beds
+
+    def save(self, *args, **kwargs):
+        # Validation to ensure price_override is not negative
+        if self.price_override is not None and self.price_override < 0:
+            raise ValidationError("Price override cannot be negative.")
+        
+        super(Room, self).save(*args, **kwargs)
+
+
+class Payment(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    ]
+    PAYMENT_MODE_CHOICES = [
+        ('cash', 'Cash'),
+        ('credit_card', 'Credit Card'),
+        ('paypal', 'PayPal'),
+    ]
     
+    booking = models.ForeignKey('Booking', related_name='payments', on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    mode = models.CharField(max_length=20, choices=PAYMENT_MODE_CHOICES, default='cash')
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    date = models.DateTimeField(auto_now_add=True)
+    transaction_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
+
+    def __str__(self):
+        return f"Payment {self.transaction_id} - {self.status}"
+
+    def get_total_due(self):
+        total_booking = self.booking.calculate_total()
+        total_paid = self.booking.payments.filter(status='completed').aggregate(total=models.Sum('amount'))['total'] or 0
+        return total_booking - total_paid
+        
+    def are_rooms_available(self, rooms, check_in_date, check_out_date):
+        """
+        Check if all the specified rooms are available for the selected date range
+        in an atomic way using select_for_update to prevent race conditions.
+        Returns True if all rooms are available, otherwise False.
+        """
+        with transaction.atomic():
+            for room in rooms:
+                # Lock the room rows to avoid race conditions
+                locked_room = Room.objects.select_for_update().get(id=room.id)
+                
+                # Check if the room has any overlapping active bookings
+                overlapping_bookings = Booking.objects.filter(
+                    room=locked_room,
+                    is_active=True,
+                    check_in_date__lt=check_out_date,
+                    check_out_date__gt=check_in_date
+                ).exists()
+                
+                if overlapping_bookings:
+                    return False, locked_room  # Return the specific room that's not available
+                
+        return True, None
+
+    def save(self, *args, **kwargs):
+        """
+        Ensure the availability of rooms before saving the booking,
+        and use a database-level lock to prevent race conditions.
+        """
+        available, unavailable_room = self.are_rooms_available(self.room.all(), self.check_in_date, self.check_out_date)
+        if not available:
+            raise ValueError(f"Room {unavailable_room.room_number} is not available for the selected dates.")
+        
+        super(Booking, self).save(*args, **kwargs)
 
 
-class Booking(models.Model):
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_customers')
+class Refund(models.Model):
+    REFUND_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processed', 'Processed'),
+        ('failed', 'Failed'),
+    ]
+    
+    payment = models.ForeignKey(Payment, related_name='refunds', on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    reason = models.CharField(max_length=255, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=REFUND_STATUS_CHOICES, default='pending')
+    transaction_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Refund {self.transaction_id} - {self.status} - ${self.amount}"
+
+    def clean(self):
+        # Ensure that the refund amount does not exceed the payment amount
+        total_refunded = self.payment.refunds.aggregate(total=models.Sum('amount'))['total'] or 0
+        if self.amount > (self.payment.amount - total_refunded):
+            raise ValidationError("Refund amount exceeds the remaining payment balance.")
+
+    def save(self, *args, **kwargs):
+        # Call the clean method to validate before saving
+        self.clean()
+        super(Refund, self).save(*args, **kwargs)
+
+
+class Transaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    payment_status = models.CharField(max_length=100, choices=PAYMENT_STATUS, default="initiated")
-    payment_mode = models.CharField(max_length=100, choices=PAYMENT_MODE, default="cash")
-    full_name = models.CharField(max_length=1000, null=True, blank=True)
-    email = models.EmailField(null=True, blank=True)
-    phone = models.CharField(max_length=1000, null=True, blank=True)
-    hotel = models.ForeignKey(Hotel, on_delete=models.SET_NULL, null=True)
-    booking_type = models.CharField(max_length=100, choices=BOOKING_TYPE, default="Instant")
-    room_type = models.ForeignKey(RoomType, on_delete=models.SET_NULL, null=True)
-    room = models.ManyToManyField(Room)
-    discount_type = models.CharField(max_length=1000, null=True, blank=True)
-    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    before_discount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    advance_amount =  models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    saved = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    hotel = models.ForeignKey('Hotel', on_delete=models.SET_NULL, null=True)
+    room_type = models.ForeignKey('RoomType', on_delete=models.SET_NULL, null=True)
+    room = models.ManyToManyField('Room')  # This can be used for both bookings and reservations
     check_in_date = models.DateField()
     check_out_date = models.DateField()
-    total_days = models.PositiveIntegerField(default=0)
     num_adults = models.PositiveIntegerField(default=1)
     num_children = models.PositiveIntegerField(default=0)
-    arrival_from = models.CharField(max_length=1000, null=True, blank=True)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    date_created = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        abstract = True
+
+    def calculate_total(self):
+        additional = self.additional_charges.aggregate(total=models.Sum('amount'))['total'] or 0
+        return self.total_amount + additional
+
+    def __str__(self):
+        return f"{self.hotel.name} - {self.room_type.type} Transaction"
+    
+    
+
+class Reservation(Transaction):
+    reservation_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
+    expiration_date = models.DateTimeField(null=True, blank=True)
+    is_cancelled = models.BooleanField(default=False)
+    cancel_date = models.DateTimeField(null=True, blank=True)
+    payment = models.ForeignKey('Payment', on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"Reservation {self.reservation_id} by {self.user.username if self.user else 'Guest'}"
+    
+    def cancel_reservation(self):
+        # Ensure expiration_date is set
+        if not self.expiration_date:
+            raise ValueError("Expiration date is not set.")
+        
+        # Check if the current time is past the expiration date and payment status is pending
+        if not self.is_cancelled and self.payment and self.payment.status == "pending" and timezone.now() > self.expiration_date:
+            self.is_cancelled = True
+            self.cancel_date = timezone.now()
+            self.save()
+
+    def save(self, *args, **kwargs):
+        # Set a default expiration date if it's not provided
+        if not self.expiration_date:
+            self.expiration_date = self.date_created + timezone.timedelta(days=3)
+        super(Reservation, self).save(*args, **kwargs)
+
+
+class Booking(Transaction):
+    booking_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
+    is_active = models.BooleanField(default=True)
     checked_in = models.BooleanField(default=False)
     checked_out = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    checked_in_tracker = models.BooleanField(default=False, help_text="DO NOT CHECK THIS BOX")
-    checked_out_tracker = models.BooleanField(default=False, help_text="DO NOT CHECK THIS BOX")
-    date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    coupons = models.ManyToManyField("bookings.Coupon",null=True, blank=True)
-    vip = models.BooleanField(default=False)
-    stripe_payment_intent = models.CharField(max_length=200,null=True, blank=True)
-    success_id = ShortUUIDField(length=300, max_length=505, alphabet="abcdefghijklmnopqrstuvxyz1234567890")
-    booking_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
-    
+    reservation = models.OneToOneField('Reservation', on_delete=models.SET_NULL, null=True, blank=True)
+    date = models.DateTimeField(auto_now_add=True)
+    coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"Booking {self.booking_id} by {self.user.username if self.user else 'Guest'}"
+
+    def get_total_with_additional_charges(self):
+        return self.calculate_total()
+
+    def apply_coupon(self, coupon):
+        """Apply a valid coupon and calculate the final amount."""
+        if coupon and coupon.active and coupon.valid_from <= timezone.now().date() <= coupon.valid_to:
+            if coupon.type == 'Percentage':
+                discount = (self.total_amount * coupon.discount) / 100
+            else:  # Fixed amount discount
+                discount = coupon.discount
+            self.total_amount -= min(discount, self.total_amount)  # Ensure discount doesn't exceed total
+            self.coupon = coupon
+            self.save()
+
+    def convert_reservation_to_booking(self, reservation):
+        """Convert a reservation into a booking and optionally apply a coupon if one exists."""
+        self.user = reservation.user
+        self.hotel = reservation.hotel
+        self.room_type = reservation.room_type
+        self.room.set(reservation.room.all())  # Copy the rooms from the reservation
+        self.check_in_date = reservation.check_in_date
+        self.check_out_date = reservation.check_out_date
+        self.num_adults = reservation.num_adults
+        self.num_children = reservation.num_children
+        self.reservation = reservation
+        self.total_amount = reservation.total_amount
+
+        # Apply coupon if any exists in the reservation
+        if reservation.payment and reservation.payment.booking.coupon:
+            self.coupon = reservation.payment.booking.coupon  # Copy the coupon from the reservation if it exists
+        
+        self.save()
+
+    def are_rooms_available(self, rooms, check_in_date, check_out_date):
+        """
+        Check if all the specified rooms are available for the selected date range.
+        Returns True if all rooms are available, otherwise False.
+        """
+        for room in rooms:
+            overlapping_bookings = Booking.objects.filter(
+                room=room,
+                is_active=True,
+                check_in_date__lt=check_out_date,
+                check_out_date__gt=check_in_date
+            ).exists()
+            if overlapping_bookings:
+                return False, room  # Return the specific room that's not available
+        return True, None
+
     def save(self, *args, **kwargs):
-        if self.check_in_date and self.check_out_date:
-            # Calculate the total number of days
-            self.total_days = (self.check_out_date - self.check_in_date).days
-        else:
-            self.total_days = 0
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.booking_id}"
-    
-    def rooms(self):
-        return self.room.all().count()
-    
-class ActivityLog(models.Model):
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
-    guest_out = models.DateTimeField()
-    guest_in = models.DateTimeField()
-    description = models.TextField(null=True, blank=True)
-    date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-
-    def __str__(self):
-        return str(self.booking)
-    
-class StaffOnDuty(models.Model):
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
-    staff_id = models.CharField(null=True, blank=True, max_length=100)
-    date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-
-    def __str__(self):
-        return str(self.staff_id)
+        # Check the availability of all rooms before saving the booking
+        available, unavailable_room = self.are_rooms_available(self.room.all(), self.check_in_date, self.check_out_date)
+        if not available:
+            raise ValueError(f"Room {unavailable_room.room_number} is not available for the selected dates.")
+        
+        super(Booking, self).save(*args, **kwargs)
     
 
 class Coupon(models.Model):
+    DISCOUNT_TYPE = [
+        ('Percentage', 'Percentage'),
+        ('Fixed', 'Fixed'),
+    ]
+    
     code = models.CharField(max_length=1000)
     type = models.CharField(max_length=100, choices=DISCOUNT_TYPE, default="Percentage")
     discount = models.IntegerField(default=1, validators=[MinValueValidator(0), MaxValueValidator(100)])
     redemption = models.IntegerField(default=0)
-    date = models.DateTimeField(auto_now_add=True)
+    max_redemptions = models.IntegerField(default=1)  # New field to limit redemptions
+    date_created = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
-    make_public = models.BooleanField(default=False)
     valid_from = models.DateField()
     valid_to = models.DateField()
     cid = ShortUUIDField(length=10, max_length=25, alphabet="abcdefghijklmnopqrstuvxyz")
 
-    
     def __str__(self):
         return self.code
     
     class Meta:
-        ordering =['-id']
+        ordering = ['-id']
+
+    def is_valid(self):
+        """Check if coupon is valid (active, within the valid date range, and not over-redeemed)."""
+        if not self.active:
+            return False
+        if self.valid_from > timezone.now().date() or self.valid_to < timezone.now().date():
+            return False
+        if self.redemption >= self.max_redemptions:
+            return False
+        return True
 
 
 class CouponUsers(models.Model):
@@ -340,9 +517,51 @@ class CouponUsers(models.Model):
         return str(self.coupon.code)
     
     class Meta:
-        ordering =['-id']
+        ordering = ['-id']
 
 
+class AdditionalCharge(models.Model):
+    CHARGE_CATEGORY_CHOICES = [
+        ('minibar', 'Minibar'),
+        ('room_service', 'Room Service'),
+        ('damage', 'Damage'),
+        ('laundry', 'Laundry'),
+        ('other', 'Other'),
+    ]
+
+    booking = models.ForeignKey(Booking, related_name='additional_charges', on_delete=models.CASCADE)
+    category = models.CharField(max_length=50, choices=CHARGE_CATEGORY_CHOICES)
+    description = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.category} - ${self.amount} for Booking {self.booking.booking_id}"
+    
+    
+    
+ 
+class ActivityLog(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    guest_out = models.DateTimeField()
+    guest_in = models.DateTimeField()
+    description = models.TextField(null=True, blank=True)
+    date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    def __str__(self):
+        return str(self.booking)
+    
+    
+ 
+class StaffOnDuty(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    staff_id = models.CharField(null=True, blank=True, max_length=100)
+    date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    def __str__(self):
+        return str(self.staff_id)
+    
+ 
 class RoomServices(models.Model):
     booking = models.ForeignKey(Booking, null=True, on_delete=models.CASCADE)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
@@ -350,9 +569,21 @@ class RoomServices(models.Model):
     service_type = models.CharField(max_length=20, null=True, blank=True)
     price = models.DecimalField(decimal_places=2, max_digits=12, default=0.00)
 
-    def str(self):
-        return str(self.booking) + " " + str(self.room) + " " + str(self.service_type)
+    def __str__(self):
+        return f"{self.booking} {self.room} {self.service_type}"
+
+    def save(self, *args, **kwargs):
+        super(RoomServices, self).save(*args, **kwargs)
+        # Create an AdditionalCharge entry
+        AdditionalCharge.objects.create(
+            booking=self.booking,
+            category='room_service',
+            description=f"Room service: {self.service_type}",
+            amount=self.price
+        )
     
+    
+         
 
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="user")
@@ -367,6 +598,14 @@ class Notification(models.Model):
     
     class Meta:
         ordering = ['-date']
+
+    
+#  ================================================================================================================================================================   
+#  ===========================================================================================================================================================   
+
+
+    
+    
 
 
 class Bookmark(models.Model):

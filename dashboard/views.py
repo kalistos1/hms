@@ -586,3 +586,88 @@ def frontdesk_room_checkout(request):
 # ==========================================================================================================
 # ==========================================================================================================
 
+
+# from django.http import JsonResponse
+# from .models import Booking, Coupon
+
+def apply_coupon_to_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    coupon_code = request.POST.get('coupon_code')
+
+    try:
+        coupon = Coupon.objects.get(code=coupon_code, active=True)
+        if coupon.valid_from <= timezone.now().date() <= coupon.valid_to:
+            # Apply the coupon to the booking
+            booking.apply_coupon(coupon)
+            return JsonResponse({'success': True, 'new_total': booking.total_amount})
+        else:
+            return JsonResponse({'success': False, 'message': 'Coupon is not valid for current date.'})
+    except Coupon.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Invalid coupon code.'})
+    
+    
+    # process additional charge
+
+# from .models import Booking, AdditionalCharge
+# from .forms import AdditionalChargeForm
+# from django.db import transaction
+
+def add_additional_charge(request, booking_id):
+    booking = get_object_or_404(Booking, booking_id=booking_id)
+    if not booking.is_active:
+        messages.error(request, 'Cannot add charges to an inactive booking.')
+        return redirect('booking_detail', booking_id=booking.booking_id)
+    
+    if request.method == 'POST':
+        form = AdditionalChargeForm(request.POST)
+        if form.is_valid():
+            with transaction.atomic():
+                additional_charge = form.save(commit=False)
+                additional_charge.booking = booking
+                additional_charge.save()
+                # Potentially update booking.total_amount or other related fields
+            messages.success(request, 'Additional charge added successfully.')
+            return redirect('booking_detail', booking_id=booking.booking_id)
+    else:
+        form = AdditionalChargeForm()
+    return render(request, 'add_additional_charge.html', {'form': form, 'booking': booking})
+
+
+def process_payment(request, booking_id):
+    booking = get_object_or_404(Booking, booking_id=booking_id)
+    total_due = booking.get_total_with_additional_charges() - booking.payments.filter(status='completed').aggregate(total=models.Sum('amount'))['total'] or 0
+    
+    if request.method == 'POST':
+        # Assume you have a form for payment details
+        form = PaymentForm(request.POST)
+        if form.is_valid():
+            payment = form.save(commit=False)
+            payment.booking = booking
+            payment.amount = total_due
+            payment.save()
+            # Update payment status based on actual payment processing
+            payment.status = 'completed'  # or 'failed' based on real outcome
+            payment.save()
+            messages.success(request, 'Payment processed successfully.')
+            return redirect('booking_detail', booking_id=booking.booking_id)
+    else:
+        form = PaymentForm()
+    
+    return render(request, 'process_payment.html', {'form': form, 'booking': booking, 'total_due': total_due})
+
+
+def available_rooms(request, room_type_id, check_in_date, check_out_date):
+    room_type = RoomType.objects.get(id=room_type_id)
+    available_rooms = []
+
+    for room in room_type.room_set.all():
+        overlapping_bookings = Booking.objects.filter(
+            room=room,
+            is_active=True,
+            check_in_date__lt=check_out_date,
+            check_out_date__gt=check_in_date
+        )
+        if not overlapping_bookings.exists():
+            available_rooms.append(room)
+
+    return render(request, 'available_rooms.html', {'available_rooms': available_rooms})
