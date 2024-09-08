@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django_countries',
     'django_ckeditor_5',
     'taggit',
+    'formtools',
     
     #apps
     'accounts',

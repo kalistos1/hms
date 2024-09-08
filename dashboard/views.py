@@ -10,6 +10,14 @@ import string
 from .forms import *
 from django.db.models import Count
 from accounts.forms import *
+from formtools.wizard.views import SessionWizardView
+
+from django.contrib.auth import login
+from bookings.forms import (
+    BasicUserInfoForm, ProfileInfoForm, 
+    BookingChoiceForm, RoomBookingForm, RoomReservationForm, 
+    RoomServiceForm, PaymentForm
+)
 
 
 # admin view s start
@@ -467,104 +475,190 @@ def generate_unique_username(base_username):
     return username
     
 
-def frontdesk_room_book(request):
-    template = "front_desk/roombook.html"
+# def frontdesk_room_book(request):
     
-    if request.user.is_frontdesk_officer:
-        hotel = Hotel.objects.filter(status='Live').first()
+    # template = "front_desk/roombook.html"
+    
+    # if request.user.is_frontdesk_officer:
+    #     hotel = Hotel.objects.filter(status='Live').first()
         
-        if request.method == 'POST':
-            customer_form = CustomerForm(request.POST, request.FILES)
-            booking_form = BookingForm(request.POST)
+    #     if request.method == 'POST':
+    #         customer_form = CustomerForm(request.POST, request.FILES)
+    #         booking_form = BookingForm(request.POST)
 
-            # Extract the email or unique identifier to check for an existing user
-            email = request.POST.get('email')
-            existing_user = User.objects.filter(email=email).first()
+    #         # Extract the email or unique identifier to check for an existing user
+    #         email = request.POST.get('email')
+    #         existing_user = User.objects.filter(email=email).first()
 
-            if existing_user:
-                user = existing_user
-                profile = user.profile  # Access the existing profile
-                profile.title = customer_form.cleaned_data['title']
-                profile.phone = customer_form.cleaned_data['phone']
-                profile.date_of_birth = customer_form.cleaned_data['date_of_birth']
-                profile.gender = customer_form.cleaned_data['gender']
-                profile.country = customer_form.cleaned_data['country']
-                profile.nationality = customer_form.cleaned_data['nationality']
-                profile.city = customer_form.cleaned_data['city']
-                profile.state = customer_form.cleaned_data['state']
-                profile.address = customer_form.cleaned_data['address']
-                profile.occupation = customer_form.cleaned_data['occupation']
-                profile.id_no = customer_form.cleaned_data['id_no']
-                profile.identity_type = customer_form.cleaned_data['identity_type']
-                profile.identity_image_front = customer_form.cleaned_data['identity_image_front']
-                profile.identity_image_back = customer_form.cleaned_data['identity_image_back']
-                profile.save()
+    #         if existing_user:
+    #             user = existing_user
+    #             profile = user.profile  # Access the existing profile
+    #             profile.title = customer_form.cleaned_data['title']
+    #             profile.phone = customer_form.cleaned_data['phone']
+    #             profile.date_of_birth = customer_form.cleaned_data['date_of_birth']
+    #             profile.gender = customer_form.cleaned_data['gender']
+    #             profile.country = customer_form.cleaned_data['country']
+    #             profile.nationality = customer_form.cleaned_data['nationality']
+    #             profile.city = customer_form.cleaned_data['city']
+    #             profile.state = customer_form.cleaned_data['state']
+    #             profile.address = customer_form.cleaned_data['address']
+    #             profile.occupation = customer_form.cleaned_data['occupation']
+    #             profile.id_no = customer_form.cleaned_data['id_no']
+    #             profile.identity_type = customer_form.cleaned_data['identity_type']
+    #             profile.identity_image_front = customer_form.cleaned_data['identity_image_front']
+    #             profile.identity_image_back = customer_form.cleaned_data['identity_image_back']
+    #             profile.save()
 
-                messages.info(request, "Using existing user and profile.")
-            else:
-                if customer_form.is_valid():
-                    base_username = customer_form.cleaned_data['email'].split('@')[0]
-                    unique_username = generate_unique_username(base_username)
+    #             messages.info(request, "Using existing user and profile.")
+    #         else:
+    #             if customer_form.is_valid():
+    #                 base_username = customer_form.cleaned_data['email'].split('@')[0]
+    #                 unique_username = generate_unique_username(base_username)
 
-                    user = customer_form.save(commit=False)
-                    random_password = get_random_string(length=8)
-                    user.username = unique_username
-                    user.set_password(random_password)
-                    user.save()
+    #                 user = customer_form.save(commit=False)
+    #                 random_password = get_random_string(length=8)
+    #                 user.username = unique_username
+    #                 user.set_password(random_password)
+    #                 user.save()
 
-                    # The profile is created automatically by the post_save signal.
-                    profile = user.profile  # Access the automatically created profile
-                    profile.title = customer_form.cleaned_data['title']
-                    profile.phone = customer_form.cleaned_data['phone']
-                    profile.date_of_birth = customer_form.cleaned_data['date_of_birth']
-                    profile.gender = customer_form.cleaned_data['gender']
-                    profile.country = customer_form.cleaned_data['country']
-                    profile.nationality = customer_form.cleaned_data['nationality']
-                    profile.city = customer_form.cleaned_data['city']
-                    profile.state = customer_form.cleaned_data['state']
-                    profile.address = customer_form.cleaned_data['address']
-                    profile.occupation = customer_form.cleaned_data['occupation']
-                    profile.id_no = customer_form.cleaned_data['id_no']
-                    profile.identity_type = customer_form.cleaned_data['identity_type']
-                    profile.identity_image_front = customer_form.cleaned_data['identity_image_front']
-                    profile.identity_image_back = customer_form.cleaned_data['identity_image_back']
-                    profile.save()
+    #                 # The profile is created automatically by the post_save signal.
+    #                 profile = user.profile  # Access the automatically created profile
+    #                 profile.title = customer_form.cleaned_data['title']
+    #                 profile.phone = customer_form.cleaned_data['phone']
+    #                 profile.date_of_birth = customer_form.cleaned_data['date_of_birth']
+    #                 profile.gender = customer_form.cleaned_data['gender']
+    #                 profile.country = customer_form.cleaned_data['country']
+    #                 profile.nationality = customer_form.cleaned_data['nationality']
+    #                 profile.city = customer_form.cleaned_data['city']
+    #                 profile.state = customer_form.cleaned_data['state']
+    #                 profile.address = customer_form.cleaned_data['address']
+    #                 profile.occupation = customer_form.cleaned_data['occupation']
+    #                 profile.id_no = customer_form.cleaned_data['id_no']
+    #                 profile.identity_type = customer_form.cleaned_data['identity_type']
+    #                 profile.identity_image_front = customer_form.cleaned_data['identity_image_front']
+    #                 profile.identity_image_back = customer_form.cleaned_data['identity_image_back']
+    #                 profile.save()
 
-                    messages.success(request, f"Customer {user.username} booked successfully! Password: {random_password}")
-                else:
-                    for error in customer_form.errors.as_data():
-                        print(f"Customer form error: {error} - {customer_form.errors[error]}")
-                    messages.error(request, "There were errors in the customer form submission. Please correct them and try again.")
-                    return render(request, template, {'customer_form': customer_form, 'booking_form': booking_form})
+    #                 messages.success(request, f"Customer {user.username} booked successfully! Password: {random_password}")
+    #             else:
+    #                 for error in customer_form.errors.as_data():
+    #                     print(f"Customer form error: {error} - {customer_form.errors[error]}")
+    #                 messages.error(request, "There were errors in the customer form submission. Please correct them and try again.")
+    #                 return render(request, template, {'customer_form': customer_form, 'booking_form': booking_form})
 
-            if booking_form.is_valid():
-                booking = booking_form.save(commit=False)
-                booking.user = user
-                hotel = hotel
-                booking.created_by = request.user
-                booking.save()
-                booking.room.set(booking_form.cleaned_data['room'])
+    #         if booking_form.is_valid():
+    #             booking = booking_form.save(commit=False)
+    #             booking.user = user
+    #             hotel = hotel
+    #             booking.created_by = request.user
+    #             booking.save()
+    #             booking.room.set(booking_form.cleaned_data['room'])
 
-                for room in booking.room.all():
-                    room.is_available = False
-                    room.save()
+    #             for room in booking.room.all():
+    #                 room.is_available = False
+    #                 room.save()
 
-                messages.success(request, f"Booking successfully created for {user.username}!")
-                return redirect('dasboard:frontdesk_booking_list')
-            else:
-                for error in booking_form.errors.as_data():
-                    print(f"Booking form error: {error} - {booking_form.errors[error]}")
-                messages.error(request, "There were errors in the booking form submission. Please correct them and try again.")
+    #             messages.success(request, f"Booking successfully created for {user.username}!")
+    #             return redirect('dasboard:frontdesk_booking_list')
+    #         else:
+    #             for error in booking_form.errors.as_data():
+    #                 print(f"Booking form error: {error} - {booking_form.errors[error]}")
+    #             messages.error(request, "There were errors in the booking form submission. Please correct them and try again.")
 
-        else:
-            customer_form = CustomerForm()
-            booking_form = BookingForm()
+    #     else:
+    #         customer_form = CustomerForm()
+    #         booking_form = BookingForm()
 
-        context = {
-            'customer_form': customer_form,
-            'booking_form': booking_form
-        }
-        return render(request, template, context)
+    #     context = {
+    #         'customer_form': customer_form,
+    #         'booking_form': booking_form
+    #     }
+    #     return render(request, template, context)
+    
+
+
+def front_desk_booking(request):
+    if request.method == 'POST':
+        # Initialize forms with POST data
+        basic_info_form = BasicUserInfoForm(request.POST)
+        profile_info_form = ProfileInfoForm(request.POST)
+        booking_choice_form = BookingChoiceForm(request.POST)
+        
+        room_booking_form = RoomBookingForm(request.POST)
+        room_reservation_form = RoomReservationForm(request.POST)
+        room_service_form = RoomServiceForm(request.POST)
+        payment_form = PaymentForm(request.POST)
+        
+        # Validate the basic and profile info first
+        if basic_info_form.is_valid() and profile_info_form.is_valid():
+            # Create user and profile if the basic info and profile forms are valid
+            user = basic_info_form.save(commit=False)
+            user.set_password(user.phone)  # Set phone number as password
+            user.username = user.email  # Set email as the username
+            user.save()
+            
+            profile = profile_info_form.save(commit=False)
+            profile.user = user
+            profile.save()
+            
+            # Check the choice between booking and reservation
+            if booking_choice_form.is_valid():
+                choice = booking_choice_form.cleaned_data['choice']
+                if choice == 'booking' and room_booking_form.is_valid():
+                    booking = room_booking_form.save(commit=False)
+                    booking.user = user
+                    booking.save()
+                    
+                elif choice == 'reservation' and room_reservation_form.is_valid():
+                    reservation = room_reservation_form.save(commit=False)
+                    reservation.user = user
+                    reservation.save()
+                
+                # Process room service and payment forms
+                if room_service_form.is_valid():
+                    room_service = room_service_form.save(commit=False)
+                    room_service.user = user
+                    room_service.save()
+
+                if payment_form.is_valid():
+                    payment = payment_form.save(commit=False)
+                    payment.user = user
+                    payment.save()
+                    
+                # Redirect to success page or confirmation
+                return redirect('receipt')
+    else:
+        # Initialize empty forms for GET request
+        basic_info_form = BasicUserInfoForm()
+        profile_info_form = ProfileInfoForm()
+        booking_choice_form = BookingChoiceForm()
+        room_booking_form = RoomBookingForm()
+        room_reservation_form = RoomReservationForm()
+        room_service_form = RoomServiceForm()
+        payment_form = PaymentForm()
+
+    return render(request, 'front_desk/roombook.html', {
+        'basic_info_form': basic_info_form,
+        'profile_info_form': profile_info_form,
+        'booking_choice_form': booking_choice_form,
+        'room_booking_form': room_booking_form,
+        'room_reservation_form': room_reservation_form,
+        'room_service_form': room_service_form,
+        'payment_form': payment_form
+    })
+
+
+
+   
+def receipt(request):
+    booking = Booking.objects.filter(user=request.user).latest('id')
+    context = {
+        'booking': booking,
+        'payment': booking.payments.last(),
+        'user': request.user,
+    }
+    return render(request, 'booking/receipt.html', context)
+
 
 
 

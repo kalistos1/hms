@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views
-
 app_name = "dashboard"
 
 
@@ -48,7 +47,8 @@ urlpatterns = [
     path('front_desk/room_status/',views.frontdesk_room_status, name ="frontdesk_room_status"),
     path('front_desk/booking_list/',views.frontdesk_booking_list, name ="frontdesk_booking_list"),
     path('front_desk/check_in_out/',views.frontdesk_room_checkout, name ="frontdesk_room_checkout"),
-    path('front_desk/book_room/',views.frontdesk_room_book, name ="book_room"),
+    path('frontdesk/booking_reservation/', views.front_desk_booking, name='book_room'),
+    path('font_desk/receipt/', views.receipt, name='receipt'),
     
     
 ]

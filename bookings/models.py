@@ -22,66 +22,8 @@ ICON_TPYE = (
     ('Fontawesome Icons', 'Fontawesome Icons'),
 )
 
-ROOM_TYPES = (
-    ('King', 'King'),
-    ('Luxury', 'Luxury'),
-    ('Normal', 'Normal'),
-    ('Economic', 'Economic'),
-)
 
 
-SERVICES_TYPES = (
-    ('Food', 'Food'),
-    ('Cleaning', 'Cleaning'),
-    ('Technical', 'Technical'),
-)
-
-
-GENDER = (
-    ("Male", "Male"),
-    ("Female", "Female"),
-)
-
-
-DISCOUNT_TYPE = (
-    ("Percentage", "Percentage"),
-    ("Flat Rate", "Flat Rate"),
-)
-
-PAYMENT_STATUS = (
-    ("paid", "Paid"),
-    ("pending", "Pending"),
-    ("processing", "Processing"),
-    ("cancelled", "Cancelled"),
-    ("initiated", 'Initiated'),
-    ("failed", 'failed'),
-    ("refunding", 'refunding'),
-    ("refunded", 'refunded'),
-    ("unpaid", 'unpaid'),
-    ("expired", 'expired'),
-)
-
-PAYMENT_MODE = (
-    ("cash", "card"),
-    ("transfer", "transfer"),
- 
-)
-
-BOOKING_TYPE = (
-    ("Advance", "Advance"),
-    ("Instant", "Instant"),
-    ("Groups", "Groups"),
-    ("Allocation", "Allocation"),
-    ("Business_Seminar","Business_Seminar"),
-    ("Wedding","Wedding"),
- 
-)
-
-
-NOTIFICATION_TYPE = (
-    ("Booking Confirmed", "Booking Confirmed"),
-    ("Booking Cancelled", "Booking Cancelled"),
-)
 
 
 RATING = (
@@ -195,9 +137,17 @@ class RoomAmenity(models.Model):
        
         
 class RoomType(models.Model):
+    ROOM_TYPES = (
+        ('King', 'King'),
+        ('Luxury', 'Luxury'),
+        ('Normal', 'Normal'),
+        ('Economic', 'Economic'),
+    )
+
+
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
     banner_img = models.ImageField(upload_to="room_type", null=True, blank=True)
-    type = models.CharField(max_length=10)
+    type = models.CharField(max_length=20, choices = ROOM_TYPES, null=True, blank=True)
     base_price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     number_of_beds = models.PositiveIntegerField(default=0)
     room_capacity = models.PositiveIntegerField(default=0)
@@ -563,10 +513,16 @@ class StaffOnDuty(models.Model):
     
  
 class RoomServices(models.Model):
+    
+    SERVICES_TYPES = (
+        ('Food', 'Food'),
+        ('Cleaning', 'Cleaning'),
+        ('Technical', 'Technical'),
+    )
     booking = models.ForeignKey(Booking, null=True, on_delete=models.CASCADE)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
-    service_type = models.CharField(max_length=20, null=True, blank=True)
+    service_type = models.CharField(max_length=20, choices = SERVICES_TYPES, null=True, blank=True)
     price = models.DecimalField(decimal_places=2, max_digits=12, default=0.00)
 
     def __str__(self):
@@ -586,6 +542,13 @@ class RoomServices(models.Model):
          
 
 class Notification(models.Model):
+    
+    NOTIFICATION_TYPE = (
+        ("Booking Confirmed", "Booking Confirmed"),
+        ("Booking Cancelled", "Booking Cancelled"),
+    )
+
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="user")
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True)
     type = models.CharField(max_length=100, default="new_order", choices=NOTIFICATION_TYPE)

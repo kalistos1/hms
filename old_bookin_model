@@ -89,3 +89,45 @@
 #         self.reservation = reservation
 #         self.total_amount = reservation.total_amount
 #         self.save()
+
+
+ templates = {
+        'step1': 'front_desk/booking/step1.html',
+        'step2': 'front_desk/booking/step2.html',
+        'step3': 'front_desk/booking/step3.html',
+        'step5': 'front_desk/booking/step5.html',
+        'step6_booking': 'front_desk/booking/step6_booking.html',
+        'step6_reservation': 'front_desk/booking/step6_reservation.html',
+        'step7': 'front_desk/booking/step7.html',
+        'step8': 'front_desk/booking/step8.html',
+    }
+ 
+ 
+ 
+ <form method="POST">
+    {{ wizard.management_form }}
+
+    <!-- First field inside a custom container -->
+    <div class="custom-container">
+        <div class="custom-inner">
+            <label for="{{ wizard.form.email.id_for_label }}">Email</label>
+            {{ wizard.form.email }}
+            {% if wizard.form.email.errors %}
+                <div class="error">{{ wizard.form.email.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Another field in a different section -->
+    <div class="row">
+        <div class="col-md-6">
+            <label for="{{ wizard.form.phone.id_for_label }}">Phone</label>
+            {{ wizard.form.phone }}
+            {% if wizard.form.phone.errors %}
+                <div class="error">{{ wizard.form.phone.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
