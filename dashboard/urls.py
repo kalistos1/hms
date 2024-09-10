@@ -47,8 +47,9 @@ urlpatterns = [
     path('front_desk/room_status/',views.frontdesk_room_status, name ="frontdesk_room_status"),
     path('front_desk/booking_list/',views.frontdesk_booking_list, name ="frontdesk_booking_list"),
     path('front_desk/check_in_out/',views.frontdesk_room_checkout, name ="frontdesk_room_checkout"),
-    path('frontdesk/booking_reservation/', views.front_desk_booking, name='book_room'),
-    path('font_desk/receipt/', views.receipt, name='receipt'),
-    
+    path('frontdesk/booking/', views.front_desk_booking, name='book_room'),
+    # path('frontdesk/reservation/', views.front_desk_reservation, name='reserve_room'),
+    path('font_desk/receipt/<str:booking_id>/', views.receipt_view, name='receipt'),
+
     
 ]

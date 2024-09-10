@@ -4,6 +4,10 @@ from .models import  Booking, Reservation, Payment, Room, RoomServices
 from accounts.models import User, Profile
 from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
+from django.db.models import Q
+from django.utils import timezone
+
+from django.core.exceptions import ValidationError
 
 
 class DateInput(forms.DateInput):
@@ -14,11 +18,13 @@ class DateInput(forms.DateInput):
 class BasicUserInfoForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['email', 'phone']
+        fields = ['first_name','last_name','email', 'phone']
         
     def __init__(self, *args, **kwargs):
         super(BasicUserInfoForm, self).__init__(*args, **kwargs)
-      
+        
+        self.fields['first_name'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customer First name'})
+        self.fields['last_name'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Cusomer Last name'})
         self.fields['email'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customer Email'})
         self.fields['phone'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customer Phone No.'})
 
@@ -26,7 +32,7 @@ class BasicUserInfoForm(forms.ModelForm):
 class ProfileInfoForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['title', 'gender', 'date_of_birth','country', 'nationality', 'identity_type', 'id_no']
+        fields = ['title', 'gender', 'date_of_birth','country', 'nationality', 'identity_type', 'id_no','city','state','address','occupation','image']
     
     country = CountryField(blank_label='(select country)').formfield(widget=CountrySelectWidget(attrs={'class': 'form-control', 'placeholder': 'Country'}))
     nationality = CountryField(blank_label='(select nationality)').formfield(widget=CountrySelectWidget(attrs={'class': 'form-control', 'placeholder': 'Nationality'}))
@@ -35,11 +41,17 @@ class ProfileInfoForm(forms.ModelForm):
         super(ProfileInfoForm, self).__init__(*args, **kwargs)
       
         self.fields['title'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customer title'})
-        self.fields['gender'].widget.attrs.update({'class': 'form-control-file', 'placeholder' :'Customer Phone No.'})
-        self.fields['date_of_birth'].widget = DateInput(attrs={'class': 'form-control-file', 'placeholder' :'Date Of Birth.'})
-        
-        self.fields['identity_type'].widget.attrs.update({'class': 'form-control-file', 'placeholder' :'ID type.'})
+        self.fields['gender'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customer Phone No.'})
+        self.fields['date_of_birth'].widget = DateInput(attrs={'class': 'form-control', 'placeholder' :'Date Of Birth.'})
+        self.fields['image'].widget.attrs.update({'class': 'form-control-file', 'placeholder' :'profile Pix.'})
+        self.fields['identity_type'].widget.attrs.update({'class': 'form-control', 'placeholder' :'ID type.'})
         self.fields['id_no'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customers ID Number.'})
+        self.fields['city'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customers City'})
+        self.fields['state'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customers State'})
+        self.fields['address'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customers Address.'})
+        self.fields['occupation'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customers Occupation.'})
+        
+        
 
 
 
@@ -53,18 +65,16 @@ class BookingChoiceForm(forms.Form):
     def __init__(self, *args, **kwargs):
             super( BookingChoiceForm, self).__init__(*args, **kwargs)
         
-            self.fields['choice'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Choose Booking or Reservation'})
+            self.fields['choice'].widget.attrs.update({})
 
-            
-            
 
+
+ 
 class RoomBookingForm(forms.ModelForm):
-    room = forms.ModelMultipleChoiceField(queryset=Room.objects.none(), widget=forms.CheckboxSelectMultiple)
-
-
+    
     class Meta:
         model = Booking
-        fields = ['room','room_type','check_in_date', 'check_out_date', 'num_adults', 'num_children']
+        fields = ['room', 'room_type', 'check_in_date', 'check_out_date', 'num_adults', 'num_children']
         widgets = {
             'check_in_date': DateInput(attrs={'class': 'form-control', 'placeholder': 'Check-in Date'}),
             'check_out_date': DateInput(attrs={'class': 'form-control', 'placeholder': 'Check-out Date'}),
@@ -73,44 +83,22 @@ class RoomBookingForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super(RoomBookingForm, self).__init__(*args, **kwargs)
-       
-        self.fields['room_type'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Room Type'})
-        self.fields['num_adults'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Number of Adults'})
+        
+        # Filter rooms that are available
+      
+        
+        # Update widget attributes for form fields
+        self.fields['room_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Type'})
+        self.fields['num_adults'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Adults'})
         self.fields['num_children'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Children'})
-        self.fields['room'].widget.attrs.update({'class': 'form-check-input', })
-
-        # Dynamically filter the room choices
-        if 'check_in_date' in self.data and 'check_out_date' in self.data:
-            try:
-                check_in_date = self.data.get('check_in_date')
-                check_out_date = self.data.get('check_out_date')
-                self.fields['room'].queryset = self.get_available_rooms(check_in_date, check_out_date)
-            except (ValueError, TypeError):
-                pass  # Invalid input, show no rooms
-        else:
-            self.fields['room'].queryset = Room.objects.none()
-
-    def get_available_rooms(self, check_in_date, check_out_date):
-        # Exclude rooms that are already booked during the selected dates
-        booked_rooms = Booking.objects.filter(
-            check_in_date__lt=check_out_date,
-            check_out_date__gt=check_in_date
-        ).values_list('room', flat=True)
-
-        # Exclude rooms that are reserved during the selected dates
-        reserved_rooms = Reservation.objects.filter(
-            check_in_date__lt=check_out_date,
-            check_out_date__gt=check_in_date
-        ).values_list('room', flat=True)
-
-        # Return rooms that are neither booked nor reserved
-        return Room.objects.exclude(id__in=booked_rooms).exclude(id__in=reserved_rooms)
-    
+        self.fields['room'].widget.attrs.update({'class': 'form-control'})
+        self.fields['room'].queryset = Room.objects.filter(is_available=True)
+           
         
 
+
+
 class RoomReservationForm(forms.ModelForm):
-    room = forms.ModelChoiceField(queryset=Room.objects.none())
-    
     class Meta:
         model = Reservation
         fields = ['room', 'room_type', 'check_in_date', 'check_out_date', 'num_adults', 'num_children']
@@ -124,32 +112,8 @@ class RoomReservationForm(forms.ModelForm):
         self.fields['room_type'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Room Type'})
         self.fields['num_adults'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Number of Adults'})
         self.fields['num_children'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Children'})
-        self.fields['room'].widget.attrs.update({'class': 'form-check-input', })
+        self.fields['room'].widget.attrs.update({'class': 'form-control', })
         
-        if 'check_in_date' in self.data and 'check_out_date' in self.data:
-            try:
-                check_in_date = self.data.get('check_in_date')
-                check_out_date = self.data.get('check_out_date')
-                self.fields['room'].queryset = self.get_available_rooms(check_in_date, check_out_date)
-            except (ValueError, TypeError):
-                pass  # Invalid input, show no rooms
-        else:
-            self.fields['room'].queryset = Room.objects.none()
-
-    def get_available_rooms(self, check_in_date, check_out_date):
-        # Exclude rooms that are already booked or reserved during the selected dates
-        booked_rooms = Booking.objects.filter(
-            check_in_date__lt=check_out_date,
-            check_out_date__gt=check_in_date
-        ).values_list('room', flat=True)
-
-        reserved_rooms = Reservation.objects.filter(
-            check_in_date__lt=check_out_date,
-            check_out_date__gt=check_in_date
-        ).values_list('room', flat=True)
-
-        # Return rooms that are available
-        return Room.objects.exclude(id__in=booked_rooms).exclude(id__in=reserved_rooms)
 
    
 class RoomServiceForm(forms.ModelForm):

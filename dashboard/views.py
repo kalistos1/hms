@@ -11,6 +11,8 @@ from .forms import *
 from django.db.models import Count
 from accounts.forms import *
 from formtools.wizard.views import SessionWizardView
+from django.db.models import Sum
+from datetime import timedelta
 
 from django.contrib.auth import login
 from bookings.forms import (
@@ -456,7 +458,7 @@ def frontdesk_room_status(request):
 # bookings
 def frontdesk_booking_list(request):
     template = "front_desk/bookinglist.html"
-    
+  
     if request.user.is_frontdesk_officer:
         bookin_list = Booking.objects.all()
         context = {
@@ -475,158 +477,131 @@ def generate_unique_username(base_username):
     return username
     
 
-# def frontdesk_room_book(request):
-    
-    # template = "front_desk/roombook.html"
-    
-    # if request.user.is_frontdesk_officer:
-    #     hotel = Hotel.objects.filter(status='Live').first()
-        
-    #     if request.method == 'POST':
-    #         customer_form = CustomerForm(request.POST, request.FILES)
-    #         booking_form = BookingForm(request.POST)
+# def front_desk_booking(request):
+#     if request.method == 'POST':
+#         basic_info_form = BasicUserInfoForm(request.POST)
+#         profile_info_form = ProfileInfoForm(request.POST)
+#         booking_choice_form = BookingChoiceForm(request.POST)
 
-    #         # Extract the email or unique identifier to check for an existing user
-    #         email = request.POST.get('email')
-    #         existing_user = User.objects.filter(email=email).first()
+#         choice = None
+#         if booking_choice_form.is_valid():
+#             choice = booking_choice_form.cleaned_data['choice']
 
-    #         if existing_user:
-    #             user = existing_user
-    #             profile = user.profile  # Access the existing profile
-    #             profile.title = customer_form.cleaned_data['title']
-    #             profile.phone = customer_form.cleaned_data['phone']
-    #             profile.date_of_birth = customer_form.cleaned_data['date_of_birth']
-    #             profile.gender = customer_form.cleaned_data['gender']
-    #             profile.country = customer_form.cleaned_data['country']
-    #             profile.nationality = customer_form.cleaned_data['nationality']
-    #             profile.city = customer_form.cleaned_data['city']
-    #             profile.state = customer_form.cleaned_data['state']
-    #             profile.address = customer_form.cleaned_data['address']
-    #             profile.occupation = customer_form.cleaned_data['occupation']
-    #             profile.id_no = customer_form.cleaned_data['id_no']
-    #             profile.identity_type = customer_form.cleaned_data['identity_type']
-    #             profile.identity_image_front = customer_form.cleaned_data['identity_image_front']
-    #             profile.identity_image_back = customer_form.cleaned_data['identity_image_back']
-    #             profile.save()
+#         if choice == 'booking':
+#             room_booking_form = RoomBookingForm(request.POST, user=request.user)
+#             room_reservation_form = None
+#         else:
+#             room_booking_form = None
+#             room_reservation_form = RoomReservationForm(request.POST, user=request.user)
 
-    #             messages.info(request, "Using existing user and profile.")
-    #         else:
-    #             if customer_form.is_valid():
-    #                 base_username = customer_form.cleaned_data['email'].split('@')[0]
-    #                 unique_username = generate_unique_username(base_username)
+#         payment_form = PaymentForm(request.POST)
 
-    #                 user = customer_form.save(commit=False)
-    #                 random_password = get_random_string(length=8)
-    #                 user.username = unique_username
-    #                 user.set_password(random_password)
-    #                 user.save()
+#         if basic_info_form.is_valid() and profile_info_form.is_valid():
+#             user = basic_info_form.save(commit=False)
+#             user.set_password(user.phone)  # Set phone number as password
+#             user.username = user.email  # Set email as the username
+#             user.save()
 
-    #                 # The profile is created automatically by the post_save signal.
-    #                 profile = user.profile  # Access the automatically created profile
-    #                 profile.title = customer_form.cleaned_data['title']
-    #                 profile.phone = customer_form.cleaned_data['phone']
-    #                 profile.date_of_birth = customer_form.cleaned_data['date_of_birth']
-    #                 profile.gender = customer_form.cleaned_data['gender']
-    #                 profile.country = customer_form.cleaned_data['country']
-    #                 profile.nationality = customer_form.cleaned_data['nationality']
-    #                 profile.city = customer_form.cleaned_data['city']
-    #                 profile.state = customer_form.cleaned_data['state']
-    #                 profile.address = customer_form.cleaned_data['address']
-    #                 profile.occupation = customer_form.cleaned_data['occupation']
-    #                 profile.id_no = customer_form.cleaned_data['id_no']
-    #                 profile.identity_type = customer_form.cleaned_data['identity_type']
-    #                 profile.identity_image_front = customer_form.cleaned_data['identity_image_front']
-    #                 profile.identity_image_back = customer_form.cleaned_data['identity_image_back']
-    #                 profile.save()
+#             profile, created = Profile.objects.get_or_create(user=user)
+#             profile_form_data = profile_info_form.cleaned_data
+#             for field, value in profile_form_data.items():
+#                 setattr(profile, field, value)
+#             profile.save()
 
-    #                 messages.success(request, f"Customer {user.username} booked successfully! Password: {random_password}")
-    #             else:
-    #                 for error in customer_form.errors.as_data():
-    #                     print(f"Customer form error: {error} - {customer_form.errors[error]}")
-    #                 messages.error(request, "There were errors in the customer form submission. Please correct them and try again.")
-    #                 return render(request, template, {'customer_form': customer_form, 'booking_form': booking_form})
+#             if choice == 'booking' and room_booking_form and room_booking_form.is_valid():
+#                 booking = room_booking_form.save(commit=False)
+#                 booking.user = user
+#                 booking.save()
+#                 room_booking_form.save_m2m()
+#                 reservation = None
 
-    #         if booking_form.is_valid():
-    #             booking = booking_form.save(commit=False)
-    #             booking.user = user
-    #             hotel = hotel
-    #             booking.created_by = request.user
-    #             booking.save()
-    #             booking.room.set(booking_form.cleaned_data['room'])
+#             elif choice == 'reservation' and room_reservation_form and room_reservation_form.is_valid():
+#                 reservation = room_reservation_form.save(commit=False)
+#                 reservation.user = user
+#                 reservation.save()
+#                 booking = None
 
-    #             for room in booking.room.all():
-    #                 room.is_available = False
-    #                 room.save()
+#             else:
+#                 booking = None
+#                 reservation = None
 
-    #             messages.success(request, f"Booking successfully created for {user.username}!")
-    #             return redirect('dasboard:frontdesk_booking_list')
-    #         else:
-    #             for error in booking_form.errors.as_data():
-    #                 print(f"Booking form error: {error} - {booking_form.errors[error]}")
-    #             messages.error(request, "There were errors in the booking form submission. Please correct them and try again.")
+#             if payment_form.is_valid():
+#                 payment = payment_form.save(commit=False)
+#                 payment.user = user
+#                 payment.booking = booking if booking else reservation
+#                 payment.save()
 
-    #     else:
-    #         customer_form = CustomerForm()
-    #         booking_form = BookingForm()
+#             return redirect('receipt')
+#     else:
+#         basic_info_form = BasicUserInfoForm()
+#         profile_info_form = ProfileInfoForm()
+#         booking_choice_form = BookingChoiceForm()
+#         room_booking_form = RoomBookingForm()
+#         room_reservation_form = RoomReservationForm()
+#         payment_form = PaymentForm()
 
-    #     context = {
-    #         'customer_form': customer_form,
-    #         'booking_form': booking_form
-    #     }
-    #     return render(request, template, context)
-    
+#     return render(request, 'front_desk/roombook.html', {
+#         'basic_info_form': basic_info_form,
+#         'profile_info_form': profile_info_form,
+#         'booking_choice_form': booking_choice_form,
+#         'room_booking_form': room_booking_form,
+#         'room_reservation_form': room_reservation_form,
+#         'payment_form': payment_form
+#     })
 
 
 def front_desk_booking(request):
     if request.method == 'POST':
-        # Initialize forms with POST data
         basic_info_form = BasicUserInfoForm(request.POST)
         profile_info_form = ProfileInfoForm(request.POST)
         booking_choice_form = BookingChoiceForm(request.POST)
-        
         room_booking_form = RoomBookingForm(request.POST)
         room_reservation_form = RoomReservationForm(request.POST)
-        room_service_form = RoomServiceForm(request.POST)
         payment_form = PaymentForm(request.POST)
-        
-        # Validate the basic and profile info first
-        if basic_info_form.is_valid() and profile_info_form.is_valid():
-            # Create user and profile if the basic info and profile forms are valid
+
+        if basic_info_form.is_valid() and profile_info_form.is_valid() and booking_choice_form.is_valid():
+            # Step 1: Save user and profile data
             user = basic_info_form.save(commit=False)
             user.set_password(user.phone)  # Set phone number as password
             user.username = user.email  # Set email as the username
             user.save()
-            
-            profile = profile_info_form.save(commit=False)
-            profile.user = user
+
+            profile, created = Profile.objects.get_or_create(user=user)
+            profile_form_data = profile_info_form.cleaned_data
+            for field, value in profile_form_data.items():
+                setattr(profile, field, value)
             profile.save()
-            
-            # Check the choice between booking and reservation
-            if booking_choice_form.is_valid():
-                choice = booking_choice_form.cleaned_data['choice']
-                if choice == 'booking' and room_booking_form.is_valid():
+
+            choice = booking_choice_form.cleaned_data['choice']
+
+            booking = None
+            reservation = None
+
+            # Step 2: Save booking or reservation once
+            if choice == 'booking':
+                if room_booking_form.is_valid():
                     booking = room_booking_form.save(commit=False)
                     booking.user = user
                     booking.save()
-                    
-                elif choice == 'reservation' and room_reservation_form.is_valid():
+                    room_booking_form.save_m2m()  # Save ManyToMany fields
+            elif choice == 'reservation':
+                if room_reservation_form.is_valid():
                     reservation = room_reservation_form.save(commit=False)
                     reservation.user = user
                     reservation.save()
-                
-                # Process room service and payment forms
-                if room_service_form.is_valid():
-                    room_service = room_service_form.save(commit=False)
-                    room_service.user = user
-                    room_service.save()
 
-                if payment_form.is_valid():
-                    payment = payment_form.save(commit=False)
-                    payment.user = user
-                    payment.save()
-                    
-                # Redirect to success page or confirmation
-                return redirect('receipt')
+            # Step 3: Attach payment to booking or reservation
+            if payment_form.is_valid():
+                payment = payment_form.save(commit=False)
+                payment.user = user
+                if booking:
+                    payment.booking = booking
+                elif reservation:
+                    payment.booking = reservation  # Assuming reservation can be treated as a booking in the payment
+                payment.save()
+
+            # Redirect to receipt view with the booking ID
+            return redirect('dashboard:receipt', booking_id=booking.booking_id if booking else reservation.id)
     else:
         # Initialize empty forms for GET request
         basic_info_form = BasicUserInfoForm()
@@ -634,7 +609,6 @@ def front_desk_booking(request):
         booking_choice_form = BookingChoiceForm()
         room_booking_form = RoomBookingForm()
         room_reservation_form = RoomReservationForm()
-        room_service_form = RoomServiceForm()
         payment_form = PaymentForm()
 
     return render(request, 'front_desk/roombook.html', {
@@ -643,21 +617,197 @@ def front_desk_booking(request):
         'booking_choice_form': booking_choice_form,
         'room_booking_form': room_booking_form,
         'room_reservation_form': room_reservation_form,
-        'room_service_form': room_service_form,
         'payment_form': payment_form
     })
 
 
-
    
-def receipt(request):
-    booking = Booking.objects.filter(user=request.user).latest('id')
+# def receipt_view(request, booking_id):
+ 
+#     try:
+#         booking = Booking.objects.get(booking_id=booking_id)
+#     except Booking.DoesNotExist:
+#         booking = None
+
+#     if not booking:
+#         reservation = get_object_or_404(Reservation, id=booking_id)
+#         booking = reservation.convert_reservation_to_booking(reservation)
+
+#     additional_charges = AdditionalCharge.objects.filter(booking=booking)
+#     total_additional_charges = sum(charge.amount for charge in additional_charges)
+    
+#     total_amount_payable = booking.total_amount + total_additional_charges
+  
+#     payment = Payment.objects.filter(booking=booking).last()  # Assuming the latest payment record
+    
+#     amount_paid = payment.amount if payment else 0
+#     payment_status = payment.status if payment else 'Unpaid'
+ 
+#     context = {
+#         'booking': booking,
+#         'additional_charges': additional_charges,
+#         'total_amount_payable': total_amount_payable,
+#         'amount_paid': amount_paid,
+#         'payment_status': payment_status,
+      
+#     }
+    
+#     return render(request, 'front_desk/booking/receipt.html', context)
+
+
+
+def receipt_view(request, booking_id):
+    try:
+        booking = Booking.objects.get(booking_id=booking_id)
+    except Booking.DoesNotExist:
+        return redirect('error_page')  # Handle case where booking does not exist
+
+    # Calculate room charges
+    total_room_charges = booking.get_room_charges()
+
+    # Calculate room service charges
+    total_service_charges = booking.get_service_charges()
+
+    # Calculate additional charges
+    total_additional_charges = booking.get_additional_charges()
+
+    # Total amount payable
+    total_amount_payable = booking.get_total_payable()
+
+    # Get latest payment details
+    payment = Payment.objects.filter(booking=booking).last()
+    amount_paid = payment.amount if payment else 0
+    payment_status = payment.status if payment else 'Unpaid'
+
+    # Remaining balance
+    remaining_balance = total_amount_payable - amount_paid
+
+    # Pass context to template
     context = {
         'booking': booking,
-        'payment': booking.payments.last(),
-        'user': request.user,
+        'total_room_charges': total_room_charges,
+        'total_service_charges': total_service_charges,
+        'total_additional_charges': total_additional_charges,
+        'total_amount_payable': total_amount_payable,
+        'amount_paid': amount_paid,
+        'payment_status': payment_status,
+        'remaining_balance': remaining_balance,
     }
-    return render(request, 'booking/receipt.html', context)
+
+    return render(request, 'front_desk/booking/receipt.html', context)
+
+# def front_desk_booking(request):
+#     if request.method == 'POST':
+#         basic_info_form = BasicUserInfoForm(request.POST)
+#         profile_info_form = ProfileInfoForm(request.POST)
+#         booking_choice_form = BookingChoiceForm(request.POST)
+#         room_booking_form = RoomBookingForm(request.POST)
+#         room_reservation_form = RoomReservationForm(request.POST)
+#         # room_service_form = RoomServiceForm(request.POST)
+#         payment_form = PaymentForm(request.POST)
+
+#         if basic_info_form.is_valid() and profile_info_form.is_valid() and booking_choice_form.is_valid():
+#             user = basic_info_form.save(commit=False)
+#             user.set_password(user.phone)  # Set phone number as password
+#             user.username = user.email  # Set email as the username
+#             user.save()
+
+#             profile, created = Profile.objects.get_or_create(user=user)
+#             profile_form_data = profile_info_form.cleaned_data
+#             for field, value in profile_form_data.items():
+#                 setattr(profile, field, value)
+#             profile.save()
+
+#             choice = booking_choice_form.cleaned_data['choice']
+#             if choice == 'booking':
+#                 if room_booking_form.is_valid():
+#                     booking = room_booking_form.save(commit=False)
+#                     booking.user = user
+#                     booking.save()
+#                     room_booking_form.save_m2m()
+#                     reservation = None
+#                 else:
+#                     booking = None
+#                     reservation = None
+
+#             elif choice == 'reservation':
+#                 if room_reservation_form.is_valid():
+#                     reservation = room_reservation_form.save(commit=False)
+#                     reservation.user = user
+#                     reservation.save()
+#                     booking = None
+#                 else:
+#                     booking = None
+#                     reservation = None
+
+#             # if room_service_form.is_valid():
+#             #     room_service = room_service_form.save(commit=False)
+#             #     room_service.user = user
+#             #     room_service.save()
+
+#             if payment_form.is_valid():
+#                 payment = payment_form.save(commit=False)
+#                 payment.user = user
+#                 payment.booking = booking if booking else reservation
+#                 payment.save()
+
+#             return redirect('dashboard:receipt', booking_id=booking.booking_id)
+#     else:
+#         basic_info_form = BasicUserInfoForm()
+#         profile_info_form = ProfileInfoForm()
+#         booking_choice_form = BookingChoiceForm()
+#         room_booking_form = RoomBookingForm()
+#         room_reservation_form = RoomReservationForm()
+#         # room_service_form = RoomServiceForm()
+#         payment_form = PaymentForm()
+
+#     return render(request, 'front_desk/roombook.html', {
+#         'basic_info_form': basic_info_form,
+#         'profile_info_form': profile_info_form,
+#         'booking_choice_form': booking_choice_form,
+#         'room_booking_form': room_booking_form,
+#         'room_reservation_form': room_reservation_form,
+#         # 'room_service_form': room_service_form,
+#         'payment_form': payment_form
+#     })
+
+   
+
+
+   
+# def receipt_view(request, booking_id):
+    
+#     try:
+#         booking = Booking.objects.get(booking_id=booking_id)
+#     except Booking.DoesNotExist:
+#         booking = None
+
+#     if not booking:
+#         reservation = get_object_or_404(Reservation, id=booking_id)
+#         booking = reservation.convert_reservation_to_booking(reservation)
+
+
+#     additional_charges = AdditionalCharge.objects.filter(booking=booking)
+#     total_additional_charges = sum(charge.amount for charge in additional_charges)
+    
+
+#     total_amount_payable = booking.total_amount + total_additional_charges
+    
+  
+#     payment = Payment.objects.filter(booking=booking).last()  # Assuming the latest payment record
+    
+#     amount_paid = payment.amount if payment else 0
+#     payment_status = payment.status if payment else 'Unpaid'
+    
+#     context = {
+#         'booking': booking,
+#         'additional_charges': additional_charges,
+#         'total_amount_payable': total_amount_payable,
+#         'amount_paid': amount_paid,
+#         'payment_status': payment_status,
+#     }
+    
+#     return render(request, 'front_desk/booking/receipt.html', context)
 
 
 
