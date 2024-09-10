@@ -256,6 +256,14 @@ class Payment(models.Model):
                     return False, locked_room  # Return the specific room that's not available
                 
         return True, None
+    
+    def save(self, *args, **kwargs):
+        # Check if payment is marked as completed
+        if self.status == 'completed':
+            # Update room availability to false (unavailable)
+            self.booking.update_room_availability(False)
+
+        super(Payment, self).save(*args, **kwargs)
 
 
     # def save(self, *args, **kwargs):
@@ -445,16 +453,19 @@ class Booking(Transaction):
             total_room_charges += room_price
         return total_room_charges
 
+
     def get_service_charges(self):
         """Sum the charges for all room services, if any."""
         room_services = self.roomservice_set.all()  # Assuming a related name for room services
         total_service_charges = sum(service.price for service in room_services)
         return total_service_charges
+    
 
     def get_additional_charges(self):
         """Calculate the total of all additional charges."""
         additional_charges = AdditionalCharge.objects.filter(booking=self)
         return sum(charge.amount for charge in additional_charges)
+
 
     def get_total_payable(self):
         """Calculate the total amount payable (rooms + services + additional charges)."""
@@ -463,6 +474,25 @@ class Booking(Transaction):
         total_additional_charges = self.get_additional_charges()
         return total_room_charges + total_service_charges + total_additional_charges
 
+
+
+    def update_room_availability(self, availability):
+        """Update the availability of rooms in the booking."""
+        for room in self.room.all():
+            room.is_available = availability
+            room.save()
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  
+            super(Booking, self).save(*args, **kwargs)
+
+        available, unavailable_room = self.are_rooms_available(self.room.all(), self.check_in_date, self.check_out_date)
+        if not available:
+            raise ValueError(f"Room {unavailable_room.room_number} is not available for the selected dates.")
+        
+        super(Booking, self).save(*args, **kwargs)
+        
+        
     @property
     def amount_paid(self):
         payment = Payment.objects.filter(booking=self).last()

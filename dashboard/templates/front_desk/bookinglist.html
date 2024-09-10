@@ -56,6 +56,7 @@
                                             <th>Paid Amount</th>
 
                                             <th>Payment Status</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -70,6 +71,10 @@
                                                 <td>{{booking.total}}</td>
 
                                                 <td><span class="badge text-bg-warning">{{booking.payment_status}}</span></td>
+                                                <td>
+                                                    <a class ="btn btn-info"> Add Room Service</a>
+                                                    <a class="btn btn-success" >Add Additional Charge</a>
+                                                </td>
                                             </tr>
                                         {% endfor %}
 

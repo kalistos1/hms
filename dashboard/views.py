@@ -475,79 +475,6 @@ def generate_unique_username(base_username):
     while User.objects.filter(username=username).exists():
         username = f"{base_username}_{get_random_string(4, allowed_chars=string.ascii_lowercase)}"
     return username
-    
-
-# def front_desk_booking(request):
-#     if request.method == 'POST':
-#         basic_info_form = BasicUserInfoForm(request.POST)
-#         profile_info_form = ProfileInfoForm(request.POST)
-#         booking_choice_form = BookingChoiceForm(request.POST)
-
-#         choice = None
-#         if booking_choice_form.is_valid():
-#             choice = booking_choice_form.cleaned_data['choice']
-
-#         if choice == 'booking':
-#             room_booking_form = RoomBookingForm(request.POST, user=request.user)
-#             room_reservation_form = None
-#         else:
-#             room_booking_form = None
-#             room_reservation_form = RoomReservationForm(request.POST, user=request.user)
-
-#         payment_form = PaymentForm(request.POST)
-
-#         if basic_info_form.is_valid() and profile_info_form.is_valid():
-#             user = basic_info_form.save(commit=False)
-#             user.set_password(user.phone)  # Set phone number as password
-#             user.username = user.email  # Set email as the username
-#             user.save()
-
-#             profile, created = Profile.objects.get_or_create(user=user)
-#             profile_form_data = profile_info_form.cleaned_data
-#             for field, value in profile_form_data.items():
-#                 setattr(profile, field, value)
-#             profile.save()
-
-#             if choice == 'booking' and room_booking_form and room_booking_form.is_valid():
-#                 booking = room_booking_form.save(commit=False)
-#                 booking.user = user
-#                 booking.save()
-#                 room_booking_form.save_m2m()
-#                 reservation = None
-
-#             elif choice == 'reservation' and room_reservation_form and room_reservation_form.is_valid():
-#                 reservation = room_reservation_form.save(commit=False)
-#                 reservation.user = user
-#                 reservation.save()
-#                 booking = None
-
-#             else:
-#                 booking = None
-#                 reservation = None
-
-#             if payment_form.is_valid():
-#                 payment = payment_form.save(commit=False)
-#                 payment.user = user
-#                 payment.booking = booking if booking else reservation
-#                 payment.save()
-
-#             return redirect('receipt')
-#     else:
-#         basic_info_form = BasicUserInfoForm()
-#         profile_info_form = ProfileInfoForm()
-#         booking_choice_form = BookingChoiceForm()
-#         room_booking_form = RoomBookingForm()
-#         room_reservation_form = RoomReservationForm()
-#         payment_form = PaymentForm()
-
-#     return render(request, 'front_desk/roombook.html', {
-#         'basic_info_form': basic_info_form,
-#         'profile_info_form': profile_info_form,
-#         'booking_choice_form': booking_choice_form,
-#         'room_booking_form': room_booking_form,
-#         'room_reservation_form': room_reservation_form,
-#         'payment_form': payment_form
-#     })
 
 
 def front_desk_booking(request):
@@ -560,17 +487,24 @@ def front_desk_booking(request):
         payment_form = PaymentForm(request.POST)
 
         if basic_info_form.is_valid() and profile_info_form.is_valid() and booking_choice_form.is_valid():
-            # Step 1: Save user and profile data
-            user = basic_info_form.save(commit=False)
-            user.set_password(user.phone)  # Set phone number as password
-            user.username = user.email  # Set email as the username
-            user.save()
+            # Step 1: Check if the user already exists by email or phone number
+            email = basic_info_form.cleaned_data['email']
+            phone = basic_info_form.cleaned_data['phone']
+            
+            user = User.objects.filter(email=email).first() 
 
-            profile, created = Profile.objects.get_or_create(user=user)
-            profile_form_data = profile_info_form.cleaned_data
-            for field, value in profile_form_data.items():
-                setattr(profile, field, value)
-            profile.save()
+            if not user:
+                # If user doesn't exist, create a new one
+                user = basic_info_form.save(commit=False)
+                user.set_password(user.phone)  # Set phone number as password
+                user.username = user.email  # Set email as the username
+                user.save()
+
+                profile, created = Profile.objects.get_or_create(user=user)
+                profile_form_data = profile_info_form.cleaned_data
+                for field, value in profile_form_data.items():
+                    setattr(profile, field, value)
+                profile.save()
 
             choice = booking_choice_form.cleaned_data['choice']
 
@@ -619,6 +553,7 @@ def front_desk_booking(request):
         'room_reservation_form': room_reservation_form,
         'payment_form': payment_form
     })
+
 
 
    
