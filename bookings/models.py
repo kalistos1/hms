@@ -262,6 +262,7 @@ class Payment(models.Model):
         if self.status == 'completed':
             # Update room availability to false (unavailable)
             self.booking.update_room_availability(False)
+            self.booking.set_checked_in()
 
         super(Payment, self).save(*args, **kwargs)
 
@@ -481,6 +482,19 @@ class Booking(Transaction):
         for room in self.room.all():
             room.is_available = availability
             room.save()
+            
+    # def mark_rooms_as_unavailable(self):
+    #     """Update the availability of all rooms in the booking to False."""
+    #     for room in self.room.all():
+    #         room.is_available = False
+    #         room.save()
+    
+    
+    def set_checked_in(self):
+        """Mark the booking as checked in."""
+        self.checked_in = True
+        self.save(update_fields=['checked_in'])
+        
 
     def save(self, *args, **kwargs):
         if not self.pk:  
