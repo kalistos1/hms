@@ -79,7 +79,7 @@
                                                                 <td>
                                                                     <ul>
                                                                         {% for room in booking.room.all %}
-                                                                            <li>{{ room.room_type.type }} - Room {{ room.room_number }}: 
+                                                                            <li>{{ room.room_type.type }} - Room {{ room.room_number }}:
                                                                                 {{ room.price }} x {{ booking.get_duration }} days = {{ room.price|multiply:booking.get_duration }}</li>
                                                                         {% endfor %}
                                                                     </ul>
@@ -150,7 +150,7 @@
         function printDiv(divId) {
             var divContents = document.getElementById(divId).innerHTML;
             var printWindow = window.open('', '', 'height=800,width=800');
-            
+
             // Basic styles
             printWindow.document.write('<html><head><title>Print</title>');
             printWindow.document.write('<style>');
@@ -166,11 +166,11 @@
             printWindow.document.write('</head><body>');
             printWindow.document.write('<div id="printable">' + divContents + '</div>');
             printWindow.document.write('</body></html>');
-            
+
             printWindow.document.close();
             printWindow.focus();
             printWindow.print();
         }
-        </script>
-        
+    </script>
+
 {% endblock %}

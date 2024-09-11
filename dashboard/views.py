@@ -18,7 +18,7 @@ from django.contrib.auth import login
 from bookings.forms import (
     BasicUserInfoForm, ProfileInfoForm, 
     BookingChoiceForm, RoomBookingForm, RoomReservationForm, 
-    RoomServiceForm, PaymentForm,AdditionalChargeForm
+    RoomServiceForm, PaymentForm,AdditionalChargeForm, PaymentCheckoutForm
 )
 from django.utils import timezone
 
@@ -537,13 +537,12 @@ def front_desk_booking(request):
                 if booking:
                     payment.booking = booking
                 elif reservation:
-                    payment.booking = reservation  # Assuming reservation can be treated as a booking in the payment
+                    payment.booking = reservation 
                 payment.save()
 
-            # Redirect to receipt view with the booking ID
             return redirect('dashboard:receipt', booking_id=booking.booking_id if booking else reservation.id)
     else:
-        # Initialize empty forms for GET request
+       
         basic_info_form = BasicUserInfoForm()
         profile_info_form = ProfileInfoForm()
         booking_choice_form = BookingChoiceForm()
@@ -563,11 +562,88 @@ def front_desk_booking(request):
 
 
 
+def front_desk_reservation(request):
+    if request.method == 'POST':
+        basic_info_form = BasicUserInfoForm(request.POST)
+        profile_info_form = ProfileInfoForm(request.POST)
+        booking_choice_form = BookingChoiceForm(request.POST)
+        room_booking_form = RoomBookingForm(request.POST)
+        room_reservation_form = RoomReservationForm(request.POST)
+        payment_form = PaymentForm(request.POST)
+
+        if basic_info_form.is_valid() and profile_info_form.is_valid() and booking_choice_form.is_valid():
+            # Step 1: Check if the user already exists by email or phone number
+            email = basic_info_form.cleaned_data['email']
+            phone = basic_info_form.cleaned_data['phone']
+            
+            user = User.objects.filter(email=email).first() 
+
+            if not user:
+                # If user doesn't exist, create a new one
+                user = basic_info_form.save(commit=False)
+                user.set_password(user.phone)  # Set phone number as password
+                user.username = user.email  # Set email as the username
+                user.save()
+
+                profile, created = Profile.objects.get_or_create(user=user)
+                profile_form_data = profile_info_form.cleaned_data
+                for field, value in profile_form_data.items():
+                    setattr(profile, field, value)
+                profile.save()
+
+            choice = booking_choice_form.cleaned_data['choice']
+
+            booking = None
+            reservation = None
+
+            # Step 2: Save booking or reservation once
+            if choice == 'booking':
+                if room_booking_form.is_valid():
+                    booking = room_booking_form.save(commit=False)
+                    booking.user = user
+                    booking.save()
+                    room_booking_form.save_m2m()  # Save ManyToMany fields
+            elif choice == 'reservation':
+                if room_reservation_form.is_valid():
+                    reservation = room_reservation_form.save(commit=False)
+                    reservation.user = user
+                    reservation.save()
+
+            # Step 3: Attach payment to booking or reservation
+            if payment_form.is_valid():
+                payment = payment_form.save(commit=False)
+                payment.user = user
+                if booking:
+                    payment.booking = booking
+                elif reservation:
+                    payment.booking = reservation 
+                payment.save()
+
+            return redirect('dashboard:receipt', booking_id=booking.booking_id if booking else reservation.id)
+    else:
+       
+        basic_info_form = BasicUserInfoForm()
+        profile_info_form = ProfileInfoForm()
+        booking_choice_form = BookingChoiceForm()
+        room_booking_form = RoomBookingForm()
+        room_reservation_form = RoomReservationForm()
+        payment_form = PaymentForm()
+
+    return render(request, 'front_desk/roomreserve.html', {
+        'basic_info_form': basic_info_form,
+        'profile_info_form': profile_info_form,
+        'booking_choice_form': booking_choice_form,
+        'room_booking_form': room_booking_form,
+        'room_reservation_form': room_reservation_form,
+        'payment_form': payment_form
+    })
+
+
 def receipt_view(request, booking_id):
     try:
         booking = Booking.objects.get(booking_id=booking_id)
     except Booking.DoesNotExist:
-        return redirect('error_page')  # Handle case where booking does not exist
+        return redirect('dashboard:frontdesk_booking_list') 
 
     # Calculate room charges
     total_room_charges = booking.get_room_charges()
@@ -631,7 +707,6 @@ def re_issue_receipt_view(request, pk):
     # Remaining balance
     remaining_balance = total_amount_payable - amount_paid
 
-    # Pass context to template
     context = {
         'booking': booking,
         'total_room_charges': total_room_charges,
@@ -644,7 +719,6 @@ def re_issue_receipt_view(request, pk):
     }
 
     return render(request, 'front_desk/booking/receipt.html', context)
-
 
 
 
@@ -697,7 +771,7 @@ def frontdesk_apply_coupon_to_booking(request, pk):
         coupon_code = request.POST.get('coupon_code')
 
         try:
-            # Fetch the coupon by its code and check if it's active
+            # get the coupon by its code and check if it's active
             coupon = Coupon.objects.get(
                 code=coupon_code, active=True, 
                 valid_from__lte=timezone.now(), valid_to__gte=timezone.now()
@@ -760,97 +834,71 @@ def checkout_view(request, pk):
         'remaining_balance': remaining_balance,
     }
 
-    return render(request, 'front_desk/checkout_details.html', context)
+    return render(request, 'front_desk/booking/checkout_details.html', context)
 
 
+def frontdesk_checkout_payment_view(request, pk):
+    booking = get_object_or_404(Booking, pk=pk)
+    total_after_discount = booking.get_total_payable_after_discount()
 
+    if request.method == 'POST':
+        form = PaymentCheckoutForm(request.POST)
+        if form.is_valid():
+            # Get the existing payment record for the booking
+            payment = Payment.objects.filter(booking=booking).first()
+            if payment:
+                payment.amount = form.cleaned_data['amount']
+                payment.mode = form.cleaned_data['mode']
+                payment.transaction_id = form.cleaned_data['transaction_id']
+                payment.status = form.cleaned_data['status']
+                
+                if payment.status == 'completed':
+                    payment.save()
+
+                    # Create or update PaymentCompletion record
+                    completion, created = PaymentCompletion.objects.get_or_create(
+                        payment=payment,
+                        defaults={
+                            'amount': payment.amount,
+                            'mode': payment.mode,
+                            'transaction_id': payment.transaction_id
+                        }
+                    )
+                    if not created:
+                        completion.amount = payment.amount
+                        completion.mode = payment.mode
+                        completion.transaction_id = payment.transaction_id
+                        completion.save()
+
+                    # Update booking and room statuses
+                    booking.is_active = False
+                    booking.checked_in = False
+                    booking.checked_out = True
+                    booking.save()
+
+                    for room in booking.room.all():
+                        room.is_available = True
+                        room.save()
+
+                    return redirect('dashboard:frontdesk_booking_list')
+                else:
+                    messages.error(request, 'Payment must be completed to proceed.')
+                    return redirect('dashboard:checkout', pk=pk)
+            else:
+                messages.error(request, 'No payment record found for this booking.')
+                return redirect('dashboard:checkout', pk=pk)
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = PaymentCheckoutForm(initial={'amount': total_after_discount})
+
+    context = {
+        'booking': booking,
+        'form': form,
+    }
+    return render(request, 'front_desk/booking/checkout_payment.html', context)
 
 #Frontdesk views ends here 
 # ==========================================================================================================
 # ==========================================================================================================
 
-
-# from django.http import JsonResponse
-# from .models import Booking, Coupon
-
-def apply_coupon_to_booking(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id)
-    coupon_code = request.POST.get('coupon_code')
-
-    try:
-        coupon = Coupon.objects.get(code=coupon_code, active=True)
-        if coupon.valid_from <= timezone.now().date() <= coupon.valid_to:
-            # Apply the coupon to the booking
-            booking.apply_coupon(coupon)
-            return JsonResponse({'success': True, 'new_total': booking.total_amount})
-        else:
-            return JsonResponse({'success': False, 'message': 'Coupon is not valid for current date.'})
-    except Coupon.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Invalid coupon code.'})
-    
-    
-    # process additional charge
-
-# from .models import Booking, AdditionalCharge
-# from .forms import AdditionalChargeForm
-# from django.db import transaction
-
-def add_additional_charge(request, booking_id):
-    booking = get_object_or_404(Booking, booking_id=booking_id)
-    if not booking.is_active:
-        messages.error(request, 'Cannot add charges to an inactive booking.')
-        return redirect('booking_detail', booking_id=booking.booking_id)
-    
-    if request.method == 'POST':
-        form = AdditionalChargeForm(request.POST)
-        if form.is_valid():
-            with transaction.atomic():
-                additional_charge = form.save(commit=False)
-                additional_charge.booking = booking
-                additional_charge.save()
-                # Potentially update booking.total_amount or other related fields
-            messages.success(request, 'Additional charge added successfully.')
-            return redirect('booking_detail', booking_id=booking.booking_id)
-    else:
-        form = AdditionalChargeForm()
-    return render(request, 'add_additional_charge.html', {'form': form, 'booking': booking})
-
-
-def process_payment(request, booking_id):
-    booking = get_object_or_404(Booking, booking_id=booking_id)
-    total_due = booking.get_total_with_additional_charges() - booking.payments.filter(status='advance').aggregate(total=models.Sum('amount'))['total'] or 0
-    
-    if request.method == 'POST':
-        # Assume you have a form for payment details
-        form = PaymentForm(request.POST)
-        if form.is_valid():
-            payment = form.save(commit=False)
-            payment.booking = booking
-            payment.amount = total_due
-            payment.save()
-            # Update payment status based on actual payment processing
-            payment.status = 'advance'  # or 'failed' based on real outcome
-            payment.save()
-            messages.success(request, 'Payment processed successfully.')
-            return redirect('booking_detail', booking_id=booking.booking_id)
-    else:
-        form = PaymentForm()
-    
-    return render(request, 'process_payment.html', {'form': form, 'booking': booking, 'total_due': total_due})
-
-
-def available_rooms(request, room_type_id, check_in_date, check_out_date):
-    room_type = RoomType.objects.get(id=room_type_id)
-    available_rooms = []
-
-    for room in room_type.room_set.all():
-        overlapping_bookings = Booking.objects.filter(
-            room=room,
-            is_active=True,
-            check_in_date__lt=check_out_date,
-            check_out_date__gt=check_in_date
-        )
-        if not overlapping_bookings.exists():
-            available_rooms.append(room)
-
-    return render(request, 'available_rooms.html', {'available_rooms': available_rooms})

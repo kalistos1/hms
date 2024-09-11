@@ -165,3 +165,22 @@ class AdditionalChargeForm(forms.ModelForm):
         self.fields['amount'].widget.attrs.update({ 'class': 'form-control', 'placeholder': ' Price'})
         
 
+
+
+class PaymentCheckoutForm(forms.ModelForm):
+    class Meta:
+        model = Payment
+        fields = ['amount', 'status', 'mode']
+        
+    def __init__(self, *args, **kwargs):
+        initial_amount = kwargs.pop('initial_amount', None)
+        super().__init__(*args, **kwargs)
+        
+        if initial_amount is not None:
+            self.fields['amount'].initial = initial_amount
+        
+        # Add Bootstrap classes to the form fields
+        self.fields['amount'].widget.attrs.update({'class': 'form-control'})
+        self.fields['status'].widget.attrs.update({'class': 'form-control'})
+        self.fields['mode'].widget.attrs.update({'class': 'form-control'})
+       

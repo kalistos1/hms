@@ -7,21 +7,21 @@
 {% block content %}
     <main class="container-fluid px-0">
         {% if request.user.is_admin %}
-            {% include '../partials/menubars/admin_sidebar.html' %}
+            {% include '../../partials/menubars/admin_sidebar.html' %}
 
         {% elif request.user.is_supervisor %}
-            {% include '../partials/menubars/supervisor_sidebar.html' %}
+            {% include '../../partials/menubars/supervisor_sidebar.html' %}
 
         {% elif request.user.is_account_officer %}
-            {% include '../partials/menubars/accounting_sidebar.html' %}
+            {% include '../../partials/menubars/accounting_sidebar.html' %}
 
         {% else %}
-            {% include '../partials/menubars/frontdesk_sidebar.html' %}
+            {% include '../../partials/menubars/frontdesk_sidebar.html' %}
 
         {% endif %}
 
         <div class="content">
-            {% include '../partials/top_header.html' %}
+            {% include '../../partials/top_header.html' %}
 
             <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
                 <div class="row g-3">
@@ -33,8 +33,8 @@
                     <div class="col-sm-12">
                         <div class="card" id="printable">
                             <div class="card-body">
-  
-                                
+
+
                                 <div class="container">
                                     <h1>Checkout</h1>
                                     <div class="table-responsive">
@@ -87,7 +87,7 @@
                                             </tbody>
                                         </table>
                                     </div>
-                                
+
                                     <!-- Coupon Form -->
                                     <form method="POST" action="{% url 'dashboard:apply_coupon' booking.id %}">
                                         {% csrf_token %}
@@ -95,11 +95,11 @@
                                         <input type="text" name="coupon_code" id="coupon_code" >
                                         <button type="submit">Apply Coupon</button>
                                     </form>
-                                
+
                                     <!-- Checkout Button -->
-                                    <a href="" class="btn btn-primary mt-3">Proceed to Checkout</a>
+                                    <a href="{% url 'dashboard:checkout_payment' booking.id %}" class="btn btn-primary mt-3">Proceed to Checkout</a>
                                 </div>
-                                
+
 
 
                             </div>
@@ -119,7 +119,7 @@
         function printDiv(divId) {
             var divContents = document.getElementById(divId).innerHTML;
             var printWindow = window.open('', '', 'height=800,width=800');
-            
+
             // Basic styles
             printWindow.document.write('<html><head><title>Print</title>');
             printWindow.document.write('<style>');
@@ -135,11 +135,11 @@
             printWindow.document.write('</head><body>');
             printWindow.document.write('<div id="printable">' + divContents + '</div>');
             printWindow.document.write('</body></html>');
-            
+
             printWindow.document.close();
             printWindow.focus();
             printWindow.print();
         }
-        </script>
-        
+    </script>
+
 {% endblock %}
