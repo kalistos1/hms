@@ -690,54 +690,81 @@ def frontdesk_add_additional_charge(request, pk):
     
 
 
-
-def frontdesk_room_checkout(request):
-        template = "front_desk/roomcheckout_detail.html"
-        
-        if request.user.is_frontdesk_officer:
-            
-            booked_rooms = Room.objects.filter(is_available = False)
-            context = {
-                'rooms':booked_rooms,
-            }
-            
-            return render (request,template,context)
-        
-        
-        
-        
-
-def frontdesk_apply_coupon_to_booking(request, booking_id):
-
-    booking = get_object_or_404(Booking, id=booking_id)
+def frontdesk_apply_coupon_to_booking(request, pk):
+    booking = get_object_or_404(Booking, pk=pk)
 
     if request.method == 'POST':
         coupon_code = request.POST.get('coupon_code')
 
         try:
             # Fetch the coupon by its code and check if it's active
-            coupon = Coupon.objects.get(code=coupon_code, active=True, valid_from__lte=timezone.now(), valid_to__gte=timezone.now())
+            coupon = Coupon.objects.get(
+                code=coupon_code, active=True, 
+                valid_from__lte=timezone.now(), valid_to__gte=timezone.now()
+            )
         except Coupon.DoesNotExist:
             messages.error(request, "Invalid or expired coupon code.")
-            return redirect('booking_detail', booking_id=booking_id)
+            return redirect('checkout', pk=pk)
 
         # Check if the coupon has already been used by this user
-        if CouponUsers.objects.filter(coupon=coupon, user=booking.user).exists():
+        if CouponUsers.objects.filter(coupon=coupon, booking=booking).exists():
             messages.error(request, "You have already used this coupon.")
-            return redirect('booking_detail', booking_id=booking_id)
+            return redirect('dashboard:checkout', pk=pk)
 
         # Apply the coupon to the booking
         booking.apply_coupon(coupon)
 
         # Create a record in the CouponUsers model to track the user who used the coupon
-        CouponUsers.objects.create(user=booking.user, coupon=coupon)
+        CouponUsers.objects.create(booking=booking, coupon=coupon)
 
         messages.success(request, f"Coupon '{coupon_code}' applied successfully!")
-        return redirect('booking_detail', booking_id=booking_id)
+        return redirect('dashboard:checkout', pk=pk)
 
-    return render(request, 'apply_coupon.html', {'booking': booking})
+    return redirect('dashboard:checkout', pk=pk)
 
-        
+
+def checkout_view(request, pk):
+    try:
+        booking = Booking.objects.get(pk=pk)
+    except Booking.DoesNotExist:
+        return redirect('error_page')  # Handle case where booking does not exist
+
+    # Calculate room charges, service charges, etc.
+    total_room_charges = booking.get_room_charges()
+    total_service_charges = booking.get_service_charges()
+    total_additional_charges = booking.get_additional_charges()
+    total_amount_payable = booking.get_total_payable()
+
+    # Apply coupon discount if available
+    discount_amount = booking.get_discount_amount()
+    total_after_discount = booking.get_total_payable_after_discount()
+
+    # Get latest payment details
+    payment = Payment.objects.filter(booking=booking).last()
+    amount_paid = payment.amount if payment else 0
+    payment_status = payment.status if payment else 'Unpaid'
+
+    # Remaining balance
+    remaining_balance = total_after_discount -float( amount_paid)
+
+    context = {
+        'booking': booking,
+        'total_room_charges': total_room_charges,
+        'total_service_charges': total_service_charges,
+        'total_additional_charges': total_additional_charges,
+        'total_amount_payable': total_amount_payable,
+        'discount_amount': discount_amount,
+        'total_after_discount': total_after_discount,
+        'amount_paid': amount_paid,
+        'payment_status': payment_status,
+        'remaining_balance': remaining_balance,
+    }
+
+    return render(request, 'front_desk/checkout_details.html', context)
+
+
+
+
 #Frontdesk views ends here 
 # ==========================================================================================================
 # ==========================================================================================================
@@ -791,7 +818,7 @@ def add_additional_charge(request, booking_id):
 
 def process_payment(request, booking_id):
     booking = get_object_or_404(Booking, booking_id=booking_id)
-    total_due = booking.get_total_with_additional_charges() - booking.payments.filter(status='completed').aggregate(total=models.Sum('amount'))['total'] or 0
+    total_due = booking.get_total_with_additional_charges() - booking.payments.filter(status='advance').aggregate(total=models.Sum('amount'))['total'] or 0
     
     if request.method == 'POST':
         # Assume you have a form for payment details
@@ -802,7 +829,7 @@ def process_payment(request, booking_id):
             payment.amount = total_due
             payment.save()
             # Update payment status based on actual payment processing
-            payment.status = 'completed'  # or 'failed' based on real outcome
+            payment.status = 'advance'  # or 'failed' based on real outcome
             payment.save()
             messages.success(request, 'Payment processed successfully.')
             return redirect('booking_detail', booking_id=booking.booking_id)

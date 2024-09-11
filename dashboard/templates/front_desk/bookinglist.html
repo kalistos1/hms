@@ -76,8 +76,8 @@
                             
                                                     <button type="button" class="btn btn-success btn-sm" data-bs-toggle="offcanvas" data-bs-target="#add-additional-charge" aria-controls="add-additional-charge"  onclick="AddAdditionalCharge(event, {{ booking.id }})"> Additional Service</button>
                                                     
-                                                    <a type="button" class="btn btn-warning btn-sm" href="{% url 'dashboard:re_receipt' booking.id %}"> Receipt </a>
-                                                    <a type="button" class="btn btn-danger btn-sm" href="{% url 'dashboard:frontdesk_room_checkout' %}"> Checkout </a>
+                                                    <span><a type="button" class="btn btn-warning btn-sm" href="{% url 'dashboard:re_receipt' booking.id %}"> Receipt </a></span>
+                                                    <span><a type="button" class="btn btn-danger btn-sm" href="{% url 'dashboard:checkout' booking.id %}"> Checkout </a> </span>
                                                   
                                                 </td>
                                             </tr>

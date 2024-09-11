@@ -46,14 +46,15 @@ urlpatterns = [
     #frontdesk
     path('front_desk/room_status/',views.frontdesk_room_status, name ="frontdesk_room_status"),
     path('front_desk/booking_list/',views.frontdesk_booking_list, name ="frontdesk_booking_list"),
-    path('front_desk/check_in_out/',views.frontdesk_room_checkout, name ="frontdesk_room_checkout"),
     path('frontdesk/booking/', views.front_desk_booking, name='book_room'),
     # path('frontdesk/reservation/', views.front_desk_reservation, name='reserve_room'),
     path('font_desk/receipt/<str:booking_id>/', views.receipt_view, name='receipt'),
     path('font_desk/re_receipt/<int:pk>/', views.re_issue_receipt_view, name='re_receipt'),
     path('frontdesk/add_booking_service/<int:pk>/', views.frontdesk_add_room_service, name="frontdesk_add_booking_service"),
     path('frontdesk/frontdesk_add_additional_charge/<int:pk>/', views.frontdesk_add_additional_charge, name="frontdesk_add_additional_charge"),
-    path('frontdesk/booking/<int:booking_id>/apply_coupon/', views.frontdesk_apply_coupon_to_booking, name='frontdesk_apply_coupon_to_booking'),
 
+    path('frontdesk/checkout/<int:pk>/', views.checkout_view, name='checkout'),
+    path('frontdesk/apply-coupon/<int:pk>/', views.frontdesk_apply_coupon_to_booking, name='apply_coupon'),
+    
     
 ]
