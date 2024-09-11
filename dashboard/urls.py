@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views
-
 app_name = "dashboard"
 
 
@@ -48,7 +47,12 @@ urlpatterns = [
     path('front_desk/room_status/',views.frontdesk_room_status, name ="frontdesk_room_status"),
     path('front_desk/booking_list/',views.frontdesk_booking_list, name ="frontdesk_booking_list"),
     path('front_desk/check_in_out/',views.frontdesk_room_checkout, name ="frontdesk_room_checkout"),
-    path('front_desk/book_room/',views.frontdesk_room_book, name ="book_room"),
-    
+    path('frontdesk/booking/', views.front_desk_booking, name='book_room'),
+    # path('frontdesk/reservation/', views.front_desk_reservation, name='reserve_room'),
+    path('font_desk/receipt/<str:booking_id>/', views.receipt_view, name='receipt'),
+    path('font_desk/re_receipt/<int:pk>/', views.re_issue_receipt_view, name='re_receipt'),
+    path('frontdesk/add_booking_service/<int:pk>/', views.frontdesk_add_room_service, name="frontdesk_add_booking_service"),
+    path('frontdesk/frontdesk_add_additional_charge/<int:pk>/', views.frontdesk_add_additional_charge, name="frontdesk_add_additional_charge"),
+
     
 ]

@@ -54,56 +54,57 @@ class CustomerForm(forms.ModelForm):
 
 
 class BookingForm(forms.ModelForm):
-    class Meta:
-        model = Booking
-        fields = [
-            'booking_type', 'room_type', 'room', 'check_in_date', 'check_out_date', 
-            'num_adults', 'num_children', 'advance_amount', 'discount_type', 
-            'discount_amount', 'payment_mode', 'vip', 'total', 'payment_status', 
-            'total', 'arrival_from'
-        ]
+    pass
+    # class Meta:
+    #     model = Booking
+    #     fields = [
+    #         'room_type', 'room', 'check_in_date', 'check_out_date', 
+    #         'num_adults', 'num_children',
+    #         'total',  
+           
+    #     ]
 
-        room = forms.ModelMultipleChoiceField(
-            queryset=Room.objects.filter(is_available=True), 
-            required=True,
-            widget=forms.CheckboxSelectMultiple,  
-        )
+    #     room = forms.ModelMultipleChoiceField(
+    #         queryset=Room.objects.filter(is_available=True), 
+    #         required=True,
+    #         widget=forms.CheckboxSelectMultiple,  
+    #     )
 
-    def __init__(self, *args, **kwargs):
-        super(BookingForm, self).__init__(*args, **kwargs)
+    # def __init__(self, *args, **kwargs):
+    #     super(BookingForm, self).__init__(*args, **kwargs)
         
        
-        available_rooms = Room.objects.filter(
-            is_available=True
-        ).exclude(
-            id__in=Booking.objects.filter(is_active=False).values_list('room__id', flat=True)
-        )
-        self.fields['room'].queryset = available_rooms
+    #     available_rooms = Room.objects.filter(
+    #         is_available=True
+    #     ).exclude(
+    #         id__in=Booking.objects.filter(is_active=False).values_list('room__id', flat=True)
+    #     )
+    #     self.fields['room'].queryset = available_rooms
         
-        # Check if there are any available rooms
-        if not available_rooms.exists():
-            self.fields['room'].widget.attrs['placeholder'] = 'No available room'
-            self.fields['room'].widget = forms.TextInput(attrs={
-                'class': 'form-control', 
-                'placeholder': 'No available room'
-            })
-        else:
-            self.fields['room'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room'})
+    #     # Check if there are any available rooms
+    #     if not available_rooms.exists():
+    #         self.fields['room'].widget.attrs['placeholder'] = 'No available room'
+    #         self.fields['room'].widget = forms.TextInput(attrs={
+    #             'class': 'form-control', 
+    #             'placeholder': 'No available room'
+    #         })
+    #     else:
+    #         self.fields['room'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room'})
         
-        self.fields['check_in_date'].widget = DateInput(attrs={'class': 'form-control','placeholder': 'Check-In Date'})
-        self.fields['check_out_date'].widget = DateInput(attrs={'class': 'form-control','placeholder': 'Check-Out Date'})
-        self.fields['booking_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Booking Type'})
-        self.fields['arrival_from'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Arrival From'})
-        self.fields['room_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Type'})
-        self.fields['num_adults'].widget.attrs.update({'class': 'form-control', 'placeholder': 'No. Adults'})
-        self.fields['num_children'].widget.attrs.update({'class': 'form-control', 'placeholder': 'No. Children'})
-        self.fields['discount_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'discount type'})
-        self.fields['discount_amount'].widget.attrs.update({'class': 'form-control', 'placeholder': 'discount amount'})
-        self.fields['payment_mode'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Payment Method'})
-        self.fields['payment_status'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Payment_status'})
-        self.fields['total'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Total Amount payable'})
-        self.fields['advance_amount'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Advance Amount'})
-        self.fields['vip'].widget.attrs.update({})
+    #     self.fields['check_in_date'].widget = DateInput(attrs={'class': 'form-control','placeholder': 'Check-In Date'})
+    #     self.fields['check_out_date'].widget = DateInput(attrs={'class': 'form-control','placeholder': 'Check-Out Date'})
+    #     self.fields['booking_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Booking Type'})
+    #     self.fields['arrival_from'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Arrival From'})
+    #     self.fields['room_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Type'})
+    #     self.fields['num_adults'].widget.attrs.update({'class': 'form-control', 'placeholder': 'No. Adults'})
+    #     self.fields['num_children'].widget.attrs.update({'class': 'form-control', 'placeholder': 'No. Children'})
+    #     self.fields['discount_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'discount type'})
+    #     self.fields['discount_amount'].widget.attrs.update({'class': 'form-control', 'placeholder': 'discount amount'})
+    #     self.fields['payment_mode'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Payment Method'})
+    #     self.fields['payment_status'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Payment_status'})
+    #     self.fields['total'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Total Amount payable'})
+    #     self.fields['advance_amount'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Advance Amount'})
+    #     self.fields['vip'].widget.attrs.update({})
         
         
 class RoomAmenityForm(forms.ModelForm):
@@ -120,36 +121,38 @@ class RoomAmenityForm(forms.ModelForm):
 
 
 class RoomTypeForm(forms.ModelForm):
-    class Meta:
-        model = RoomType
-        fields = ['banner_img','type','price', 'number_of_beds', 'room_capacity','amenities']
+    pass
+    # class Meta:
+    #     model = RoomType
+    #     fields = ['banner_img','type','price', 'number_of_beds', 'room_capacity','amenities']
 
-    def __init__(self, *args, **kwargs):
-        super(RoomTypeForm, self).__init__(*args, **kwargs)
+    # def __init__(self, *args, **kwargs):
+    #     super(RoomTypeForm, self).__init__(*args, **kwargs)
       
-        self.fields['banner_img'].widget.attrs.update({'class': 'form-control-file'})
-        self.fields['type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Type'})
-        self.fields['price'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Price'})
-        self.fields['number_of_beds'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Beds'})
-        self.fields['room_capacity'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Capacity'})
-        self.fields['amenities'].widget.attrs.update({'class': 'form-control select2'})
+    #     self.fields['banner_img'].widget.attrs.update({'class': 'form-control-file'})
+    #     self.fields['type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Type'})
+    #     self.fields['price'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Price'})
+    #     self.fields['number_of_beds'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Beds'})
+    #     self.fields['room_capacity'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Capacity'})
+    #     self.fields['amenities'].widget.attrs.update({'class': 'form-control select2'})
         
         
         
         
 
 class RoomForm(forms.ModelForm):
-    class Meta:
-        model = Room
-        fields = ['room_type','banner_img','room_number','floor']
+    pass
+    # class Meta:
+    #     model = Room
+    #     fields = ['room_type','banner_img','room_number','floor']
 
-    def __init__(self, *args, **kwargs):
-        super(RoomForm, self).__init__(*args, **kwargs)
+    # def __init__(self, *args, **kwargs):
+    #     super(RoomForm, self).__init__(*args, **kwargs)
      
-        self.fields['room_type'].widget.attrs.update({'class': 'form-control'})
-        self.fields['banner_img'].widget.attrs.update({'class': 'form-control-file'})
-        self.fields['room_number'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Number'})
-        self.fields['floor'].widget.attrs.update({'class': 'form-control'})
+    #     self.fields['room_type'].widget.attrs.update({'class': 'form-control'})
+    #     self.fields['banner_img'].widget.attrs.update({'class': 'form-control-file'})
+    #     self.fields['room_number'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Number'})
+    #     self.fields['floor'].widget.attrs.update({'class': 'form-control'})
        
 
 
@@ -170,18 +173,19 @@ class RoomServicesForm(forms.ModelForm):
         
         
 class CreateCouponForm(forms.ModelForm):
-    class Meta:
-        model = Coupon
-        fields =[ 'code', 'type','discount','redemption','active', 'make_public', 'valid_from', 'valid_to']
+    pass
+    # class Meta:
+    #     model = Coupon
+    #     fields =[ 'code', 'type','discount','redemption','active', 'make_public', 'valid_from', 'valid_to']
         
-    def __init__(self, *args, **kwargs):
-        super(CreateCouponForm, self).__init__(*args, **kwargs)
-        self.fields['code'].widget.attrs.update({'class': 'form-control', 'placeholder': 'coupon code'})
-        self.fields['type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Coupon Type'})
-        self.fields['discount'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Discount value'})
-        self.fields['redemption'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Redemption'})  
-        self.fields['active'].widget.attrs.update({})   
-        self.fields['make_public'].widget.attrs.update({})     
-        self.fields['valid_from'].widget= DateInput(attrs={'class': 'form-control','placeholder': 'Valid From'}) 
-        self.fields['valid_to'].widget=DateInput(attrs={'class': 'form-control','placeholder': 'Valid To'}) 
+    # def __init__(self, *args, **kwargs):
+    #     super(CreateCouponForm, self).__init__(*args, **kwargs)
+    #     self.fields['code'].widget.attrs.update({'class': 'form-control', 'placeholder': 'coupon code'})
+    #     self.fields['type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Coupon Type'})
+    #     self.fields['discount'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Discount value'})
+    #     self.fields['redemption'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Redemption'})  
+    #     self.fields['active'].widget.attrs.update({})   
+    #     self.fields['make_public'].widget.attrs.update({})     
+    #     self.fields['valid_from'].widget= DateInput(attrs={'class': 'form-control','placeholder': 'Valid From'}) 
+    #     self.fields['valid_to'].widget=DateInput(attrs={'class': 'form-control','placeholder': 'Valid To'}) 
 

@@ -49,26 +49,20 @@ class Profile(models.Model):
 
     pid = ShortUUIDField(length=7, max_length=25, alphabet="abcdefghijklmnopqrstuvxyz123")
     title = models.CharField(max_length=100, null=True, blank=True)
-    surname = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(upload_to=user_directory_path, default="default.jpg", null=True, blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    phone = models.CharField(max_length=100, null=True, blank=True)
     gender = models.CharField(max_length=100, choices=GENDER, null=True, blank=True)
     date_of_birth =models.DateField(null=True, blank=True)
-
     country = CountryField(blank_label='(select country)', null=True, blank=True)
     nationality=CountryField(blank_label='(select country)', null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)
     address = models.CharField(max_length=1000, null=True, blank=True)
     occupation = models.CharField(max_length=1000, null=True, blank=True)
-    
     id_no =  models.CharField(max_length=1000, null=True, blank=True)
-
     identity_type = models.CharField(choices=IDENTITY_TYPE, default="national_id_card", max_length=100, null=True, blank=True)
     identity_image_front = models.ImageField(upload_to=user_directory_path, default="id.jpg", null=True, blank=True)
     identity_image_back = models.ImageField(upload_to=user_directory_path, default="id.jpg", null=True, blank=True)
-
     facebook = models.URLField(default="https://facebook.com/", null=True, blank=True)
     twitter = models.URLField(default="https://twitter.com/", null=True, blank=True)
     wallet = models.DecimalField(decimal_places=2, max_digits=12, default=0.00)

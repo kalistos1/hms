@@ -32,13 +32,14 @@
 
    {% comment %} body content starts {% endcomment %}
 
-            <div class="px-xl-5 px-lg-4 px-3 py-3 page-body">
+            <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
                 <div class="row g-3">
                     <div class="col-sm-12">
                         <div class="d-flex align-items-center justify-content-between flex-wrap">
                             <h3 class="fw-bold mb-0">Room Booking List</h3>
-                            <div class="col-auto d-flex w-sm-100">
-                                <a href="{% url 'dashboard:book_room' %}" class="btn btn-dark btn-set-task w-sm-100">Room Book</a>
+                            <div class="col-auto d-flex w-sm-100 mt-3">
+                                <a href="{% url 'dashboard:book_room' %}" class="btn btn-warning btn-set-task w-sm-100 me-4">Room Booking</a>
+                                {% comment %} <a href="{% url 'dashboard:reserve_room' %}" class="btn btn-warning btn-set-task w-sm-100">Room Reservation</a> {% endcomment %}
                             </div>
                         </div>
                     </div>
@@ -55,6 +56,7 @@
                                             <th>Paid Amount</th>
 
                                             <th>Payment Status</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -69,6 +71,15 @@
                                                 <td>{{booking.total}}</td>
 
                                                 <td><span class="badge text-bg-warning">{{booking.payment_status}}</span></td>
+                                                <td>
+                                                    <button type="button" class="btn btn-info btn-sm"  data-bs-toggle="offcanvas" data-bs-target="#add-room-service" aria-controls="add-room-service"  onclick="AddRoomService(event, {{ booking.id }})"> Room Service</button>
+                            
+                                                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="offcanvas" data-bs-target="#add-additional-charge" aria-controls="add-additional-charge"  onclick="AddAdditionalCharge(event, {{ booking.id }})"> Additional Service</button>
+                                                    
+                                                    <a type="button" class="btn btn-warning btn-sm" href="{% url 'dashboard:re_receipt' booking.id %}"> Receipt </a>
+                                                    <a type="button" class="btn btn-danger btn-sm" href="{% url 'dashboard:frontdesk_room_checkout' %}"> Checkout </a>
+                                                  
+                                                </td>
                                             </tr>
                                         {% endfor %}
 
@@ -83,8 +94,44 @@
             </div>
    {% comment %} body content ends {% endcomment %}
 
+   {% include '../partials/htmx/fd_add_additional_charge.html' %}
+
+   {% include '../partials/htmx/fd_add_room_service.html' %}
 
 
         </div>
+
+
+        <script>
+            function AddRoomService(event, bookingId) {
+                // Prevent default behavior (if needed)
+                event.preventDefault();
+                
+                // Get the form element in the offcanvas
+                const form = document.querySelector('#add-room-service form');
+                
+                // Construct the new action URL by replacing the placeholder 'pk' with the actual booking ID
+                const newActionUrl = "{% url 'dashboard:frontdesk_add_booking_service' 0 %}".replace('0', bookingId);
+                
+                // Set the new action URL on the form
+                form.action = newActionUrl;
+            }
+
+
+            function AddAdditionalCharge(event, bookingId) {
+                // Prevent default behavior (if needed)
+                event.preventDefault();
+                
+                // Get the form element in the offcanvas
+                const form = document.querySelector('#add-additional-charge form');
+                
+                // Construct the new action URL by replacing the placeholder 'pk' with the actual booking ID
+                const newActionUrl = "{% url 'dashboard:frontdesk_add_additional_charge' 0 %}".replace('0', bookingId);
+                
+                // Set the new action URL on the form
+                form.action = newActionUrl;
+            }
+        </script>
+        
     </main>
 {% endblock %}
