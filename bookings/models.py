@@ -529,13 +529,16 @@ class Coupon(models.Model):
     code = models.CharField(max_length=1000)
     type = models.CharField(max_length=100, choices=DISCOUNT_TYPE, default="Percentage")
     discount = models.IntegerField(default=1, validators=[MinValueValidator(0), MaxValueValidator(100)])
-    redemption = models.IntegerField(default=0)
-    max_redemptions = models.IntegerField(default=1)  # New field to limit redemptions
+    redemption = models.IntegerField(default=0)  # Track how many times this coupon has been used
+    max_redemptions = models.IntegerField(default=1)  # Limit the number of redemptions
     date_created = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
     valid_from = models.DateField()
     valid_to = models.DateField()
     cid = ShortUUIDField(length=10, max_length=25, alphabet="abcdefghijklmnopqrstuvxyz")
+    
+    # Optional: Limit coupon to single use per user
+    single_use = models.BooleanField(default=False)
 
     def __str__(self):
         return self.code
@@ -544,21 +547,42 @@ class Coupon(models.Model):
         ordering = ['-id']
 
     def is_valid(self):
-        """Check if coupon is valid (active, within the valid date range, and not over-redeemed)."""
+        """
+        Check if the coupon is valid globally (active, within date range, and not over-redeemed).
+        """
+        current_date = timezone.now().date()
         if not self.active:
             return False
-        if self.valid_from > timezone.now().date() or self.valid_to < timezone.now().date():
+        if self.valid_from > current_date or self.valid_to < current_date:
             return False
         if self.redemption >= self.max_redemptions:
             return False
         return True
 
+    def is_valid_for_user(self, user):
+        """
+        Check if the coupon is valid for a specific user.
+        If it's a single-use coupon, verify that the user hasn't already used it.
+        """
+        if self.single_use and CouponUsers.objects.filter(coupon=self, email=user.email).exists():
+            return False
+        return self.is_valid()
 
+    def redeem_coupon(self, user):
+        """
+        Redeem the coupon if valid.
+        Increase redemption count and ensure it's valid for the user.
+        """
+        if self.is_valid_for_user(user):
+            self.redemption += 1
+            self.save()
+            return True
+        return False
 
 
 class CouponUsers(models.Model):
     coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE)
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    booking = models.ForeignKey('Booking', on_delete=models.CASCADE)  # Assuming 'Booking' is defined elsewhere
     full_name = models.CharField(max_length=1000)
     email = models.CharField(max_length=1000)
     mobile = models.CharField(max_length=1000)

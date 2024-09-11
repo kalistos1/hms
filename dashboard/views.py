@@ -20,6 +20,8 @@ from bookings.forms import (
     BookingChoiceForm, RoomBookingForm, RoomReservationForm, 
     RoomServiceForm, PaymentForm,AdditionalChargeForm
 )
+from django.utils import timezone
+
 
 
 # admin view s start
@@ -702,6 +704,39 @@ def frontdesk_room_checkout(request):
             return render (request,template,context)
         
         
+        
+        
+
+def frontdesk_apply_coupon_to_booking(request, booking_id):
+
+    booking = get_object_or_404(Booking, id=booking_id)
+
+    if request.method == 'POST':
+        coupon_code = request.POST.get('coupon_code')
+
+        try:
+            # Fetch the coupon by its code and check if it's active
+            coupon = Coupon.objects.get(code=coupon_code, active=True, valid_from__lte=timezone.now(), valid_to__gte=timezone.now())
+        except Coupon.DoesNotExist:
+            messages.error(request, "Invalid or expired coupon code.")
+            return redirect('booking_detail', booking_id=booking_id)
+
+        # Check if the coupon has already been used by this user
+        if CouponUsers.objects.filter(coupon=coupon, user=booking.user).exists():
+            messages.error(request, "You have already used this coupon.")
+            return redirect('booking_detail', booking_id=booking_id)
+
+        # Apply the coupon to the booking
+        booking.apply_coupon(coupon)
+
+        # Create a record in the CouponUsers model to track the user who used the coupon
+        CouponUsers.objects.create(user=booking.user, coupon=coupon)
+
+        messages.success(request, f"Coupon '{coupon_code}' applied successfully!")
+        return redirect('booking_detail', booking_id=booking_id)
+
+    return render(request, 'apply_coupon.html', {'booking': booking})
+
         
 #Frontdesk views ends here 
 # ==========================================================================================================

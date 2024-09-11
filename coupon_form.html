@@ -1,0 +1,6 @@
+<form method="POST" action="{% url 'apply_coupon_to_booking' booking.id %}">
+    {% csrf_token %}
+    <label for="coupon_code">Enter Coupon Code:</label>
+    <input type="text" name="coupon_code" id="coupon_code" required>
+    <button type="submit">Apply Coupon</button>
+</form>

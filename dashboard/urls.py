@@ -53,6 +53,7 @@ urlpatterns = [
     path('font_desk/re_receipt/<int:pk>/', views.re_issue_receipt_view, name='re_receipt'),
     path('frontdesk/add_booking_service/<int:pk>/', views.frontdesk_add_room_service, name="frontdesk_add_booking_service"),
     path('frontdesk/frontdesk_add_additional_charge/<int:pk>/', views.frontdesk_add_additional_charge, name="frontdesk_add_additional_charge"),
+    path('frontdesk/booking/<int:booking_id>/apply_coupon/', views.frontdesk_apply_coupon_to_booking, name='frontdesk_apply_coupon_to_booking'),
 
     
 ]
