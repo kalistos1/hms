@@ -50,6 +50,9 @@ urlpatterns = [
     path('frontdesk/booking/', views.front_desk_booking, name='book_room'),
     # path('frontdesk/reservation/', views.front_desk_reservation, name='reserve_room'),
     path('font_desk/receipt/<str:booking_id>/', views.receipt_view, name='receipt'),
+    path('font_desk/re_receipt/<int:pk>/', views.re_issue_receipt_view, name='re_receipt'),
+    path('frontdesk/add_booking_service/<int:pk>/', views.frontdesk_add_room_service, name="frontdesk_add_booking_service"),
+    path('frontdesk/frontdesk_add_additional_charge/<int:pk>/', views.frontdesk_add_additional_charge, name="frontdesk_add_additional_charge"),
 
     
 ]

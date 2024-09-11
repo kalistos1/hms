@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import  Booking, Reservation, Payment, Room, RoomServices
+from .models import  Booking, Reservation, Payment, Room, RoomServices,  AdditionalCharge
 from accounts.models import User, Profile
 from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
@@ -140,3 +140,28 @@ class PaymentForm(forms.ModelForm):
         self.fields['mode'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Mode Of Payment'})
         self.fields['status'].widget.attrs.update({ 'class': 'form-control', 'placeholder': ' Payment Status'})
         
+
+class RoomServiceForm(forms.ModelForm):
+    class Meta:
+        model = RoomServices
+        fields = ['room', 'service_type','price']
+        
+    def __init__(self, *args, **kwargs):
+        super(RoomServiceForm, self).__init__(*args, **kwargs)
+        self.fields['room'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Room'})
+        self.fields['service_type'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Service Type'})
+        self.fields['price'].widget.attrs.update({ 'class': 'form-control', 'placeholder': ' Price'})
+        
+
+class AdditionalChargeForm(forms.ModelForm):
+    class Meta:
+        model =  AdditionalCharge
+        fields = ['category', 'description','amount']
+        
+    def __init__(self, *args, **kwargs):
+        super(AdditionalChargeForm, self).__init__(*args, **kwargs)
+        self.fields['category'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Choose Category'})
+        self.fields['description'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Write a description of the service'})
+        self.fields['amount'].widget.attrs.update({ 'class': 'form-control', 'placeholder': ' Price'})
+        
+

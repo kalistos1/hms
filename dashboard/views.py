@@ -18,7 +18,7 @@ from django.contrib.auth import login
 from bookings.forms import (
     BasicUserInfoForm, ProfileInfoForm, 
     BookingChoiceForm, RoomBookingForm, RoomReservationForm, 
-    RoomServiceForm, PaymentForm
+    RoomServiceForm, PaymentForm,AdditionalChargeForm
 )
 
 
@@ -461,8 +461,12 @@ def frontdesk_booking_list(request):
   
     if request.user.is_frontdesk_officer:
         bookin_list = Booking.objects.all()
+        room_service_form =  RoomServiceForm()
+        additional_charge_form =  AdditionalChargeForm()
         context = {
             'bookings':bookin_list,
+            'room_service_form': room_service_form,
+            "additional_charge_form":additional_charge_form,
         }
         
         return render (request,template, context)
@@ -556,40 +560,6 @@ def front_desk_booking(request):
 
 
 
-   
-# def receipt_view(request, booking_id):
- 
-#     try:
-#         booking = Booking.objects.get(booking_id=booking_id)
-#     except Booking.DoesNotExist:
-#         booking = None
-
-#     if not booking:
-#         reservation = get_object_or_404(Reservation, id=booking_id)
-#         booking = reservation.convert_reservation_to_booking(reservation)
-
-#     additional_charges = AdditionalCharge.objects.filter(booking=booking)
-#     total_additional_charges = sum(charge.amount for charge in additional_charges)
-    
-#     total_amount_payable = booking.total_amount + total_additional_charges
-  
-#     payment = Payment.objects.filter(booking=booking).last()  # Assuming the latest payment record
-    
-#     amount_paid = payment.amount if payment else 0
-#     payment_status = payment.status if payment else 'Unpaid'
- 
-#     context = {
-#         'booking': booking,
-#         'additional_charges': additional_charges,
-#         'total_amount_payable': total_amount_payable,
-#         'amount_paid': amount_paid,
-#         'payment_status': payment_status,
-      
-#     }
-    
-#     return render(request, 'front_desk/booking/receipt.html', context)
-
-
 
 def receipt_view(request, booking_id):
     try:
@@ -631,124 +601,96 @@ def receipt_view(request, booking_id):
 
     return render(request, 'front_desk/booking/receipt.html', context)
 
-# def front_desk_booking(request):
-#     if request.method == 'POST':
-#         basic_info_form = BasicUserInfoForm(request.POST)
-#         profile_info_form = ProfileInfoForm(request.POST)
-#         booking_choice_form = BookingChoiceForm(request.POST)
-#         room_booking_form = RoomBookingForm(request.POST)
-#         room_reservation_form = RoomReservationForm(request.POST)
-#         # room_service_form = RoomServiceForm(request.POST)
-#         payment_form = PaymentForm(request.POST)
-
-#         if basic_info_form.is_valid() and profile_info_form.is_valid() and booking_choice_form.is_valid():
-#             user = basic_info_form.save(commit=False)
-#             user.set_password(user.phone)  # Set phone number as password
-#             user.username = user.email  # Set email as the username
-#             user.save()
-
-#             profile, created = Profile.objects.get_or_create(user=user)
-#             profile_form_data = profile_info_form.cleaned_data
-#             for field, value in profile_form_data.items():
-#                 setattr(profile, field, value)
-#             profile.save()
-
-#             choice = booking_choice_form.cleaned_data['choice']
-#             if choice == 'booking':
-#                 if room_booking_form.is_valid():
-#                     booking = room_booking_form.save(commit=False)
-#                     booking.user = user
-#                     booking.save()
-#                     room_booking_form.save_m2m()
-#                     reservation = None
-#                 else:
-#                     booking = None
-#                     reservation = None
-
-#             elif choice == 'reservation':
-#                 if room_reservation_form.is_valid():
-#                     reservation = room_reservation_form.save(commit=False)
-#                     reservation.user = user
-#                     reservation.save()
-#                     booking = None
-#                 else:
-#                     booking = None
-#                     reservation = None
-
-#             # if room_service_form.is_valid():
-#             #     room_service = room_service_form.save(commit=False)
-#             #     room_service.user = user
-#             #     room_service.save()
-
-#             if payment_form.is_valid():
-#                 payment = payment_form.save(commit=False)
-#                 payment.user = user
-#                 payment.booking = booking if booking else reservation
-#                 payment.save()
-
-#             return redirect('dashboard:receipt', booking_id=booking.booking_id)
-#     else:
-#         basic_info_form = BasicUserInfoForm()
-#         profile_info_form = ProfileInfoForm()
-#         booking_choice_form = BookingChoiceForm()
-#         room_booking_form = RoomBookingForm()
-#         room_reservation_form = RoomReservationForm()
-#         # room_service_form = RoomServiceForm()
-#         payment_form = PaymentForm()
-
-#     return render(request, 'front_desk/roombook.html', {
-#         'basic_info_form': basic_info_form,
-#         'profile_info_form': profile_info_form,
-#         'booking_choice_form': booking_choice_form,
-#         'room_booking_form': room_booking_form,
-#         'room_reservation_form': room_reservation_form,
-#         # 'room_service_form': room_service_form,
-#         'payment_form': payment_form
-#     })
-
-   
 
 
-   
-# def receipt_view(request, booking_id):
+def re_issue_receipt_view(request, pk):
+    try:
+        booking = Booking.objects.get(pk=pk)
+    except Booking.DoesNotExist:
+        return redirect('error_page')  # Handle case where booking does not exist
+
+    # Calculate room charges
+    total_room_charges = booking.get_room_charges()
+
+    # Calculate room service charges
+    total_service_charges = booking.get_service_charges()
+
+    # Calculate additional charges
+    total_additional_charges = booking.get_additional_charges()
+
+    # Total amount payable
+    total_amount_payable = booking.get_total_payable()
+
+    # Get latest payment details
+    payment = Payment.objects.filter(booking=booking).last()
+    amount_paid = payment.amount if payment else 0
+    payment_status = payment.status if payment else 'Unpaid'
+
+    # Remaining balance
+    remaining_balance = total_amount_payable - amount_paid
+
+    # Pass context to template
+    context = {
+        'booking': booking,
+        'total_room_charges': total_room_charges,
+        'total_service_charges': total_service_charges,
+        'total_additional_charges': total_additional_charges,
+        'total_amount_payable': total_amount_payable,
+        'amount_paid': amount_paid,
+        'payment_status': payment_status,
+        'remaining_balance': remaining_balance,
+    }
+
+    return render(request, 'front_desk/booking/receipt.html', context)
+
+
+
+
+def frontdesk_add_room_service(request, pk):
+    booking_instance = Booking.objects.get(pk = pk)
     
-#     try:
-#         booking = Booking.objects.get(booking_id=booking_id)
-#     except Booking.DoesNotExist:
-#         booking = None
+    if request.method == "POST":
+        add_room_service_form = RoomServiceForm(request.POST)
+        if add_room_service_form.is_valid():
+            room_service_form = add_room_service_form.save(commit=False)
+            room_service_form.booking = booking_instance
+            room_service_form.save()
+            
+            messages.success(request,"Room service sucessfull added to booking")
+            return redirect("dashboard:frontdesk_booking_list")
+        else:
+            messages.error(request,"Something wnt wrong, Unable to add Room service")
+            return redirect("dashboard:frontdesk_booking_list")
+    else:
+        messages.error(request,f"Invalid Form: unable to room service to booking")
+        return redirect("dashboard:frontdesk_booking_list")
+            
+        
 
-#     if not booking:
-#         reservation = get_object_or_404(Reservation, id=booking_id)
-#         booking = reservation.convert_reservation_to_booking(reservation)
-
-
-#     additional_charges = AdditionalCharge.objects.filter(booking=booking)
-#     total_additional_charges = sum(charge.amount for charge in additional_charges)
+def frontdesk_add_additional_charge(request, pk):
+    booking_instance = Booking.objects.get(pk = pk)
     
-
-#     total_amount_payable = booking.total_amount + total_additional_charges
+    if request.method == "POST":
+        additional_service_form = AdditionalChargeForm(request.POST)
+        if additional_service_form.is_valid():
+            room_service_form = additional_service_form.save(commit=False)
+            room_service_form.booking = booking_instance
+            room_service_form.save()
+            
+            messages.success(request,"Room service sucessfull added to booking")
+            return redirect("dashboard:frontdesk_booking_list")
+        else:
+            messages.error(request,"Something wnt wrong, Unable to add Room service")
+            return redirect("dashboard:frontdesk_booking_list")
+    else:
+        messages.error(request,f"Invalid Form: unable to room service to booking")
+        return redirect("dashboard:frontdesk_booking_list")
     
-  
-#     payment = Payment.objects.filter(booking=booking).last()  # Assuming the latest payment record
-    
-#     amount_paid = payment.amount if payment else 0
-#     payment_status = payment.status if payment else 'Unpaid'
-    
-#     context = {
-#         'booking': booking,
-#         'additional_charges': additional_charges,
-#         'total_amount_payable': total_amount_payable,
-#         'amount_paid': amount_paid,
-#         'payment_status': payment_status,
-#     }
-    
-#     return render(request, 'front_desk/booking/receipt.html', context)
-
 
 
 
 def frontdesk_room_checkout(request):
-        template = "front_desk/roomcheckout.html"
+        template = "front_desk/roomcheckout_detail.html"
         
         if request.user.is_frontdesk_officer:
             

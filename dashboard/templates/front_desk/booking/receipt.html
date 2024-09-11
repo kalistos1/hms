@@ -89,7 +89,7 @@
                                                             <tr>
                                                                 <th scope="row">Additional Charges</th>
                                                                 <td>
-                                                                    {% for charge in booking.additionalcharge_set.all %}
+                                                                    {% for charge in booking.additional_charges.all %}
                                                                         <li>{{ charge.description }}: {{ charge.amount }}</li>
                                                                     {% endfor %}
                                                                 </td>
