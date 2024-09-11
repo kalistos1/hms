@@ -209,7 +209,7 @@ class Payment(models.Model):
     PAYMENT_STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('advance', 'advance'),
-        ('completed', 'Completed'),
+        ('completed', 'completed'),
         ('failed', 'Failed'),
         ('refunded', 'Refunded'),
     ]
@@ -281,6 +281,23 @@ class Payment(models.Model):
     #         raise ValueError(f"Room {unavailable_room.room_number} is not available for the selected dates.")
         
     #     super(Payment, self).save(*args, **kwargs)
+
+class PaymentCompletion(models.Model):
+
+    PAYMENT_MODE_CHOICES = [
+        ('cash', 'Cash'),
+        ('credit_card', 'Credit Card'),
+        ('paypal', 'PayPal'),
+    ]
+    
+    payment = models.OneToOneField(Payment, related_name='completion', on_delete=models.CASCADE)
+    completion_date = models.DateTimeField(auto_now_add=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    mode = models.CharField(max_length=20, choices=PAYMENT_MODE_CHOICES, default='cash')
+    transaction_id = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return f"Completion for Payment {self.payment.transaction_id} - {self.transaction_id}"
 
 
 
@@ -619,7 +636,6 @@ class ActivityLog(models.Model):
     
     
  
- 
 class StaffOnDuty(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
     staff_id = models.CharField(null=True, blank=True, max_length=100)
@@ -628,8 +644,7 @@ class StaffOnDuty(models.Model):
     def __str__(self):
         return str(self.staff_id)
     
- 
- 
+
  
 class RoomServices(models.Model):
     
