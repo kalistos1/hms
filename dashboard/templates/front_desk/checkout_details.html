@@ -92,7 +92,7 @@
                                     <form method="POST" action="{% url 'dashboard:apply_coupon' booking.id %}">
                                         {% csrf_token %}
                                         <label for="coupon_code">Enter Coupon Code:</label>
-                                        <input type="text" name="coupon_code" id="coupon_code" required>
+                                        <input type="text" name="coupon_code" id="coupon_code" >
                                         <button type="submit">Apply Coupon</button>
                                     </form>
                                 

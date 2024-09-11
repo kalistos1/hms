@@ -715,10 +715,10 @@ def frontdesk_apply_coupon_to_booking(request, pk):
         booking.apply_coupon(coupon)
 
         # Create a record in the CouponUsers model to track the user who used the coupon
-        CouponUsers.objects.create(user=booking.user, coupon=coupon)
+        CouponUsers.objects.create(booking=booking, coupon=coupon)
 
         messages.success(request, f"Coupon '{coupon_code}' applied successfully!")
-        return redirect('dashboars:checkout', pk=pk)
+        return redirect('dashboard:checkout', pk=pk)
 
     return redirect('dashboard:checkout', pk=pk)
 
@@ -745,7 +745,7 @@ def checkout_view(request, pk):
     payment_status = payment.status if payment else 'Unpaid'
 
     # Remaining balance
-    remaining_balance = total_after_discount - amount_paid
+    remaining_balance = total_after_discount -float( amount_paid)
 
     context = {
         'booking': booking,
@@ -818,7 +818,7 @@ def add_additional_charge(request, booking_id):
 
 def process_payment(request, booking_id):
     booking = get_object_or_404(Booking, booking_id=booking_id)
-    total_due = booking.get_total_with_additional_charges() - booking.payments.filter(status='completed').aggregate(total=models.Sum('amount'))['total'] or 0
+    total_due = booking.get_total_with_additional_charges() - booking.payments.filter(status='advance').aggregate(total=models.Sum('amount'))['total'] or 0
     
     if request.method == 'POST':
         # Assume you have a form for payment details
@@ -829,7 +829,7 @@ def process_payment(request, booking_id):
             payment.amount = total_due
             payment.save()
             # Update payment status based on actual payment processing
-            payment.status = 'completed'  # or 'failed' based on real outcome
+            payment.status = 'advance'  # or 'failed' based on real outcome
             payment.save()
             messages.success(request, 'Payment processed successfully.')
             return redirect('booking_detail', booking_id=booking.booking_id)

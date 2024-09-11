@@ -208,6 +208,7 @@ class Room(models.Model):
 class Payment(models.Model):
     PAYMENT_STATUS_CHOICES = [
         ('pending', 'Pending'),
+        ('advance', 'advance'),
         ('completed', 'Completed'),
         ('failed', 'Failed'),
         ('refunded', 'Refunded'),
@@ -230,7 +231,7 @@ class Payment(models.Model):
 
     def get_total_due(self):
         total_booking = self.booking.calculate_total()
-        total_paid = self.booking.payments.filter(status='completed').aggregate(total=models.Sum('amount'))['total'] or 0
+        total_paid = self.booking.payments.filter(status='advance').aggregate(total=models.Sum('amount'))['total'] or 0
         return total_booking - total_paid
         
     def are_rooms_available(self, rooms, check_in_date, check_out_date):
@@ -258,8 +259,8 @@ class Payment(models.Model):
         return True, None
     
     def save(self, *args, **kwargs):
-        # Check if payment is marked as completed
-        if self.status == 'completed':
+        # Check if payment is marked as advance
+        if self.status == 'advance':
             # Update room availability to false (unavailable)
             self.booking.update_room_availability(False)
             self.booking.set_checked_in()
@@ -396,12 +397,17 @@ class Booking(Transaction):
     def get_discount_amount(self):
         """Calculate the discount amount based on the coupon."""
         if self.coupon:
-            return self.coupon.discount(self.get_total_payable())  # Assuming Coupon has a discount method
+            total_payable = self.get_total_payable()
+            discount_value = self.coupon.discount  # Accessing the discount field
+            return float(total_payable) * (discount_value / 100)  # Assuming discount is a percentage
         return 0
 
     def get_total_payable_after_discount(self):
         """Get the total payable after applying the coupon discount."""
-        return self.get_total_payable() - self.get_discount_amount()
+        total_payable = self.get_total_payable()
+        discount_amount = self.get_discount_amount()
+        print(f"Total Payable: {total_payable}, Discount Amount: {discount_amount}")
+        return float(total_payable) - float(discount_amount)
 
     def convert_reservation_to_booking(self, reservation):
         """Convert a reservation into a booking and optionally apply a coupon if one exists."""
