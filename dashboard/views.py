@@ -14,6 +14,7 @@ from formtools.wizard.views import SessionWizardView
 from datetime import timedelta
 from django.db.models import Sum, Q
 from django.contrib.auth import login
+
 from bookings.forms import (
     BasicUserInfoForm, ProfileInfoForm, 
     BookingChoiceForm, RoomBookingForm, RoomReservationForm, 
