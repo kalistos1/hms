@@ -70,7 +70,7 @@
 
                             </li>
 
-                            <li>
+                            {% comment %} <li>
                                 <a href=""  aria-label="Users">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
@@ -81,10 +81,10 @@
                                     <span class="mx-3">Reserve Room</span>
                                 </a>
 
-                            </li>
+                            </li> {% endcomment %}
 
                             <li>
-                                <a href=""  aria-label="Users">
+                                <a href="{% url 'dashboard:checkout_list' %}"  aria-label="Users">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                                         <path d="M12 8m-5 0a5 5 0 1 0 10 0a5 5 0 1 0 -10 0"></path>
