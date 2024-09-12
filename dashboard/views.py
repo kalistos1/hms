@@ -14,7 +14,6 @@ from formtools.wizard.views import SessionWizardView
 from datetime import timedelta
 from django.db.models import Sum, Q
 from django.contrib.auth import login
-
 from bookings.forms import (
     BasicUserInfoForm, ProfileInfoForm, 
     BookingChoiceForm, RoomBookingForm, RoomReservationForm, 
@@ -203,6 +202,7 @@ def admin_update_room_type(request, pk):
     return render(request, 'room_amenities/update.html', {'form': form})
 
 
+
 def admin_delete_room_type(request, pk):   
     room_type = get_object_or_404(RoomType, pk=pk)
     if request.method == 'GET':
@@ -273,7 +273,7 @@ def admin_delete_coupon(request, pk):
 
 
 # Privilaged Users
-# ================================================================================================================
+# =================
 
 def admin_users_list(request):
     template ="admin_user/admin_user.html"
@@ -368,7 +368,6 @@ def add_admin_privilaged_user(request):
     return redirect('dashboard:admin_users_list')
 
 
-
 def admin_delete_privilaged_user(request, pk):
     
     room_type = get_object_or_404(User, pk=pk)
@@ -378,6 +377,36 @@ def admin_delete_privilaged_user(request, pk):
         return redirect('dashboard:admin_users_list')
     
     return redirect('dashboard:admin_users_list')
+
+
+#booking list
+def admin_booking_list(request):
+    template = "admin_user/admin_bookinglist.html"
+  
+    
+    bookin_list = Booking.objects.all()
+    room_service_form =  RoomServiceForm()
+    additional_charge_form =  AdditionalChargeForm()
+    context = {
+        'bookings':bookin_list,
+        'room_service_form': room_service_form,
+        "additional_charge_form":additional_charge_form,
+    }
+    
+    return render (request,template, context)
+    
+
+#room status 
+def admin_room_status(request):
+    template = "admin_user/admin_roomstatus.html"
+
+        
+    room_status = Room.objects.all()
+    context = {
+        'room_status':room_status
+    }
+    
+    return render (request,template, context)
 
 
 
