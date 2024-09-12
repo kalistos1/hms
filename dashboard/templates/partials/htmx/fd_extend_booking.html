@@ -2,8 +2,8 @@
 <div
     class="offcanvas offcanvas-end"
     tabindex="-1"
-    id="add-room-service"
-    aria-labelledby="add-room-service"
+    id="extend-booking"
+    aria-labelledby="extend-booking"
 >
     <div class="offcanvas-header">
         <h5 class="offcanvas-title">Extend Room Booking</h5>
@@ -15,12 +15,12 @@
         ></button>
     </div>
     <div class="offcanvas-body">
-        <form action ="{% url 'dashboard:frontdesk_add_booking_service' 0 %}" method ="post" enctype="multipart/form-data">
+        <form action ="{% url 'dashboard:frontdesk_update_checkout_date' 0 %}" method ="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group mb-3">
 
 
-                {{ room_service_form.as_p}}
+                {{ form.as_p}}
 
             </div>
 
