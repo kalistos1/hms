@@ -114,10 +114,9 @@ class EquipmentAuditLogForm(forms.ModelForm):
 class InspectionChecklistForm(forms.ModelForm):
     class Meta:
         model = InspectionChecklist
-        fields = ['equipment', 'checklist_item', 'is_passed', 'remarks', 'inspection_date']
+        fields = ['equipment', 'checklist_item', 'is_passed', 'remarks']
         widgets = {
             'checklist_item': forms.TextInput(attrs={'class': 'form-control'}),
             'remarks': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-            'inspection_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'equipment': forms.Select(attrs={'class': 'form-control'}),
         }
