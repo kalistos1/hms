@@ -126,21 +126,21 @@
                                     </thead>
                                     <tbody>
                                         {% if todays_bookings %}
-                                        {% for booking in todays_bookings %}
-                                        <tr>
-                                            <td>
-                                                {{booking.user.first_name}}  {{booking.user.last_name}}
-                                            </td>
-                                            <td>{{ booking.room_type.type}}</td>
-                                            <td>{{ booking.check_in_date}}</td>
-                                            <td>{{ booking.check_out_date}}</td>
-                                            <td>{{ booking.amount_paid }}</td>
-                                            <td> Not Available</td>
-                                            <td><span class="badge text-bg-warning">{{booking.payment_status }}</span></td>
-                                        </tr>
-                                       
-                                        {% endfor %}
-                                       {% endif %}
+                                            {% for booking in todays_bookings %}
+                                                <tr>
+                                                    <td>
+                                                        {{booking.user.first_name}}  {{booking.user.last_name}}
+                                                    </td>
+                                                    <td>{{ booking.room_type.type}}</td>
+                                                    <td>{{ booking.check_in_date}}</td>
+                                                    <td>{{ booking.check_out_date}}</td>
+                                                    <td>{{ booking.amount_paid }}</td>
+                                                    <td> Not Available</td>
+                                                    <td><span class="badge text-bg-warning">{{booking.payment_status }}</span></td>
+                                                </tr>
+
+                                            {% endfor %}
+                                        {% endif %}
                                     </tbody>
                                 </table>
                             </div>

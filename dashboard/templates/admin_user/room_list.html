@@ -118,29 +118,11 @@
                     <form action ="{% url 'dashboard:admin_create_room' %}" method ="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="form-group mb-3">
-                            <label class="form-label text-muted"
-                            >Room Type <span class="text-danger">*</span></label >
-                            {{form.room_type}}
+
+                            {{form.as_p}}
 
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted"
-                            >Room Number <span class="text-danger">*</span></label >
-                            {{form.room_number}}
 
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted"
-                            >Room Floor <span class="text-danger">*</span></label >
-                            {{form.floor}}
-
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted"
-                            >Room Image <span class="text-danger">*</span></label >
-                            {{form.banner_img}}
-
-                        </div>
 
                         <div class="d-flex">
                             <button type="button" class="btn w-100 me-1 py-2 btn-primary">

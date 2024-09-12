@@ -104,13 +104,13 @@
 
             <li class="nav-item user ms-3">
                 <a class="dropdown-toggle gray-6 d-flex text-decoration-none align-items-center lh-sm p-0" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="User" data-bs-auto-close="outside">
-                   {% if request.user.profile.image %}
+                    {% if request.user.profile.image %}
 
                       {% comment %} <img class="avatar rounded-circle border border-3" src="{{request.user.profile.image.url}}" alt="profile image"> {% endcomment %}
-                      <img class="avatar rounded-circle border border-3" src="{% static 'dashboard/assets/images/profile_av.png' %}" alt="profile image">
+                        <img class="avatar rounded-circle border border-3" src="{% static 'dashboard/assets/images/profile_av.png' %}" alt="profile image">
                     {% else %}
-                    <img class="avatar rounded-circle border border-3" src="{% static 'dashboard/assets/images/profile_av.png' %}" alt="profile image">
-                   {% endif %}   
+                        <img class="avatar rounded-circle border border-3" src="{% static 'dashboard/assets/images/profile_av.png' %}" alt="profile image">
+                    {% endif %}
                     <span class="ms-2 fs-6 d-none d-sm-inline-flex">{{request.user.first_name}}</span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end shadow p-2 p-xl-3 rounded-4">
