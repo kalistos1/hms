@@ -56,6 +56,8 @@ urlpatterns = [
     path('frontdesk/checkout/<int:pk>/', views.checkout_view, name='checkout'),
     path('frontdesk/apply-coupon/<int:pk>/', views.frontdesk_apply_coupon_to_booking, name='apply_coupon'),
     path('frontdesk/checkout/payment/<int:pk>/', views.frontdesk_checkout_payment_view, name='checkout_payment'),
+    path('frontdesk/checkout/extend_booking/<int:pk>/', views.frontdesk_update_checkout_date, name='frontdesk_update_checkout_date'),
+    
     
     
    

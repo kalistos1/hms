@@ -6,13 +6,11 @@ from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
 from django.db.models import Q
 from django.utils import timezone
-
 from django.core.exceptions import ValidationError
 
 
 class DateInput(forms.DateInput):
     input_type = 'date'
-
 
 
 class BasicUserInfoForm(forms.ModelForm):
@@ -51,9 +49,7 @@ class ProfileInfoForm(forms.ModelForm):
         self.fields['address'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customers Address.'})
         self.fields['occupation'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customers Occupation.'})
         
-        
-
-
+    
 
 class BookingChoiceForm(forms.Form):
     CHOICES = [
@@ -68,8 +64,6 @@ class BookingChoiceForm(forms.Form):
             self.fields['choice'].widget.attrs.update({})
 
 
-
- 
 class RoomBookingForm(forms.ModelForm):
     
     class Meta:
@@ -94,9 +88,6 @@ class RoomBookingForm(forms.ModelForm):
         self.fields['room'].widget.attrs.update({'class': 'form-control'})
         self.fields['room'].queryset = Room.objects.filter(is_available=True)
            
-        
-
-
 
 class RoomReservationForm(forms.ModelForm):
     class Meta:
@@ -115,7 +106,6 @@ class RoomReservationForm(forms.ModelForm):
         self.fields['room'].widget.attrs.update({'class': 'form-control', })
         
 
-   
 class RoomServiceForm(forms.ModelForm):
     class Meta:
         model = RoomServices
@@ -165,8 +155,6 @@ class AdditionalChargeForm(forms.ModelForm):
         self.fields['amount'].widget.attrs.update({ 'class': 'form-control', 'placeholder': ' Price'})
         
 
-
-
 class PaymentCheckoutForm(forms.ModelForm):
     class Meta:
         model = Payment
@@ -184,3 +172,19 @@ class PaymentCheckoutForm(forms.ModelForm):
         self.fields['status'].widget.attrs.update({'class': 'form-control'})
         self.fields['mode'].widget.attrs.update({'class': 'form-control'})
        
+       
+class UpdateCheckOutDateForm(forms.ModelForm):
+    check_out_date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        label="New Check-Out Date"
+    )
+
+    class Meta:
+        model = Booking
+        fields = ['check_out_date']
+
+    def clean_check_out_date(self):
+        new_check_out_date = self.cleaned_data.get('check_out_date')
+        if new_check_out_date < timezone.now().date():
+            raise forms.ValidationError("Check-out date cannot be in the past.")
+        return new_check_out_date

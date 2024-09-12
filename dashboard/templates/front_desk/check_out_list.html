@@ -72,7 +72,7 @@
 
                                                 <td><span class="badge text-bg-warning">{{booking.payment_status}}</span></td>
                                                 <td>
-                                                    <button type="button" class="btn btn-info btn-sm"  data-bs-toggle="offcanvas" data-bs-target="#add-room-service" aria-controls="add-room-service"  onclick="AddRoomService(event, {{ booking.id }})"> Extend Booking</button>
+                                                    <button type="button" class="btn btn-info btn-sm"  data-bs-toggle="offcanvas" data-bs-target="#extend-booking" aria-controls="extend-booking"  onclick="ExtendBooking(event, {{ booking.id }})"> Extend Booking</button>
                                                     <span><a type="button" class="btn btn-danger btn-sm" href="{% url 'dashboard:checkout' booking.id %}"> Checkout </a> </span>
 
                                                 </td>
@@ -97,12 +97,12 @@
 
 
         <script>
-            function AddRoomService(event, bookingId) {
+            function ExtendBooking(event, bookingId) {
                 // Prevent default behavior (if needed)
                 event.preventDefault();
 
                 // Get the form element in the offcanvas
-                const form = document.querySelector('#add-room-service form');
+                const form = document.querySelector('#extend-booking form');
 
                 // Construct the new action URL by replacing the placeholder 'pk' with the actual booking ID
                 const newActionUrl = "{% url 'dashboard:frontdesk_add_booking_service' 0 %}".replace('0', bookingId);
@@ -110,22 +110,6 @@
                 // Set the new action URL on the form
                 form.action = newActionUrl;
             }
-
-
-            function AddAdditionalCharge(event, bookingId) {
-                // Prevent default behavior (if needed)
-                event.preventDefault();
-
-                // Get the form element in the offcanvas
-                const form = document.querySelector('#add-additional-charge form');
-
-                // Construct the new action URL by replacing the placeholder 'pk' with the actual booking ID
-                const newActionUrl = "{% url 'dashboard:frontdesk_add_additional_charge' 0 %}".replace('0', bookingId);
-
-                // Set the new action URL on the form
-                form.action = newActionUrl;
-            }
-        </script>
 
     </main>
 {% endblock %}

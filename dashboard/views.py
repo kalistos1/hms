@@ -13,12 +13,11 @@ from accounts.forms import *
 from formtools.wizard.views import SessionWizardView
 from datetime import timedelta
 from django.db.models import Sum, Q
-
 from django.contrib.auth import login
 from bookings.forms import (
     BasicUserInfoForm, ProfileInfoForm, 
     BookingChoiceForm, RoomBookingForm, RoomReservationForm, 
-    RoomServiceForm, PaymentForm,AdditionalChargeForm, PaymentCheckoutForm
+    RoomServiceForm, PaymentForm,AdditionalChargeForm, PaymentCheckoutForm,UpdateCheckOutDateForm
 )
 from django.utils import timezone
 
@@ -201,7 +200,6 @@ def admin_update_room_type(request, pk):
         form = RoomAmenityForm(instance=amenity)
 
     return render(request, 'room_amenities/update.html', {'form': form})
-
 
 
 def admin_delete_room_type(request, pk):   
@@ -512,39 +510,46 @@ def frontdesk_booking_list(request):
         return render (request,template, context)
     
 
+
+def frontdesk_update_checkout_date(request, pk):
+    booking = get_object_or_404(Booking, pk=pk)
+
+    if request.method == 'POST':
+        form = UpdateCheckOutDateForm(request.POST, instance=booking)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Check-out date updated successfully.')
+            return redirect('dashboard:checkout_list')  
+    else:
+        messages.error(request, 'Unable to Update Check-out date updated.')
+        return redirect('dashboard:checkout_list')
+     
+
 # checkout list
 def frontdesk_checkout_list(request):
     template = "front_desk/check_out_list.html"
-  
-    if request.user.is_frontdesk_officer:
-        bookin_list = Booking.objects.all()
-        context = {
-            'bookings':bookin_list,
-        }
-        return render (request,template, context)
-    
-    
     
 
-# def frontdesk_checkout_list(request):
-#     template = "front_desk/check_out_list.html"
-  
-#     if request.user.is_frontdesk_officer:
+    if request.user.is_frontdesk_officer:
         
-#         # Filtering bookings where:
-#         # check_out_date is today or in the past 
-#         # is_active is True
-#         # checked_in is True
+        # Filtering bookings where:
+        # check_out_date is today or in the past 
+        # is_active is True
+        # checked_in is True
         
-#         booking_list = Booking.objects.filter(
-#             check_out_date__lte=timezone.now(),
-#             is_active=True,
-#             checked_in=True
-#         )
-#         context = {
-#             'bookings': booking_list,
-#         }
-#         return render(request, template, context)
+       
+        booking_list = Booking.objects.filter(
+            check_out_date__lte=timezone.now(),
+            is_active=True,
+            checked_in=True
+        )
+        
+        form = UpdateCheckOutDateForm()
+        context = {
+            'form': form,
+            'bookings': booking_list,
+        }
+        return render(request, template, context)
 
 
 
