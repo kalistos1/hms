@@ -43,9 +43,9 @@
                                 <h6 class="card-title mb-0">Today Booking</h6>
                             </div>
                             <div class="card-body">
-                                <h2>1,587</h2>
-                                <span class="badge bg-primary">+11% </span>
-                                <span class="text-muted">From previous period</span>
+                                <h2>{{ total_todays_booking }}</h2>
+                                {% comment %} <span class="badge bg-primary">+11% </span>
+                                <span class="text-muted">From previous period</span> {% endcomment %}
                             </div>
                         </div>
                     </div>
@@ -55,8 +55,8 @@
                                 <h6 class="card-title mb-0">Total Amount</h6>
                             </div>
                             <div class="card-body">
-                                <h2>$2,258</h2>
-                                <span class="badge bg-info">+05% </span>
+                                <h2><span>&#8358;</span> {{todays_total_money }}</h2>
+                                {% comment %} <span class="badge bg-info">+05% </span> {% endcomment %}
                                 <span class="text-muted">New income</span>
                             </div>
                         </div>
@@ -67,8 +67,9 @@
                                 <h6 class="card-title mb-0">Total Customer</h6>
                             </div>
                             <div class="card-body">
-                                <h2>2.3k</h2>
-                                <span class="badge bg-warning">+11% </span>
+                                <h2>{{ customers }}</h2>
+
+                                {% comment %} <span class="badge bg-warning">+11% </span> {% endcomment %}
                                 <span class="text-muted">From previous period</span>
                             </div>
                         </div>
@@ -79,14 +80,18 @@
                                 <h6 class="card-title mb-0">Total Booking</h6>
                             </div>
                             <div class="card-body">
-                                <h2>11,5587</h2>
-                                <span class="badge bg-success">+21% </span>
+                                <h2>{{ all_bookings }}</h2>
+                                {% comment %} <span class="badge bg-success">+21% </span> {% endcomment %}
                                 <span class="text-muted">From previous period</span>
                             </div>
                         </div>
                     </div>
                 </div>
+
+
                 <div class="row g-3">
+
+                    <!-- graph -->
                     <div class="col-md-12">
                         <div class="card">
                             <div class="card-header">
@@ -97,6 +102,10 @@
                             </div>
                         </div>
                     </div>
+                      <!-- graph ends -->
+
+
+
                     <div class="col-sm-12">
                         <div class="card">
                             <div class="card-header">
@@ -116,61 +125,22 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        {% if todays_bookings %}
+                                        {% for booking in todays_bookings %}
                                         <tr>
                                             <td>
-                                                Frank Baker
+                                                {{booking.user.first_name}}  {{booking.user.last_name}}
                                             </td>
-                                            <td>Single</td>
-                                            <td>12/03/2024</td>
-                                            <td>13/03/2024</td>
-                                            <td>0.00</td>
-                                            <td>$230</td>
-                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                            <td>{{ booking.room_type.type}}</td>
+                                            <td>{{ booking.check_in_date}}</td>
+                                            <td>{{ booking.check_out_date}}</td>
+                                            <td>{{ booking.amount_paid }}</td>
+                                            <td> Not Available</td>
+                                            <td><span class="badge text-bg-warning">{{booking.payment_status }}</span></td>
                                         </tr>
-                                        <tr>
-                                            <td>
-                                                Rya Randall
-                                            </td>
-                                            <td>Deluxe</td>
-                                            <td>12/03/2024</td>
-                                            <td>24/03/2024</td>
-                                            <td>0.00</td>
-                                            <td>$430</td>
-                                            <td><span class="badge text-bg-warning">Pending</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                Phil Glover
-                                            </td>
-                                            <td>Studio</td>
-                                            <td>12/03/2024</td>
-                                            <td>21/03/2024</td>
-                                            <td>0.00</td>
-                                            <td>$4450</td>
-                                            <td><span class="badge text-bg-warning">Pending</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                Victor Rampling
-                                            </td>
-                                            <td>Junior Suite</td>
-                                            <td>12/03/2024</td>
-                                            <td>15/03/2024</td>
-                                            <td>0.00</td>
-                                            <td>$530</td>
-                                            <td><span class="badge text-bg-warning">Pending</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                Sally Graham
-                                            </td>
-                                            <td>Queen</td>
-                                            <td>12/03/2024</td>
-                                            <td>17/03/2024</td>
-                                            <td>$1550</td>
-                                            <td>0.00</td>
-                                            <td><span class="badge text-bg-success">Success</span></td>
-                                        </tr>
+                                       
+                                        {% endfor %}
+                                       {% endif %}
                                     </tbody>
                                 </table>
                             </div>
