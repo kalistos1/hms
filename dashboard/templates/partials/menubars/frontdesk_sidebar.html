@@ -1,4 +1,5 @@
-		<!-- start: page menu link -->
+{% load static %}
+        <!-- start: page menu link -->
 <aside class="ps-xl-5 ps-lg-4 ps-3 pe-2 py-3 sidebar sticky-top" data-bs-theme="none">
     <nav class="navbar navbar-expand-xl py-0">
         <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvas_Navbar">
@@ -8,8 +9,14 @@
             </div>
             <div class="offcanvas-body flex-column custom_scroll ps-4 ps-xl-0">
                 <div class="d-flex align-items-start mb-4">
-                    <img class="avatar lg rounded-circle border border-3" src="assets/images/profile_av.png" alt="avatar">
-                    <div class="ms-3 mt-1">
+                    {% if request.user.profile.image %}
+                        {% comment %} <img class="avatar lg rounded-circle border border-3" src="{{request.user.profile.image.url}}" alt="profile image"> {% endcomment %}
+                        <img class="avatar lg rounded-circle border border-3" src="{% static 'dashboard/assets/images/profile_av.png' %}" alt="profile image">
+                    {% else %}
+                    <img class="avatar rounded-circle border border-3" src="{% static 'dashboard/assets/images/profile_av.png' %}" alt="profile image">
+
+                    {% endif %}
+                        <div class="ms-3 mt-1">
                         <h4 class="mb-0 text-gradient title-font">Front-Desk</h4>
                         <span class="text-muted">Front-desk</span>
                     </div>
