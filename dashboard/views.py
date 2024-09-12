@@ -11,8 +11,8 @@ from .forms import *
 from django.db.models import Count
 from accounts.forms import *
 from formtools.wizard.views import SessionWizardView
-from django.db.models import Sum
 from datetime import timedelta
+from django.db.models import Sum, Q
 
 from django.contrib.auth import login
 from bookings.forms import (
@@ -370,8 +370,6 @@ def add_admin_privilaged_user(request):
 
 
 
-
-
 def admin_delete_privilaged_user(request, pk):
     
     room_type = get_object_or_404(User, pk=pk)
@@ -438,8 +436,49 @@ def frontdesk_dashboard(request):
     template = "front_desk/dashboard.html"
     
     if request.user.is_frontdesk_officer:
-    
-     return render (request,template)
+        all_bookings = Booking.objects.all()
+        today = timezone.now().date()
+
+        # Bookings created today
+        todays_bookings = Booking.objects.filter(date_created__date=today)
+
+        # Payments with status 'advance' or 'completed'
+        todays_payments = Payment.objects.filter(
+            Q(booking__in=todays_bookings) & (Q(status='advance') | Q(status='completed'))
+        )
+
+        # Sum of advance payments
+        advance_payments_total = todays_payments.filter(status='advance').aggregate(total=Sum('amount'))['total'] or 0
+
+        # Sum of completed payments
+        completed_payments_total = todays_payments.filter(status='completed').aggregate(total=Sum('amount'))['total'] or 0
+
+        # Sum of payment completions
+        payment_completion_total = PaymentCompletion.objects.filter(payment__booking__in=todays_bookings).aggregate(
+            total=Sum('amount')
+        )['total'] or 0
+
+        # Calculate the total money realized for today
+        todays_total_money = advance_payments_total + completed_payments_total + payment_completion_total
+
+        # Get all customers excluding specific user roles
+        customers = User.objects.filter(
+            is_admin=False,
+            is_supervisor=False,
+            is_account_officer=False,
+            is_frontdesk_officer=False,
+            is_pos_officer=False
+        )
+
+        context = {
+            'all_bookings': all_bookings.count(),
+            'todays_bookings': todays_bookings,
+            'total_todays_booking':todays_bookings.count(),
+            'todays_total_money': todays_total_money,
+            'customers': customers.count(),
+        }
+
+        return render(request, template, context)
 
 
 #room status 
