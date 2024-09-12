@@ -495,7 +495,6 @@ def frontdesk_room_status(request):
         return render (request,template, context)
 
 
-
 # bookings
 def frontdesk_booking_list(request):
     template = "front_desk/bookinglist.html"
@@ -511,6 +510,41 @@ def frontdesk_booking_list(request):
         }
         
         return render (request,template, context)
+    
+
+# checkout list
+def frontdesk_checkout_list(request):
+    template = "front_desk/check_out_list.html"
+  
+    if request.user.is_frontdesk_officer:
+        bookin_list = Booking.objects.all()
+        context = {
+            'bookings':bookin_list,
+        }
+        return render (request,template, context)
+    
+    
+    
+
+# def frontdesk_checkout_list(request):
+#     template = "front_desk/check_out_list.html"
+  
+#     if request.user.is_frontdesk_officer:
+        
+#         # Filtering bookings where:
+#         # check_out_date is today or in the past 
+#         # is_active is True
+#         # checked_in is True
+        
+#         booking_list = Booking.objects.filter(
+#             check_out_date__lte=timezone.now(),
+#             is_active=True,
+#             checked_in=True
+#         )
+#         context = {
+#             'bookings': booking_list,
+#         }
+#         return render(request, template, context)
 
 
 
