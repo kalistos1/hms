@@ -41,6 +41,8 @@ urlpatterns = [
     path('admin/privilaged_users/list/', views.admin_users_list, name='admin_users_list'),
     path('admin/privilaged_user/create/', views.add_admin_privilaged_user, name='add_admin_privilaged_user'),
     path('admin/privilaged_user/delete/<int:pk>/', views.admin_delete_privilaged_user, name='admin_delete_privilaged_user'),
+    path('admin/view/room_status/',views.admin_room_status, name ="admin_room_status"),
+    path('admin/view/booking_list/',views.admin_booking_list, name ="admin_booking_list"),
 
 
     #frontdesk
@@ -57,8 +59,6 @@ urlpatterns = [
     path('frontdesk/apply-coupon/<int:pk>/', views.frontdesk_apply_coupon_to_booking, name='apply_coupon'),
     path('frontdesk/checkout/payment/<int:pk>/', views.frontdesk_checkout_payment_view, name='checkout_payment'),
     path('frontdesk/checkout/extend_booking/<int:pk>/', views.frontdesk_update_checkout_date, name='frontdesk_update_checkout_date'),
-    
-    
     
    
 ]

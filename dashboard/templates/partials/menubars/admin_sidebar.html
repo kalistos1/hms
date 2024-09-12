@@ -33,7 +33,7 @@
                             <h6 class="fl-title title-font ps-2 small text-uppercase text-muted py-3" style="--dynamic-color: var(--theme-color1)">Universal</h6>
                             <ul class="list-unstyled mb-4 menu-list">
                                 <li>
-                                    <a class="active" href="index(Admin).html" aria-label="Hotel Dashboard">
+                                    <a class="active" href="" aria-label="Hotel Dashboard">
                                         <svg class="svg-stroke" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                                             <path d="M5 12l-2 0l9 -9l9 9l-2 0"></path>
@@ -45,7 +45,7 @@
                                 </li>
 
                                 <li>
-                                    <a href="transaction(Admin).html" aria-label="Transaction list">
+                                    <a href="" aria-label="Transaction list">
                                         <svg class="svg-stroke" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                                             <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12"></path>
@@ -65,9 +65,9 @@
                                         <span class="mx-3">Room Book</span>
                                     </a>
                                     <ul class="collapse list-unstyled" id="RoomMenu">
-                                        <li><a href="room-booking-list.html" aria-label="Booking List">Booking List</a></li>
-                                        <li><a href="checkin-out.html" aria-label="Room Checkout">Room Checkout</a></li>
-                                        <li><a href="room-status.html" aria-label="Room Status">Room Status</a></li>
+                                        <li><a href="{% url 'dashboard:admin_room_status' %}" aria-label="Booking List">Booking List</a></li>
+                                        <li><a href="" aria-label="Room Checkout">Room Checkout</a></li>
+                                        <li><a href="{% url 'dashboard:admin_booking_list' %}" aria-label="Room Status">Room Status</a></li>
                                     </ul>
                                 </li>
                                 <li>
@@ -85,9 +85,7 @@
                                         <span class="mx-3">Room Facilites</span>
                                     </a>
                                     <ul class="collapse list-unstyled" id="RoomFacilitesMenu">
-                                        <li><a href="room-facilites-list.html" aria-label="Facilites List">Facilites List</a></li>
-                                        <li><a href="facilites-details.html" aria-label="Facilites Details">Facilites Details</a></li>
-                                        <li><a href="room-size.html" aria-label="Room Size">Room Size</a></li>
+                                        <li><a href="{% url 'dashboard:admin_list_room_amenities' %}" aria-label="Facilites List">Facilites List</a></li>
                                     </ul>
                                 </li>
                                 <li>
@@ -101,10 +99,10 @@
                                     <ul class="collapse list-unstyled" id="HousekeepingMenu">
                                         <li><a href="housekeeping-assign-room.html" aria-label="Housekeeping All">Assign Room</a></li>
 
-                                        <li><a href="housekeeping-roomcleaning.html" aria-label="Housekeeping Cleaning">Room Cleaning</a></li>
-                                        <li><a href="housekeeping-Checklist.html" aria-label="Housekeeping Checklist">Checklist</a></li>
-                                        <li><a href="housekeeping-qrlist.html" aria-label="Housekeeping QR">QR List</a></li>
-                                        <li><a href="housekeeping-report.html" aria-label="Housekeeping Reports">Cleaning Report</a></li>
+                                        <li><a href="" aria-label="Housekeeping Cleaning">Room Cleaning</a></li>
+                                        <li><a href="" aria-label="Housekeeping Checklist">Checklist</a></li>
+                                        <li><a href="" aria-label="Housekeeping QR">QR List</a></li>
+                                        <li><a href="" aria-label="Housekeeping Reports">Cleaning Report</a></li>
                                     </ul>
                                 </li>
 
@@ -122,11 +120,11 @@
                                         <span class="mx-3">Items Manage</span>
                                     </a>
                                     <ul class="collapse list-unstyled" id="ItemsManageMenu">
-                                        <li><a href="items-unit-list.html" aria-label="Items Unit List">Items Unit List</a></li>
-                                        <li><a href="items-list.html" aria-label="Items List">Items List</a></li>
-                                        <li><a href="items-destroyed-list.html" aria-label="Items Destroyed">Items Destroyed</a></li>
-                                        <li><a href="items-category-list.html" aria-label="Items Category">Items Category</a></li>
-                                        <li><a href="items-suppliers-list.html" aria-label="Items Suppliers">Items Suppliers</a></li>
+                                        <li><a href="" aria-label="Items Unit List">Items Unit List</a></li>
+                                        <li><a href="" aria-label="Items List">Items List</a></li>
+                                        <li><a href="" aria-label="Items Destroyed">Items Destroyed</a></li>
+                                        <li><a href="" aria-label="Items Category">Items Category</a></li>
+                                        <li><a href="" aria-label="Items Suppliers">Items Suppliers</a></li>
                                     </ul>
                                 </li>
                                 <li>
@@ -140,13 +138,13 @@
                                         <span class="mx-3">Personalised</span>
                                     </a>
                                     <ul class="collapse list-unstyled" id="PersonalisedMenu">
-                                        <li><a href="personalised-jacuzzi.html" aria-label="">Jacuzzi</a></li>
-                                        <li><a href="personalised-swimmingpool.html" aria-label="">Swimming pool</a></li>
-                                        <li><a href="personalised-spa.html" aria-label="">Spa</a></li>
-                                        <li><a href="personalised-pedicure.html" aria-label="">Pedicure</a></li>
-                                        <li><a href="personalised-theater.html" aria-label="">Theater</a></li>
-                                        <li><a href="personalised-banquet.html" aria-label="">Banquet</a></li>
-                                        <li><a href="personalised-settings.html" aria-label="">All Settings</a></li>
+                                        <li><a href="" aria-label="">Jacuzzi</a></li>
+                                        <li><a href="" aria-label="">Swimming pool</a></li>
+                                        <li><a href="" aria-label="">Spa</a></li>
+                                        <li><a href="" aria-label="">Pedicure</a></li>
+                                        <li><a href="" aria-label="">Theater</a></li>
+                                        <li><a href="" aria-label="">Banquet</a></li>
+                                        <li><a href="" aria-label="">All Settings</a></li>
                                     </ul>
                                 </li>
 
@@ -163,9 +161,9 @@
                                     </a>
 
                                     <ul class="collapse list-unstyled" id ="ReportsMenu">
-                                        <li><a href="booking-report(Admin).html" aria-label="Booking Reports">Booking Reports</a></li>
-                                        <li><a href="purchase-reports(Admin).html" aria-label="Purchase Report">Purchase Reports</a></li>
-                                        <li><a href="stock-report(Admin).html" aria-label="Stock Report">Stock Reports</a></li>
+                                        <li><a href="" aria-label="Booking Reports">Booking Reports</a></li>
+                                        <li><a href="" aria-label="Purchase Report">Purchase Reports</a></li>
+                                        <li><a href="" aria-label="Stock Report">Stock Reports</a></li>
                                     </ul>
                                 </li>
 
@@ -199,10 +197,10 @@
                                     </a>
 
                                     <ul class="collapse list-unstyled" id="Roomsettings">
-                                        <li><a href="{% url 'dashboard:admin_list_room_amenities' %}" aria-label="Bed List">Room Amenity</a></li>
+                                       
                                         <li><a href="{% url 'dashboard:admin_list_room_types' %}" aria-label="Bed List">Room Types</a></li>
                                         <li><a href="{% url 'dashboard:admin_list_room' %}" aria-label="Room List">Room List</a></li>
-                                        {% comment %} <li><a href="" aria-label="Room List">Room Services</a></li> {% endcomment %}
+                                        <li><a href="" aria-label="Room List">Room Services</a></li>
                                         {% comment %} <li><a href="booking-type-list(Admin).html" aria-label="Booking Type List">Booking Type List</a></li> {% endcomment %}
 
                                         {% comment %} <li><a href="complementary-list(Admin).html" aria-label="Complementary">Complementary List</a></li>
@@ -213,74 +211,6 @@
                                     </ul>
                                 </li>
 
-
-
-                                {% comment %} <li class="nav-item" role="presentation">
-                                    <h6 class="fl-title title-font ps-2 small text-uppercase text-muted" style="--dynamic-color: var(--theme-color1)">HRMS</h6>
-
-                                    <ul class="list-unstyled mb-4 menu-list">
-                                        <li>
-                                            <a href="index-hr.html" aria-label="HRMS Dashboard">
-                                                <svg class="svg-stroke" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                    <path d="M5 12l-2 0l9 -9l9 9l-2 0"></path>
-                                                    <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"></path>
-                                                    <path d="M10 12h4v4h-4z"></path>
-                                                </svg>
-                                                <span class="mx-3">HR Dashboard</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="hrms.html" aria-label="hrms">
-                                                <svg class="svg-stroke" xmlns="http://www.w3.org/2000/svg"  width="24"  viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                    <path d="M7 5m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                                                    <path d="M5 22v-5l-1 -1v-4a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4l-1 1v5" />
-                                                    <path d="M17 5m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                                                    <path d="M15 22v-4h-2l2 -6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1l2 6h-2v4" />
-                                                </svg>
-                                                <span class="mx-3">HRMS</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#DutyMenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                    <path d="M3 12a9 9 0 0 0 5.998 8.485m12.002 -8.485a9 9 0 1 0 -18 0" />
-                                                    <path d="M12 7v5" /><path d="M12 15h2a1 1 0 0 1 1 1v1a1 1 0 0 1 -1 1h-1a1 1 0 0 0 -1 1v1a1 1 0 0 0 1 1h2" />
-                                                    <path d="M18 15v2a1 1 0 0 0 1 1h1" />
-                                                    <path d="M21 15v6" />
-                                                </svg>
-                                                <span class="mx-3">Duty Changes</span>
-                                            </a>
-                                            <ul class="collapse list-unstyled" id="DutyMenu">
-                                                <li><a href="duty-assigned-list.html" aria-label="Assigned List">Assigned List</a></li>
-                                                <li><a href="duty-shift-list.html" aria-label="Hotel Images">Shift List</a></li>
-                                                <li><a href="duty-roster-list.html" aria-label="Hotel Images">Roster List</a></li>
-                                            </ul>
-                                        </li>
-                                        <li class="py-2 mt-2">
-                                            <h6 class="fl-title title-font ps-2 small text-uppercase text-muted" style="--dynamic-color: var(--theme-color1)">Employees [ <strong>58</strong> ]</h6>
-                                            <ul class="list-unstyled">
-                                                <li><a href="employees-all.html" aria-label="All Employees">All Employees</a></li>
-                                                <li><a href="employees-leave.html" aria-label="Leave Tracking">Leave Tracking</a></li>
-                                                <li><a href="employees-attendance.html" aria-label="Employees Attendance">Attendance</a></li>
-                                                <li><a href="employees-departments.html" aria-label="Departments">Departments</a></li>
-                                                <li><a href="employees-loan.html" aria-label="Employees Loan">Employees Loan</a></li>
-                                                <li><a href="employees-appraisal.html" aria-label="Appraisal">Appraisal</a></li>
-                                                <li><a href="employees-add.html" class="fw-bold" aria-label="New Project">Add Employees</a></li>
-                                            </ul>
-                                        </li>
-                                        <li class="py-2 mt-2">
-                                            <h6 class="fl-title title-font ps-2 small text-uppercase text-muted" style="--dynamic-color: var(--theme-color1)">Payroll</h6>
-                                            <ul class="list-unstyled">
-                                                <li><a href="payroll-employee-salary.html" aria-label="Employee Salary">Employee Salary</a></li>
-                                                <li><a href="payroll-payslip.html" aria-label="payslip">Payslip</a></li>
-                                                <li><a href="payroll-report.html" aria-label="General Settings">Report</a></li>
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </li> {% endcomment %}
                             </ul>
 
                         </div>
