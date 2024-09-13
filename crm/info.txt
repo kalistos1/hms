@@ -1,0 +1,52 @@
+Models and Their Descriptions
+
+    Interaction:
+        Description: Tracks interactions between guests and hotel staff, including type, date, and notes. Useful for managing and reviewing communication history.
+
+    LoyaltyProgram:
+        Description: Records loyalty points earned by guests, along with details like transaction date and a description. Helps in managing and tracking guest loyalty.
+
+    Campaign:
+        Description: Represents marketing campaigns, including details like name, description, dates, and target audience. Supports promotional efforts and campaign management.
+
+    GuestFeedback:
+        Description: Captures feedback from guests about their stay, including rating and comments. Useful for assessing guest satisfaction and improving services.
+
+    Coupon:
+        Description: Defines discount coupons with code, description, discount amount, and validity dates. Facilitates promotional discounts and offers.
+
+    ReservationHistory:
+        Description: Maintains a history of reservations made by guests, including dates, action types (e.g., booking, cancellation), and any related notes. Useful for tracking reservation activity.
+
+    SpecialRequest:
+        Description: Records special requests made by guests related to their bookings, such as room preferences or additional needs. Tracks whether these requests have been fulfilled.
+
+    GuestSegment:
+        Description: Categorizes guests into segments based on criteria like preferences or behavior, with a slug for SEO-friendly URLs. Supports targeted marketing and personalized services.
+
+    Notification:
+        Description: Logs notifications sent to guests, including message content, type, and sent date. Useful for tracking communication and engagement.
+
+    RoomPricing:
+        Description: Manages pricing for different room types based on seasons or demand factors. Helps in dynamic pricing and revenue management.
+
+    GuestPreference:
+        Description: Stores individual guest preferences, such as bed type or room view. Enhances guest experience by personalizing accommodations.
+
+    Referral:pyth
+        Description: Tracks referrals made by guests, including referrer, referred guest, reward details, and referral date. Supports referral programs and reward management.
+
+    AbandonedBooking:
+        Description: Records bookings that were started but not completed, including abandonment date and reason. Helps in understanding and analyzing booking drop-offs.
+
+    ServiceUsage:
+        Description: Logs services used by guests, such as spa or room service, along with the amount spent. Useful for tracking service usage and revenue.
+
+    Analytics:
+        Description: Aggregates analytics data for guests, including total spending, booking count, and average booking value. Helps in understanding guest behavior and financial metrics.
+
+    Survey:
+        Description: Represents surveys sent to guests, including survey name, questions, responses, and completion status. Useful for collecting and analyzing guest feedback.
+
+    GuestLifetimeValue:
+        Description: Tracks the total revenue and lifetime value of each guest, with last update timestamp. Helps in assessing the long-term value of guests and guiding loyalty strategies.
