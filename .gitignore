@@ -19,6 +19,7 @@
 # Ignore all local history of files
 .history
 .ionide
+inventory_improvements.txt
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode
 
