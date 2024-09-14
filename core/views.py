@@ -175,20 +175,31 @@ def selected_rooms(request):
                 room_type=room_type,
                 check_in_date=checkin,
                 check_out_date=checkout,
-                total_days=total_days,
+                # total_days=total_days,
                 num_adults=adult,
                 num_children=children,
-                full_name=full_name,
-                email=email,
-                phone=phone
+                # full_name=full_name,
+                # email=email,
+                # phone=phone
             )
 
             if request.user.is_authenticated:
                 booking.user = request.user
                 booking.save()
             else:
-                booking.user = None
-                booking.save()
+                user = User.objects.filter(email=email).first() 
+                
+                if not user:
+                    # If user doesn't exist, create a new one
+                    user.set_password(phone)  # Set phone number as password
+                    user.username = email  # Set email as the username
+                    user.save()
+                    # booking.user = None
+                    booking.save()
+                       
+
+            
+
 
 
             for h_id, item in request.session['selection_data_obj'].items():
@@ -238,7 +249,7 @@ def selected_rooms(request):
 
             room_count += 1
             days = total_days
-            price = room_type.price
+            price = room_type.base_price
 
             room_price = price * room_count
             total = room_price * days

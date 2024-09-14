@@ -610,8 +610,8 @@ def front_desk_booking(request):
             if not user:
                 # If user doesn't exist, create a new one
                 user = basic_info_form.save(commit=False)
-                user.set_password(user.phone)  # Set phone number as password
-                user.username = user.email  # Set email as the username
+                user.set_password(phone)  # Set phone number as password
+                user.username = email  # Set email as the username
                 user.save()
 
                 profile, created = Profile.objects.get_or_create(user=user)
