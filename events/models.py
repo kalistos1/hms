@@ -7,6 +7,8 @@ from accounts.models import User
 
 class EventType(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -29,6 +31,8 @@ class Event(models.Model):
     total_expenses = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     profit = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
     def calculate_profit(self):
         self.profit = self.total_revenue - self.total_expenses
@@ -57,7 +61,8 @@ class EventAgenda(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     venue_name = models.CharField(max_length=255)
-
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
     
 #Manages rooms that can be booked for events.
 class Hall(models.Model):
@@ -66,7 +71,8 @@ class Hall(models.Model):
     is_available = models.BooleanField(default=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     seasonal_multiplier = models.DecimalField(max_digits=5, decimal_places=2, default=1.0, validators=[MinValueValidator(0.1), MaxValueValidator(5.0)])
-
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
     def __str__(self):
         return f"Room {self.room_number} - {self.room_type}"
     
@@ -76,6 +82,8 @@ class Service(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -124,6 +132,8 @@ class StaffAssignment(models.Model):
     role = models.CharField(max_length=100)
     shift_start = models.DateTimeField()
     shift_end = models.DateTimeField()
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.staff_member.username} assigned to {self.event.name} as {self.role}"
@@ -155,7 +165,8 @@ class Coupon(models.Model):
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(100)])
     valid_from = models.DateTimeField()
     valid_to = models.DateTimeField()
-
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
     def is_valid(self):
         return self.valid_from <= timezone.now() <= self.valid_to
 

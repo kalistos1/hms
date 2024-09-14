@@ -16,6 +16,8 @@ class Interaction(models.Model):
     interaction_date = models.DateTimeField(default=timezone.now)
     notes = models.TextField(blank=True, null=True)
     staff = models.ForeignKey(User,on_delete=models.CASCADE, related_name='staff_interactions')
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [
@@ -30,6 +32,7 @@ class LoyaltyProgram(models.Model):
     points = models.PositiveIntegerField()
     description = models.CharField(max_length=255)
     transaction_date = models.DateTimeField(default=timezone.now)
+    
 
     class Meta:
         indexes = [
