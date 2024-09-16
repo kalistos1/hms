@@ -1,0 +1,20 @@
+{% load static %}
+{% if products %}
+<div class="product-row">
+
+    {% for product in products %}
+<div class="product-container" data-type="meat">
+    <a href="#" class="product" data-bs-toggle="modal" data-bs-target="#modalPos">
+        <div class="img" style="background-image: url({% static 'frontpage/pos/assets/img/pos/product-1.jpg' %})"></div>
+        <div class="text">
+            <div class="title">{{ product.name }}&reg;</div>
+            <div class="desc">{{ product.description }}</div>
+            <div class="price">{{ product.price }}</div>
+        </div>
+    </a>
+</div>
+   {% endfor %}
+</div>
+{% else %}
+<p>No products found in this category.</p>
+{% endif %}

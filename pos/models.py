@@ -10,9 +10,18 @@ from django.db.models import Sum
 
 # ProductCategory 
 class ProductCategory(models.Model):
+    ICONS = (
+    ('fa-bowl-rice','fa-bowl-rice'),
+    ('fa-cocktail','fa-cocktail'),
+    ('fa-ice-cream','fa-ice-cream'),
+    ('fa-drumstick-bite','fa-drumstick-bite'),
+    ('fa-hamburger','fa-hamburger'),
+    )
+    
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     slug = models.SlugField(max_length=150, unique=True, blank=True)
+    icon_class = models.CharField(max_length=100, default='fa-utensils',choices =ICONS)
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
@@ -29,10 +38,12 @@ pre_save.connect(pre_save_category_slug, sender=ProductCategory)
 
 # Product 
 class Product(models.Model):
+    
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    image = models.ImageField(upload_to="pos", default = "pos.jpg", null=True, blank =True)
     stock_quantity = models.PositiveIntegerField()
     slug = models.SlugField(max_length=150, unique=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
