@@ -51,72 +51,16 @@
                                     </div>
                                 </div>
                                 <hr/>
-                                <div class="mb-3">
-                                    <div class="fw-bold fs-6">Size</div>
-                                    <div class="option-list">
-                                        <div class="option">
-                                            <input type="radio" id="size3" name="size" class="option-input" checked />
-                                            <label class="option-label" for="size3">
-                                                <span class="option-text">Small</span>
-                                                <span class="option-price">+0.00</span>
-                                            </label>
-                                        </div>
-                                        <div class="option">
-                                            <input type="radio" id="size1" name="size" class="option-input" />
-                                            <label class="option-label" for="size1">
-                                                <span class="option-text">Large</span>
-                                                <span class="option-price">+3.00</span>
-                                            </label>
-                                        </div>
-                                        <div class="option">
-                                            <input type="radio" id="size2" name="size" class="option-input" />
-                                            <label class="option-label" for="size2">
-                                                <span class="option-text">Medium</span>
-                                                <span class="option-price">+1.50</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="fw-bold fs-6">Add On</div>
-                                    <div class="option-list">
-                                        <div class="option">
-                                            <input type="checkbox" name="addon[sos]" value="true" class="option-input" id="addon1" />
-                                            <label class="option-label" for="addon1">
-                                                <span class="option-text">More BBQ sos</span>
-                                                <span class="option-price">+0.00</span>
-                                            </label>
-                                        </div>
-                                        <div class="option">
-                                            <input type="checkbox" name="addon[ff]" value="true" class="option-input" id="addon2" />
-                                            <label class="option-label" for="addon2">
-                                                <span class="option-text">Extra french fries</span>
-                                                <span class="option-price">+1.00</span>
-                                            </label>
-                                        </div>
-                                        <div class="option">
-                                            <input type="checkbox" name="addon[ms]" value="true" class="option-input" id="addon3" />
-                                            <label class="option-label" for="addon3">
-                                                <span class="option-text">Mushroom soup</span>
-                                                <span class="option-price">+3.50</span>
-                                            </label>
-                                        </div>
-                                        <div class="option">
-                                            <input type="checkbox" name="addon[ms]" value="true" class="option-input" id="addon4" />
-                                            <label class="option-label" for="addon4">
-                                                <span class="option-text">Lemon Juice (set)</span>
-                                                <span class="option-price">+2.50</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
+
+
                                 <hr/>
                                 <div class="row gx-3">
                                     <div class="col-4">
                                         <a href="#" class="btn btn-default fs-14px rounded-3 fw-bold mb-0 d-block py-3" data-bs-dismiss="modal">Cancel</a>
                                     </div>
                                     <div class="col-8">
-                                        <a href="#" class="btn btn-theme fs-14px rounded-3 fw-bold d-flex justify-content-center align-items-center py-3 m-0">Add to cart <i class="fa fa-plus ms-3"></i></a>
+                                        <button class="addToCart btn btn-info btn-lg py-3 " hx-get="{% url 'pos:add_to_cart' 0 %}" hx-target=".pos-sidebar" hx-swap="innerHTML">Add to Cart</button>
+                                       
                                     </div>
                                 </div>
                             </div>
@@ -145,6 +89,46 @@
             gtag('config', 'G-Y3Q0VGQKY3');
         </script>
       
+
+      
+    
+        <script>
+            function UpdateModal(event, productId, productName, productDescription, productPrice, productImage) {
+                event.preventDefault();
+                
+                // Update modal image
+                const modalImg = document.querySelector('#modalPos .modal-pos-product-img .img');
+                modalImg.style.backgroundImage = `url('${productImage}')`;
+        
+                // Update modal product name
+                const modalTitle = document.querySelector('#modalPos .modal-pos-product-info .fs-4');
+                modalTitle.textContent = productName;
+        
+                // Update modal description
+                const modalDescription = document.querySelector('#modalPos .modal-pos-product-info .fs-6.text-body');
+                modalDescription.textContent = productDescription;
+        
+                // Update modal price
+                const modalPrice = document.querySelector('#modalPos .modal-pos-product-info .fs-3');
+                modalPrice.textContent = `$${productPrice}`;
+        
+                // Update modal URL
+                const addToCartButton = document.querySelector('#modalPos .gx-3 .col-8 button');
+                const baseUrl = "{% url 'pos:add_to_cart' 0 %}";
+                const newUrl = baseUrl.replace('/0/', `/${productId}/`);
+                addToCartButton.setAttribute('hx-get', newUrl);
+        
+                // Ensure HTMX reinitializes or updates the button
+                htmx.process(addToCartButton);
+            }
+        </script>
+        
+        <script>
+            document.body.addEventListener('htmx:configRequest', function(event) {
+                event.detail.headers['X-CSRFToken'] = "{{ csrf_token }}";
+            });
+        </script>
+
     </body>
 
 
