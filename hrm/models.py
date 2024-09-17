@@ -4,9 +4,8 @@ from django.core.validators import RegexValidator, MinValueValidator
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
-
 class Employee(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='employee_profile')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='employee_profile', null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     emergency_contact_name = models.CharField(max_length=255, null=True, blank=True)
@@ -20,7 +19,11 @@ class Employee(models.Model):
     certifications = models.ManyToManyField('Certification', related_name='employees', blank=True)
 
     def __str__(self):
-        return f"{self.user.get_full_name()} - {self.user.email}"
+        if self.user:
+            return f"{self.user.get_full_name()} - {self.user.email}"
+        else:
+            return "Employee without system user"
+
 
 
 # Skill Model

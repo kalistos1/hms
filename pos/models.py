@@ -5,14 +5,25 @@ from django_countries.fields import CountryField
 from accounts.models import User
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
-
+from django.utils.translation import gettext_lazy as _
+from uuid import uuid4
+from hrm.models import Employee
 
 
 # ProductCategory 
 class ProductCategory(models.Model):
+    ICONS = (
+    ('fa-bowl-rice','fa-bowl-rice'),
+    ('fa-cocktail','fa-cocktail'),
+    ('fa-ice-cream','fa-ice-cream'),
+    ('fa-drumstick-bite','fa-drumstick-bite'),
+    ('fa-hamburger','fa-hamburger'),
+    )
+    
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     slug = models.SlugField(max_length=150, unique=True, blank=True)
+    icon_class = models.CharField(max_length=100, default='fa-utensils',choices =ICONS)
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
@@ -29,10 +40,12 @@ pre_save.connect(pre_save_category_slug, sender=ProductCategory)
 
 # Product 
 class Product(models.Model):
+    
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    image = models.ImageField(upload_to="pos", default = "pos.jpg", null=True, blank =True)
     stock_quantity = models.PositiveIntegerField()
     slug = models.SlugField(max_length=150, unique=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
@@ -55,30 +68,25 @@ pre_save.connect(pre_save_product_slug, sender=Product)
 
 
 # Customer 
-class Customer(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+class Customer(User):
     room_number = models.CharField(max_length=10, blank=True)  # If room is assigned
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=20)
-    nationality = CountryField()
+    pos_customer = models.BooleanField(default=True)
     slug = models.SlugField(max_length=150, unique=True, blank=True)
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_modified = models.DateTimeField(auto_now=True)
+
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
-def pre_save_customer_slug(sender, instance, *args, **kwargs):
-    if not instance.slug:
-        instance.slug = slugify(f"{instance.first_name} {instance.last_name}")
+# def pre_save_customer_slug(sender, instance, *args, **kwargs):
+#     if not instance.slug:
+#         instance.slug = slugify(f"{instance.first_name} {instance.last_name}")
 
-pre_save.connect(pre_save_customer_slug, sender=Customer)
+# pre_save.connect(pre_save_customer_slug, sender=Customer)
 
 
 # POSUser
 class POSUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(Employee, on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
@@ -109,7 +117,7 @@ class Discount(models.Model):
 # Order 
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True)
-    staff = models.ForeignKey(POSUser, on_delete=models.CASCADE)  # User handling the transaction
+    staff = models.ForeignKey(POSUser, on_delete=models.CASCADE,null=True, blank=True)  # User handling the transaction
     created_at = models.DateTimeField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     discount = models.ForeignKey(Discount, on_delete=models.SET_NULL, null=True, blank=True)
@@ -158,9 +166,9 @@ class Payment(models.Model):
     
     
     PAYMENT_METHODS = (
-    ('CASH', 'Cash'),
-    ('CARD', 'Card'),
-    ('ROOM_CHARGE', 'Room Charge'),
+    ('CASH', 'CASH'),
+    ('CARD', 'CARD'),
+    ('ROOM_CHARGE', 'ROOM_CHARGE'),
     )
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
@@ -168,7 +176,7 @@ class Payment(models.Model):
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
     payment_status = models.CharField(
         max_length=20,
-        choices=[('PAID', 'Paid'), ('PARTIALLY_PAID', 'Partially Paid'), ('UNPAID', 'Unpaid')],
+        choices=[('PAID', 'PAID'), ('PARTIALLY_PAID', 'PARTIALLY_PAID'), ('UNPAID', 'UNPAID')],
         default='PAID'
     )
     payment_date = models.DateTimeField(auto_now_add=True)
@@ -211,3 +219,51 @@ class Shift(models.Model):
         if self.end_time:
             return self.end_time - self.start_time
         return 'Shift still ongoing'
+
+
+
+
+
+class Cart(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    session_key = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def total_amount(self):
+        return sum(item.total_price for item in self.items.all())
+
+    def __str__(self):
+        return f"Cart - {self.user or self.session_key}"
+    
+    
+    @property
+    def subtotal(self):
+        return sum(float(item.total_price)for item in self.items.all())
+
+    @property
+    def taxes(self):
+        return self.subtotal * 0.06  # Assuming a 6% tax rate
+
+    @property
+    def total(self):
+        return self.subtotal + self.taxes
+    
+    @property
+    def total_items(self):
+        # This sums up the quantity of each item in the cart
+        return sum(item.quantity for item in self.items.all())
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)  # Assuming you have a Product model
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    @property
+    def total_price(self):
+        return self.price * self.quantity
+
+    def __str__(self):
+        return f"{self.product.name} ({self.quantity})"

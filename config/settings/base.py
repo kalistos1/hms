@@ -10,7 +10,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = 'django-insecure-oh4x%-rhg90&a6#475_2zt1^2u3(v*ne69!_l@3=kq(v+zda+-'
 
 
-
+# SESSION_COOKIE_AGE = 86400
+# SESSION_CART_ID = 'cart'
+SESSION_COOKIE_AGE = 7 * 24 * 60 * 60  # Session lasts for 7 days
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False 
 # Application definition
 
 INSTALLED_APPS = [
