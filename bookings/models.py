@@ -138,10 +138,10 @@ class RoomAmenity(models.Model):
 class RoomType(models.Model):
     
     ROOM_TYPES = (
-        ('King', 'King'),
-        ('Luxury', 'Luxury'),
-        ('Normal', 'Normal'),
-        ('Economic', 'Economic'),
+        ('Delux', 'Delux'),
+        ('Executive', 'Executive'),
+        ('Presidential', 'Presidential'),
+        
     )
 
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)

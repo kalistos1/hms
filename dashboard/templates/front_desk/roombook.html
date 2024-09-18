@@ -44,9 +44,7 @@
                         <div class="col-sm-12">
 
                             <div class="card">
-                                <div class="card-header">
-                                    <h6 class="card-title">Customer Details</h6>
-                                </div>
+                                
                                 <div class="card-body">
                                     <div class="row g-3">
 
@@ -102,39 +100,7 @@
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label class="form-label text-muted">Date of Birth</label>
-                                                                <div class="input-group">
-                                                                    <span class="input-group-text"><i class="bi bi-calendar"></i></span>
-                                                                    {{ profile_info_form.date_of_birth}}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label class="form-label text-muted">Nationality</label>
-                                                                <div class="input-group">
-                                                                    <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-                                                                    {{ profile_info_form.nationality}}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12 col-lg-6 d-flex">
-                                            <div class="card flex-fill w-100 border">
-                                                <div class="card-header py-3">
-                                                    <h6 class="card-title">Contact Details</h6>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div class="row g-3">
-
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label class="form-label text-muted">Your email</label>
+                                                                <label class="form-label text-muted">Email</label>
                                                                 <div class="input-group">
                                                                     <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
                                                                     {{ basic_info_form.email}}
@@ -150,130 +116,33 @@
                                                                 </div>
                                                             </div>
                                                         </div>
+                                                       
 
+                                                        
 
-
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label class="form-label text-muted">Country</label>
-                                                                <div class="input-group">
-                                                                    <span class="input-group-text"><i class="bi bi-map"></i></span>
-                                                                    {{ profile_info_form.country}}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label class="form-label text-muted">State</label>
-                                                                <div class="input-group">
-                                                                    <span class="input-group-text"><i class="bi bi-layers"></i></span>
-                                                                    {{ profile_info_form.state}}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label class="form-label text-muted">City</label>
-                                                                <div class="input-group">
-                                                                    <span class="input-group-text"><i class="bi bi-mailbox"></i></span>
-                                                                    {{ profile_info_form.city}}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="col-md-6 mb-3">
-                                                            <div class="form-group">
-                                                                <label class="form-label text-muted">Address</label>
-                                                                {{ profile_info_form.address}}
-                                                            </div>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-
                                         <div class="col-md-12 col-lg-6 d-flex">
                                             <div class="card flex-fill w-100 border">
                                                 <div class="card-header py-3">
-                                                    <h6 class="card-title">Identity Details</h6>
+                                                    <h6 class="card-title">Booking Details</h6>
                                                 </div>
                                                 <div class="card-body">
                                                     <div class="row g-3">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label class="form-label text-muted">Identity Type</label>
                                                                 <div class="input-group">
-                                                                    <span class="input-group-text"><i class="bi bi-images"></i></span>
-                                                                    {{ profile_info_form.identity_type}}
+                                                                    {{ booking_choice_form.choice }}
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label class="form-label text-muted">ID Number # <span class="text-danger">*</span></label>
-                                                                <div class="input-group">
-                                                                    <span class="input-group-text"><i class="bi bi-images"></i></span>
-                                                                    {{profile_info_form.id_no}}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-
-                                                          {% comment %}                                                         
-                                                        <div class="col-md-12">
-                                                            <label>Identity Upload</label>
                                                         </div>
                                                         
-                                                        <div class="col-md-12">
-                                                            <div class="form-group">
-                                                                <label class="form-label text-muted">Front Side Document</label>
-                                                                <div class="input-group">
-                                                                    <span class="input-group-text"><i class="bi bi-images"></i></span>
-                                                                    {{ customer_form.identity_image_front}}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="form-group">
-                                                                <label class="form-label text-muted">Back Side Document</label>
-                                                                <div class="input-group">
-                                                                    <span class="input-group-text"><i class="bi bi-images"></i></span>
-                                                                    {{ customer_form.identity_image_back}}
-                                                                </div>
-                                                            </div>
-                                                        </div> {% endcomment %}
-
-
-
-
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-
-
-                                        <div class="col-md-12 col-lg-6 d-flex">
-                                            <div class="card flex-fill w-100 border">
-                                                <div class="card-header py-3">
-                                                    <h6 class="card-title">Guest Image</h6>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div class="row g-3">
-                                                        <div class="col-md-12">
-                                                            <div class="form-group">
-                                                                <label class="form-label text-muted">Customer Image</label>
-                                                                <div class="input-group">
-                                                                    <span class="input-group-text"><i class="bi bi-images"></i></span>
-                                                                    {{ profile_info_form.image}}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
                                     </div>
                                 </div>
                             </div>
@@ -285,25 +154,7 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-3">
-                                        <div class="col-md-12 col-lg-6 d-flex">
-                                            <div class="card flex-fill w-100 border">
-                                                <div class="card-header py-3">
-                                                    <h6 class="card-title">Choose Service</h6>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div class="row g-3">
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <div class="input-group">
-                                                                    {{ booking_choice_form.choice }}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
+                                    
                                         <div class="col-md-12 col-lg-6 d-flex">
                                             <div class="card flex-fill w-100 border booking-form">
                                                 <div class="card-header py-3">
@@ -312,6 +163,9 @@
                                                 <div class="card-body">
                                                     <div class="row g-3">
                                                         <div class="col-md-12">
+
+                                                        
+
                                                             <div class="form-group">
                                                                 {{ room_booking_form.as_p }}
                                                             </div>
@@ -320,7 +174,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="card flex-fill w-100 border reservation-form">
+                                            {% comment %} <div class="card flex-fill w-100 border reservation-form">
                                                 <div class="card-header py-3">
                                                     <h6 class="card-title">Reservation</h6>
                                                 </div>
@@ -328,46 +182,13 @@
                                                     <div class="row g-3">
                                                         <div class="col-md-12">
                                                             <div class="form-group">
-                                                                {% comment %} {{ room_reservation_form.as_p }} {% endcomment %}
+                                                                {{ room_reservation_form.as_p }}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </div> {% endcomment %}
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="card-title">Reservation / Booking  Details</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row g-3">
-
-                                        {% comment %} <div class="col-md-12 col-lg-6 d-flex">
-                                            <div class="card flex-fill w-100 border">
-                                                
-                                                <div class="card-body">
-                                                    <div class="row g-3">
-                                                        
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                              
-                                                                
-                                                                    {{room_service_form.as_p}}
-                                                                   
-                                                               
-                                                            </div>
-                                                        </div>
-
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div> {% endcomment %}
-
 
                                         <div class="col-md-12 col-lg-6 d-flex">
                                             <div class="card flex-fill w-100 border">
@@ -376,11 +197,20 @@
                                                 </div>
                                                 <div class="card-body">
                                                     <div class="row g-3">
-                                                        <div class="col-md-12">
-                                                            <div class="form-group">
-
-                                                                {{ payment_form.as_p }}
-
+                                                        <div class="col-md-12 col-lg-12 d-flex">
+                                                            <div class="card flex-fill w-100 border">
+                                                                
+                                                                <div class="card-body">
+                                                                    <div class="row g-3">
+                                                                        <div class="col-md-12">
+                                                                            <div class="form-group">
+                
+                                                                                {{ payment_form.as_p }}
+                
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -392,7 +222,6 @@
                                     </div>
                                 </div>
                             </div>
-
 
 
                         </div>

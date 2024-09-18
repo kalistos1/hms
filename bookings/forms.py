@@ -30,10 +30,10 @@ class BasicUserInfoForm(forms.ModelForm):
 class ProfileInfoForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['title', 'gender', 'date_of_birth','country', 'nationality', 'identity_type', 'id_no','city','state','address','occupation','image']
+        fields = ['title', 'gender', 'date_of_birth','occupation']
     
-    country = CountryField(blank_label='(select country)').formfield(widget=CountrySelectWidget(attrs={'class': 'form-control', 'placeholder': 'Country'}))
-    nationality = CountryField(blank_label='(select nationality)').formfield(widget=CountrySelectWidget(attrs={'class': 'form-control', 'placeholder': 'Nationality'}))
+    # country = CountryField(blank_label='(select country)').formfield(widget=CountrySelectWidget(attrs={'class': 'form-control', 'placeholder': 'Country'}))
+    # nationality = CountryField(blank_label='(select nationality)').formfield(widget=CountrySelectWidget(attrs={'class': 'form-control', 'placeholder': 'Nationality'}))
 
     def __init__(self, *args, **kwargs):
         super(ProfileInfoForm, self).__init__(*args, **kwargs)
@@ -41,12 +41,6 @@ class ProfileInfoForm(forms.ModelForm):
         self.fields['title'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customer title'})
         self.fields['gender'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customer Phone No.'})
         self.fields['date_of_birth'].widget = DateInput(attrs={'class': 'form-control', 'placeholder' :'Date Of Birth.'})
-        self.fields['image'].widget.attrs.update({'class': 'form-control-file', 'placeholder' :'profile Pix.'})
-        self.fields['identity_type'].widget.attrs.update({'class': 'form-control', 'placeholder' :'ID type.'})
-        self.fields['id_no'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customers ID Number.'})
-        self.fields['city'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customers City'})
-        self.fields['state'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customers State'})
-        self.fields['address'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customers Address.'})
         self.fields['occupation'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Customers Occupation.'})
         
     
@@ -68,7 +62,7 @@ class RoomBookingForm(forms.ModelForm):
     
     class Meta:
         model = Booking
-        fields = ['room', 'room_type', 'check_in_date', 'check_out_date', 'num_adults', 'num_children']
+        fields = ['room_type','room', 'check_in_date', 'check_out_date', 'num_adults', 'num_children']
         widgets = {
             'check_in_date': DateInput(attrs={'class': 'form-control', 'placeholder': 'Check-in Date'}),
             'check_out_date': DateInput(attrs={'class': 'form-control', 'placeholder': 'Check-out Date'}),
@@ -79,11 +73,12 @@ class RoomBookingForm(forms.ModelForm):
         super(RoomBookingForm, self).__init__(*args, **kwargs)
         
         # Update widget attributes for form fields
+        self.fields['room'].widget.attrs.update({'class': 'form-control'})
+        self.fields['room'].queryset = Room.objects.filter(is_available=True)
         self.fields['room_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Type'})
         self.fields['num_adults'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Adults'})
         self.fields['num_children'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Children'})
-        self.fields['room'].widget.attrs.update({'class': 'form-control'})
-        self.fields['room'].queryset = Room.objects.filter(is_available=True)
+       
            
 
 class RoomReservationForm(forms.ModelForm):

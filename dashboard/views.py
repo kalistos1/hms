@@ -958,7 +958,7 @@ def frontdesk_checkout_payment_view(request, pk):
             if payment:
                 payment.amount = form.cleaned_data['amount']
                 payment.mode = form.cleaned_data['mode']
-                payment.transaction_id = form.cleaned_data['transaction_id']
+              
                 payment.status = form.cleaned_data['status']
                 
                 if payment.status == 'completed':
