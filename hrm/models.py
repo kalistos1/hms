@@ -3,65 +3,133 @@ from accounts.models import User
 from django.core.validators import RegexValidator, MinValueValidator
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
-
-class Employee(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='employee_profile', null=True, blank=True)
-    profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
-    date_of_birth = models.DateField(null=True, blank=True)
-    emergency_contact_name = models.CharField(max_length=255, null=True, blank=True)
-    emergency_contact_relationship = models.CharField(max_length=255, null=True, blank=True)
-    emergency_contact_phone = models.CharField(max_length=20, null=True, blank=True, validators=[
-        RegexValidator(r'^\+?1?\d{9,15}$', _('Enter a valid phone number.'))
-    ])
-    address = models.TextField(null=True, blank=True)
-    gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')], null=True, blank=True)
-    skills = models.ManyToManyField('Skill', related_name='employees', blank=True)
-    certifications = models.ManyToManyField('Certification', related_name='employees', blank=True)
-
-    def __str__(self):
-        if self.user:
-            return f"{self.user.get_full_name()} - {self.user.email}"
-        else:
-            return "Employee without system user"
+from django.utils.text import slugify
+from django.db.models.signals import pre_save
 
 
-
-# Skill Model
-class Skill(models.Model):
-    name = models.CharField(max_length=100)
+class Department(models.Model):
+    name = models.CharField(max_length=100, unique=True)  # Ensure department name is unique
+    slug = models.SlugField(max_length=100, unique=True, blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
 
-# Certification Model
-class Certification(models.Model):
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+        
+        
+class DepartmentLocation(models.Model):
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='locations')
     name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.department.name}"
+    
+    
+
+class Skill(models.Model):
+    name = models.CharField(max_length=100, unique=True)  # Prevent duplicate skill names
+
+    def __str__(self):
+        return self.name
+
+
+class Certification(models.Model):
+    name = models.CharField(max_length=100, unique=True)  # Prevent duplicate certifications
     expiration_date = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.name
     
 
-# Attendance Model
+class Employee(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='employee_profile', null=True, blank=True)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='employee_department',blank=True, null=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+    emergency_contact_name = models.CharField(max_length=255, null=True, blank=True)
+    emergency_contact_relationship = models.CharField(max_length=255, null=True, blank=True)
+    emergency_contact_phone = models.CharField(max_length=20, null=True, blank=True, validators=[
+        RegexValidator(r'^\+?1?\d{9,15}$', 'Enter a valid phone number.')
+    ])
+    address = models.TextField(null=True, blank=True)
+    gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')], null=True, blank=True)
+    skills = models.ManyToManyField('Skill', related_name='employees', blank=True)
+    certifications = models.ManyToManyField('Certification', related_name='employees', blank=True)
+    
+    # Contract-related fields
+    contract_type = models.CharField(max_length=50, choices=[('full_time', 'Full-Time'), ('part_time', 'Part-Time'), ('temporary', 'Temporary')], null=True, blank=True)
+    contract_start_date = models.DateField(null=True, blank=True)
+    contract_end_date = models.DateField(null=True, blank=True)
+    contract_renewal_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.get_full_name() if self.user else 'No User'}"
+    
+
+class EmployeeRole(models.Model):
+
+    WorkerRoles = (
+        ('pos_staff', 'POS Staff'), 
+        ('hr_staff', 'HR Staff'), 
+        ('manager', 'Manager'),
+    )
+    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, related_name='employee_profile', null=True, blank=True)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='employees', null=True, blank=True)
+    role = models.CharField(max_length=50, choices=WorkerRoles)
+    date_created = models.DateTimeField(auto_now_add=True)
+
+
 class Attendance(models.Model):
+    SHIFTTYPE = (
+        ('morning', 'Morning'), 
+        ('afternoon', 'Afternoon'),
+        ('night', 'Night')
+    )
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='attendances')
     check_in = models.DateTimeField()
     check_out = models.DateTimeField(null=True, blank=True)
+    shift_type = models.CharField(max_length=50, choices=SHIFTTYPE,blank=True, null=True,)
+    shift_location = models.ForeignKey(DepartmentLocation, blank=True, null=True, on_delete=models.CASCADE)
     late_arrival = models.BooleanField(default=False)
     notes = models.TextField(blank=True, null=True)
 
     class Meta:
-        indexes = [
-            models.Index(fields=['check_in']),
-            models.Index(fields=['employee']),
-        ]
-
+        indexes = [models.Index(fields=['check_in']), models.Index(fields=['employee'])]
 
     def __str__(self):
-        return f"{self.employee.user.get_full_name()} - {self.check_in}"
+        return f"{self.employee} - {self.check_in}"
+    
 
+# Staff Schedules Model
+class StaffSchedules(models.Model):
+    
+    SCHEDULESHIFTTYPE = (
+        ('morning', 'Morning'), 
+        ('afternoon', 'Afternoon'),
+        ('night', 'Night')
+    )
+    scheduletype =(
+        ('pos_shift', 'POS Shift'),
+        ('hr_shift', 'HR Shift'),
+    )
+    
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='schedules')
+    schedule_date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    schedule_shift_type = models.CharField(max_length=50, choices =SCHEDULESHIFTTYPE, blank=True, null=True)
+    schedule_type = models.CharField(max_length=50, choices= scheduletype,blank=True, null=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
-# Leave Request Model
+    def __str__(self):
+        return f"Schedule for {self.employee.user.get_full_name()} - {self.schedule_date}"
+
 
 class LeaveRequest(models.Model):
     class LeaveType(models.TextChoices):
@@ -82,17 +150,17 @@ class LeaveRequest(models.Model):
     reason = models.TextField(blank=True, null=True)
     attachment = models.FileField(upload_to='leave_attachments/', null=True, blank=True)
 
+    class Meta:
+        indexes = [models.Index(fields=['start_date', 'end_date']), models.Index(fields=['employee'])]
+
     def clean(self):
         if self.start_date > self.end_date:
             raise ValidationError('Start date cannot be after end date.')
 
-    class Meta:
-        indexes = [
-            models.Index(fields=['start_date', 'end_date']),
-            models.Index(fields=['employee']),
-        ]
     def __str__(self):
-        return f"{self.employee.user.get_full_name()} - {self.leave_type} from {self.start_date} to {self.end_date}"
+        return f"{self.employee} - {self.leave_type} from {self.start_date} to {self.end_date}"
+
+
 
 class Payroll(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='payrolls')
@@ -105,13 +173,13 @@ class Payroll(models.Model):
     overtime_pay = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)])
 
     def __str__(self):
-        return f"Payroll for {self.employee.user.get_full_name()} - {self.payment_date}"
+        return f"Payroll for {self.employee} - {self.payment_date}"
 
     def calculate_total_pay(self):
-        """Calculate total pay including salary, bonus, and overtime pay"""
         return self.salary + (self.bonus or 0) + (self.overtime_pay or 0)
 
-# Performance Review Model
+
+
 class PerformanceReview(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='performance_reviews')
     review_date = models.DateField()
@@ -122,14 +190,12 @@ class PerformanceReview(models.Model):
     improvement_plan = models.TextField(blank=True, null=True)
 
     class Meta:
-        indexes = [
-            models.Index(fields=['review_date']),
-        ]
+        indexes = [models.Index(fields=['review_date'])]
 
     def __str__(self):
-        return f"Review for {self.employee.user.get_full_name()} - {self.review_date}"
+        return f"Review for {self.employee} - {self.review_date}"
 
-# Recruitment Model
+
 class Recruitment(models.Model):
     position = models.CharField(max_length=255)
     job_description = models.TextField()
@@ -138,7 +204,8 @@ class Recruitment(models.Model):
 
     def __str__(self):
         return f"Recruitment for {self.position} - {self.application_status}"
-
+    
+    
 # Training Model
 class Training(models.Model):
     name = models.CharField(max_length=255)
@@ -162,17 +229,6 @@ class EmployeeTraining(models.Model):
         unique_together = ('employee', 'training')
 
 
-# Employee Contract Model
-class EmployeeContract(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='contracts')
-    contract_type = models.CharField(max_length=50, choices=[('full_time', 'Full-Time'), ('part_time', 'Part-Time'), ('temporary', 'Temporary')])
-    start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
-    renewal_date = models.DateField(null=True, blank=True)
-    amendments = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return f"Contract for {self.employee.user.get_full_name()} - {self.contract_type}"
 
 # Benefits Model
 class Benefits(models.Model):
@@ -184,6 +240,8 @@ class Benefits(models.Model):
 
     def __str__(self):
         return f"Benefits for {self.employee.user.get_full_name()} - {self.benefit_type}"
+
+
 
 # Disciplinary Action Model
 class DisciplinaryAction(models.Model):
@@ -200,29 +258,9 @@ class DisciplinaryAction(models.Model):
 
     def __str__(self):
         return f"Disciplinary Action for {self.employee.user.get_full_name()} - {self.action_type}"
-
-# Staff On Duty Model
-class StaffOnDuty(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='shifts')
-    shift_type = models.CharField(max_length=50, choices=[('morning', 'Morning'), ('afternoon', 'Afternoon'), ('night', 'Night')])
-    shift_location = models.CharField(max_length=255, blank=True, null=True)
-    shift_date = models.DateField()
-
-    def __str__(self):
-        return f"{self.employee.user.get_full_name()} - {self.shift_type} shift on {self.shift_date}"
-
-# Staff Schedules Model
-class StaffSchedules(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='schedules')
-    schedule_date = models.DateField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    shift_coverage = models.CharField(max_length=255, blank=True, null=True)
-    schedule_changes = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return f"Schedule for {self.employee.user.get_full_name()} - {self.schedule_date}"
-
+    
+    
+    
 # Leave Balance Model
 class LeaveBalance(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='leave_balances')
@@ -234,6 +272,7 @@ class LeaveBalance(models.Model):
     def __str__(self):
         return f"Leave Balance for {self.employee.user.get_full_name()} - {self.leave_type}"
 
+
 # HR Document Model
 class HRDocument(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='hr_documents')
@@ -243,6 +282,7 @@ class HRDocument(models.Model):
 
     def __str__(self):
         return f"Document for {self.employee.user.get_full_name()} - {self.document_type}"
+
 
 # Employee Exit Model
 class EmployeeExit(models.Model):
@@ -255,6 +295,7 @@ class EmployeeExit(models.Model):
     def __str__(self):
         return f"Exit for {self.employee.user.get_full_name()} - {self.exit_date}"
 
+
 # Job Posting Model
 class JobPosting(models.Model):
     position = models.CharField(max_length=255)
@@ -265,6 +306,7 @@ class JobPosting(models.Model):
     def __str__(self):
         return f"Job Posting for {self.position} - {self.application_status}"
 
+
 # Employee Recognition Model
 class EmployeeRecognition(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='recognitions')
@@ -274,6 +316,7 @@ class EmployeeRecognition(models.Model):
 
     def __str__(self):
         return f"Recognition for {self.employee.user.get_full_name()} - {self.award_type}"
+    
 
 # Health and Safety Model
 class HealthAndSafety(models.Model):
@@ -284,6 +327,7 @@ class HealthAndSafety(models.Model):
 
     def __str__(self):
         return f"Incident Report for {self.employee.user.get_full_name()} - {self.incident_date}"
+
 
 # Employee Feedback Model
 class EmployeeFeedback(models.Model):

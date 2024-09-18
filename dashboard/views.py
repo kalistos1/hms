@@ -610,8 +610,8 @@ def front_desk_booking(request):
             if not user:
                 # If user doesn't exist, create a new one
                 user = basic_info_form.save(commit=False)
-                user.set_password(phone)  # Set phone number as password
-                user.username = email  # Set email as the username
+                user.set_password(user.phone)  # Set phone number as password
+                user.username = user.email  # Set email as the username
                 user.save()
 
                 profile, created = Profile.objects.get_or_create(user=user)
@@ -631,6 +631,7 @@ def front_desk_booking(request):
                     booking = room_booking_form.save(commit=False)
                     booking.user = user
                     booking.save()
+                    room_booking_form.instance = booking 
                     room_booking_form.save_m2m()  # Save ManyToMany fields
             elif choice == 'reservation':
                 if room_reservation_form.is_valid():

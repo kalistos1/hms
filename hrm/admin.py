@@ -12,10 +12,10 @@ admin.site.register(PerformanceReview)
 admin.site.register(Recruitment)
 admin.site.register(Training)
 admin.site.register(EmployeeTraining)
-admin.site.register(EmployeeContract)
+
 admin.site.register(Benefits)
 admin.site.register(DisciplinaryAction)
-admin.site.register(StaffOnDuty)
+
 admin.site.register(StaffSchedules)
 admin.site.register(LeaveBalance)
 admin.site.register(HRDocument)

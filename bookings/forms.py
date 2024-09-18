@@ -78,9 +78,6 @@ class RoomBookingForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         super(RoomBookingForm, self).__init__(*args, **kwargs)
         
-        # Filter rooms that are available
-      
-        
         # Update widget attributes for form fields
         self.fields['room_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Type'})
         self.fields['num_adults'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Adults'})
