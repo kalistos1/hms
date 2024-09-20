@@ -49,15 +49,12 @@ class Certification(models.Model):
 
 class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='employee_profile', null=True, blank=True)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='employee_department',blank=True, null=True)
-    date_of_birth = models.DateField(null=True, blank=True)
+    department = models.ForeignKey(DepartmentLocation, on_delete=models.CASCADE, related_name='employee_department',blank=True, null=True)
     emergency_contact_name = models.CharField(max_length=255, null=True, blank=True)
     emergency_contact_relationship = models.CharField(max_length=255, null=True, blank=True)
     emergency_contact_phone = models.CharField(max_length=20, null=True, blank=True, validators=[
         RegexValidator(r'^\+?1?\d{9,15}$', 'Enter a valid phone number.')
     ])
-    address = models.TextField(null=True, blank=True)
-    gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')], null=True, blank=True)
     skills = models.ManyToManyField('Skill', related_name='employees', blank=True)
     certifications = models.ManyToManyField('Certification', related_name='employees', blank=True)
     
@@ -74,9 +71,16 @@ class Employee(models.Model):
 class EmployeeRole(models.Model):
 
     WorkerRoles = (
-        ('pos_staff', 'POS Staff'), 
-        ('hr_staff', 'HR Staff'), 
-        ('manager', 'Manager'),
+        ('front_desk', 'front_desk'), 
+        ('pos_staff', 'pos_staff'), 
+        ('hr_staff', 'hr_ataff'), 
+        ('manager', 'manager'),
+        ('waiter', 'waiter'),
+        ('supervisor', 'supervisor'),
+        ('potter', 'potter'),
+        ('accountant', 'accountant'),
+        ('store_keeper', 'store_keeper'),
+        ('security', 'security'), 
     )
     employee = models.OneToOneField(Employee, on_delete=models.CASCADE, related_name='employee_profile', null=True, blank=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='employees', null=True, blank=True)
@@ -86,12 +90,13 @@ class EmployeeRole(models.Model):
 
 class Attendance(models.Model):
     SHIFTTYPE = (
-        ('morning', 'Morning'), 
+        ('24_hours', '24_hours'), 
+        ('Morning', 'Morning'),
         ('afternoon', 'Afternoon'),
         ('night', 'Night')
     )
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='attendances')
-    check_in = models.DateTimeField()
+    check_in = models.DateTimeField(auto_now_add= True)
     check_out = models.DateTimeField(null=True, blank=True)
     shift_type = models.CharField(max_length=50, choices=SHIFTTYPE,blank=True, null=True,)
     shift_location = models.ForeignKey(DepartmentLocation, blank=True, null=True, on_delete=models.CASCADE)
@@ -109,19 +114,28 @@ class Attendance(models.Model):
 class StaffSchedules(models.Model):
     
     SCHEDULESHIFTTYPE = (
-        ('morning', 'Morning'), 
+        ('24_hours', '24_hours'), 
+        ('Morning', 'Morning'),
         ('afternoon', 'Afternoon'),
         ('night', 'Night')
     )
     scheduletype =(
-        ('pos_shift', 'POS Shift'),
-        ('hr_shift', 'HR Shift'),
+        ('Pos_shift', 'Pos_shift'),
+        ('Frontdesk_shift', 'Frontdesk_shift'),
+        ('Potter_shift', 'Potter_shift'),
+        ('Supervisor_shift', 'Supervisor_shift'),
+        ('Waiter_shift', 'Waiter_shift'),
+        ('Accountant_shift', 'Accountant_shift'),
+        ('Store_keeper_shift', 'Store_keeper_shift'),
+        ('Security_shift', 'Security_shift'), 
+        ('Hr_shift', 'hr_shift'),
+        ('Manager', 'Manager'), 
     )
     
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='schedules')
     schedule_date = models.DateField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
     schedule_shift_type = models.CharField(max_length=50, choices =SCHEDULESHIFTTYPE, blank=True, null=True)
     schedule_type = models.CharField(max_length=50, choices= scheduletype,blank=True, null=True)
     date_created = models.DateTimeField(auto_now_add=True)

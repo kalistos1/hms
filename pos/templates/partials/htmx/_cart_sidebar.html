@@ -6,7 +6,7 @@
                 <i class="fa fa-chevron-left"></i>
             </button>
         </div>
-        
+
         <div class="order">Order: <b>#0056</b></div>
     </div>
     <div class="pos-sidebar-nav">
@@ -23,32 +23,32 @@
         <div class="tab-pane fade h-100 show active" id="newOrderTab">
             <div class="pos-table">
                 {% for item in cart.items.all %}
-                <div class="row pos-table-row">
-                    <div class="col-9">
-                        <div class="pos-product-thumb">
-                            <div class="img" style="background-image: url({{item.product.image.url}})"></div>
-                            <div class="info">
-                                <div class="title">{{ item.product.name }}</div>
-                                <div class="single-price">${{ item.product.price }}</div>
-                                <div class="desc">- size: {{ item.product.size }}</div>
-                                <div class="input-group qty">
-                                    <div class="input-group-append">
-                                        <a href="{% url 'pos:decrease_item_quantity' item.id %}" class="btn btn-default" hx-get="{% url 'pos:decrease_item_quantity' item.id %}" hx-target=".pos-sidebar" hx-swap="innerHTML"><i class="fa fa-minus"></i></a>
-                                    </div>
-                                    <input type="text" class="form-control" value="{{ item.quantity }}" readonly />
-                                    <div class="input-group-prepend">
-                                        <a href="{% url 'pos:increase_item_quantity' item.id %}" class="btn btn-default" hx-get="{% url 'pos:increase_item_quantity' item.id %}" hx-target=".pos-sidebar" hx-swap="innerHTML"><i class="fa fa-plus"></i></a>
+                    <div class="row pos-table-row">
+                        <div class="col-9">
+                            <div class="pos-product-thumb">
+                                <div class="img" style="background-image: url({{item.product.image.url}})"></div>
+                                <div class="info">
+                                    <div class="title">{{ item.product.name }}</div>
+                                    <div class="single-price">${{ item.product.price }}</div>
+                                    <div class="desc">- size: {{ item.product.size }}</div>
+                                    <div class="input-group qty">
+                                        <div class="input-group-append">
+                                            <a href="{% url 'pos:decrease_item_quantity' item.id %}" class="btn btn-default" hx-get="{% url 'pos:decrease_item_quantity' item.id %}" hx-target=".pos-sidebar" hx-swap="innerHTML"><i class="fa fa-minus"></i></a>
+                                        </div>
+                                        <input type="text" class="form-control" value="{{ item.quantity }}" readonly />
+                                        <div class="input-group-prepend">
+                                            <a href="{% url 'pos:increase_item_quantity' item.id %}" class="btn btn-default" hx-get="{% url 'pos:increase_item_quantity' item.id %}" hx-target=".pos-sidebar" hx-swap="innerHTML"><i class="fa fa-plus"></i></a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <div class="col-3 total-price">${{ item.total_price }}</div>
                     </div>
-                    <div class="col-3 total-price">${{ item.total_price }}</div>
-                </div>
                 {% empty %}
-                <div class="row pos-table-row">
-                    <div class="col-12 text-center">Your cart is empty.</div>
-                </div>
+                    <div class="row pos-table-row">
+                        <div class="col-12 text-center">Your cart is empty.</div>
+                    </div>
                 {% endfor %}
             </div>
         </div>
@@ -66,18 +66,18 @@
             </div>
         </div>
     </div>
-    
+
     <div class="pos-sidebar-footer">
         {% comment %} totals {% endcomment %}
 
         {% include 'partials/htmx/_cart_total.html' %}
         {% comment %} totals end {% endcomment %}
         <div class="d-flex align-items-center mt-3">
-           
-            <a class="btn btn-theme rounded-3 text-center flex-1" 
-            hx-get="{% url 'pos:checkout_view' %}" 
-            hx-target=".pos-sidebar" 
-            hx-swap="innerHTML"
+
+            <a class="btn btn-theme rounded-3 text-center flex-1"
+               hx-get="{% url 'pos:checkout_view' %}"
+               hx-target=".pos-sidebar"
+               hx-swap="innerHTML"
             ><i class="fa fa-shopping-cart d-block fs-18px my-1"></i> Submit Order</a>
         </div>
     </div>

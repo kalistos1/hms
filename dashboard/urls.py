@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+
 app_name = "dashboard"
 
 
@@ -62,3 +63,10 @@ urlpatterns = [
     
    
 ]
+
+htmx_views=[
+path('get-available-rooms/', views.available_rooms_view, name='get-available-rooms'),
+path('get-room-price/', views.get_room_price_view, name='get_room_price'),
+]
+
+urlpatterns += htmx_views

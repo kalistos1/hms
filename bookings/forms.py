@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import  Booking, Reservation, Payment, Room, RoomServices,  AdditionalCharge
+from .models import  Booking, Reservation, Payment, Room, RoomServices,  AdditionalCharge, RoomType
 from accounts.models import User, Profile
 from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
@@ -58,28 +58,90 @@ class BookingChoiceForm(forms.Form):
             self.fields['choice'].widget.attrs.update({})
 
 
-class RoomBookingForm(forms.ModelForm):
+# class RoomBookingForm(forms.ModelForm):
     
+#     class Meta:
+#         model = Booking
+#         fields = ['room_type','room', 'check_in_date', 'check_out_date', 'num_adults', 'num_children']
+        # widgets = {
+        #     'check_in_date': DateInput(attrs={'class': 'form-control', 'placeholder': 'Check-in Date'}),
+        #     'check_out_date': DateInput(attrs={'class': 'form-control', 'placeholder': 'Check-out Date'}),
+        # }
+
+    # def __init__(self, *args, **kwargs):
+    #     user = kwargs.pop('user', None)
+    #     super(RoomBookingForm, self).__init__(*args, **kwargs)
+        
+    #     # Update widget attributes for form fields
+    #     self.fields['room'].widget.attrs.update({'class': 'form-control'})
+    #     self.fields['room'].queryset = Room.objects.filter(is_available=True)
+    #     self.fields['room_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Type'})
+    #     self.fields['num_adults'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Adults'})
+    #     self.fields['num_children'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Children'})
+       
+   
+class RoomBookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        fields = ['room_type','room', 'check_in_date', 'check_out_date', 'num_adults', 'num_children']
+        fields = ['room_type', 'room', 'check_in_date', 'check_out_date','num_adults', 'num_children']
         widgets = {
             'check_in_date': DateInput(attrs={'class': 'form-control', 'placeholder': 'Check-in Date'}),
             'check_out_date': DateInput(attrs={'class': 'form-control', 'placeholder': 'Check-out Date'}),
         }
 
+    room_type = forms.ModelChoiceField(
+        queryset=RoomType.objects.all(),
+        widget=forms.Select(attrs={
+            'hx-get': '/dashboard/get-available-rooms/',  # HTMX will make a GET request to this URL
+            'hx-target': '#room-select',  # This is where the response will be placed
+            'hx-trigger': 'change',  # Trigger the request on selection change
+            'class': 'form-control',
+        })
+    )
+
+    room = forms.ModelMultipleChoiceField(
+        queryset=Room.objects.none(),
+        widget=forms.SelectMultiple(attrs={
+            'id': 'room-select',
+            'class': 'form-control',
+            'hx-get': '/dashboard/get-room-price/',  # Fetch the price of selected room
+            'hx-target': '#payment-amount',  # Response will update the amount field
+            'hx-trigger': 'change',
+            'hx-swap': 'outerHTML',
+        })
+    )
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
         super(RoomBookingForm, self).__init__(*args, **kwargs)
         
-        # Update widget attributes for form fields
-        self.fields['room'].widget.attrs.update({'class': 'form-control'})
-        self.fields['room'].queryset = Room.objects.filter(is_available=True)
-        self.fields['room_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Type'})
         self.fields['num_adults'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Adults'})
         self.fields['num_children'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Children'})
        
-           
+   
+    
+   
+
+class PaymentForm(forms.ModelForm):
+    amount = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'Amount paid',
+            'id': 'payment-amount'
+        })
+    )
+    class Meta:
+        model = Payment
+        fields = ['amount', 'mode','status']
+        
+       
+    def __init__(self, *args, **kwargs):
+        super(PaymentForm, self).__init__(*args, **kwargs)
+        # self.fields['amount'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Amount paid'})
+        self.fields['mode'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Mode Of Payment'})
+        self.fields['status'].widget.attrs.update({ 'class': 'form-control', 'placeholder': ' Payment Status'})  
+                                                  
+                                                           
 
 class RoomReservationForm(forms.ModelForm):
     class Meta:
@@ -98,29 +160,8 @@ class RoomReservationForm(forms.ModelForm):
         self.fields['room'].widget.attrs.update({'class': 'form-control', })
         
 
-class RoomServiceForm(forms.ModelForm):
-    class Meta:
-        model = RoomServices
-        fields = ['service_type']
-        widgets = {
-            'service_type': forms.CheckboxSelectMultiple()  # Allow multiple selections or none
-        }
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['service_type'].required = False  # Make room service optional
 
 
-class PaymentForm(forms.ModelForm):
-    class Meta:
-        model = Payment
-        fields = ['amount', 'mode','status']
-        
-    def __init__(self, *args, **kwargs):
-        super(PaymentForm, self).__init__(*args, **kwargs)
-        self.fields['amount'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Amount paid'})
-        self.fields['mode'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Mode Of Payment'})
-        self.fields['status'].widget.attrs.update({ 'class': 'form-control', 'placeholder': ' Payment Status'})
         
 
 class RoomServiceForm(forms.ModelForm):
@@ -180,3 +221,18 @@ class UpdateCheckOutDateForm(forms.ModelForm):
         if new_check_out_date < timezone.now().date():
             raise forms.ValidationError("Check-out date cannot be in the past.")
         return new_check_out_date
+    
+    
+    
+    
+# class RoomServiceForm(forms.ModelForm):
+#     class Meta:
+#         model = RoomServices
+#         fields = ['service_type']
+#         widgets = {
+#             'service_type': forms.CheckboxSelectMultiple()  # Allow multiple selections or none
+#         }
+    
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.fields['service_type'].required = False  # Make room service optional

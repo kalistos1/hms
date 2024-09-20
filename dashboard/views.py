@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
+from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 from django.contrib import messages
 from dashboard . models import *
@@ -20,6 +21,7 @@ from bookings.forms import (
     RoomServiceForm, PaymentForm,AdditionalChargeForm, PaymentCheckoutForm,UpdateCheckOutDateForm
 )
 from django.utils import timezone
+from django.http import JsonResponse,HttpResponse
 
 
 
@@ -581,15 +583,44 @@ def frontdesk_checkout_list(request):
         }
         return render(request, template, context)
 
-
-
-
 def generate_unique_username(base_username):
     username = base_username
     while User.objects.filter(username=username).exists():
         username = f"{base_username}_{get_random_string(4, allowed_chars=string.ascii_lowercase)}"
     return username
 
+
+#htmx view for avaiilable room 
+def available_rooms_view(request):
+    room_type_id = request.GET.get('room_type')
+    rooms = Room.objects.filter(room_type_id=room_type_id, is_available=True)
+
+    return render(request, 'partials/htmx/available-rooms.html', {'rooms': rooms})
+
+
+def get_room_price_view(request):
+    room_type_id = request.GET.get('room_type')
+    room_id = request.GET.get('room')
+
+    base_price = 0
+   
+    if room_id:
+        # Fetch price from Room model (priority if selected)
+        room = Room.objects.filter(id=room_id, is_available=True).first()
+        if room and room.price_override:
+            base_price = room.price_override
+        else:
+            base_price = room.room_type.base_price if room else 0
+    elif room_type_id:
+        # Fetch price from RoomType model
+        room_type = RoomType.objects.filter(id=room_type_id).first()
+        base_price = room_type.base_price if room_type else 0
+    print('fffffffffffffffffffffffffffffffffffffff',base_price)
+    # Return the updated input field HTML with the base price
+    html = render_to_string('partials/htmx/payment_amount_input.html', {'base_price': base_price})
+    return HttpResponse(html)
+
+#htmx view for room price
 
 def front_desk_booking(request):
     if request.method == 'POST':
