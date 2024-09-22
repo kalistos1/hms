@@ -100,6 +100,7 @@ class Attendance(models.Model):
     check_out = models.DateTimeField(null=True, blank=True)
     shift_type = models.CharField(max_length=50, choices=SHIFTTYPE,blank=True, null=True,)
     shift_location = models.ForeignKey(DepartmentLocation, blank=True, null=True, on_delete=models.CASCADE)
+    active = models.BooleanField(default=False)
     late_arrival = models.BooleanField(default=False)
     notes = models.TextField(blank=True, null=True)
 
@@ -139,6 +140,7 @@ class StaffSchedules(models.Model):
     schedule_shift_type = models.CharField(max_length=50, choices =SCHEDULESHIFTTYPE, blank=True, null=True)
     schedule_type = models.CharField(max_length=50, choices= scheduletype,blank=True, null=True)
     date_created = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=False)
     date_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):

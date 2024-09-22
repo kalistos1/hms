@@ -225,7 +225,7 @@
             >
               <li class="nav-item" role="presentation">
                 <a
-                  class="ps-2 pe-3 nav-link"
+                  class="ps-2 pe-3 nav-link text-warning "
                   data-bs-toggle="tab"
                   href="#tab_hrms"
                   role="tab"
@@ -238,41 +238,11 @@
 
 
               <div class="tab-pane fade" id="tab_hrms" role="tabpanel">
-                <h6
-                  class="fl-title title-font ps-2 small text-uppercase text-muted"
-                  style="--dynamic-color: var(--theme-color1)"
-                >
-                  Usual
-                </h6>
-                <ul class="list-unstyled mb-4 menu-list">
+                
+                <ul class="list-unstyled mb-4 menu-list ">
+                
                   <li>
-                    <a href="index-hr.html" aria-label="HRMS Dashboard">
-                      <svg
-                        class="svg-stroke"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        fill="none"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path
-                          stroke="none"
-                          d="M0 0h24v24H0z"
-                          fill="none"
-                        ></path>
-                        <path d="M5 12l-2 0l9 -9l9 9l-2 0"></path>
-                        <path
-                          d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"
-                        ></path>
-                        <path d="M10 12h4v4h-4z"></path>
-                      </svg>
-                      <span class="mx-3">HR Dashboard</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="hrms.html" aria-label="hrms">
+                    <a href="hrms.html" aria-label="hrms" >
                       <svg
                         class="svg-stroke"
                         xmlns="http://www.w3.org/2000/svg"
@@ -325,28 +295,22 @@
                         <path d="M18 15v2a1 1 0 0 0 1 1h1" />
                         <path d="M21 15v6" />
                       </svg>
-                      <span class="mx-3">Duty Changes</span>
+                      <span class="mx-3">Duty Rooster</span>
                     </a>
                     <ul class="collapse list-unstyled" id="DutyMenu">
                       <li>
                         <a
                           href="duty-assigned-list.html"
                           aria-label="Assigned List"
-                        >Assigned List</a
+                        >Roaster</a
                           >
                         </li>
-                        <li>
-                          <a
-                            href="duty-shift-list.html"
-                            aria-label="Hotel Images"
-                          >Shift List</a
-                            >
-                          </li>
+                        
                           <li>
                             <a
                               href="duty-roster-list.html"
                               aria-label="Hotel Images"
-                            >Roster List</a
+                            >Attendance</a
                               >
                             </li>
                           </ul>
@@ -356,23 +320,30 @@
                             class="fl-title title-font ps-2 small text-uppercase text-muted"
                             style="--dynamic-color: var(--theme-color1)"
                           >
-                            Employees [ <strong>58</strong> ]
+                            Employees
                           </h6>
                           <ul class="list-unstyled">
                             <li>
                               <a
-                                href="employees-all.html"
+                                href="{% url 'hrm:employees' %}"
                                 aria-label="All Employees"
                               >All Employees</a
                                 >
                               </li>
                               <li>
                                 <a
-                                  href="employees-leave.html"
-                                  aria-label="Leave Tracking"
-                                >Leave Tracking</a
+                                  href="{% url 'hrm:departments' %}"
+                                  aria-label="departments"
+                                >Departments</a
                                   >
                                 </li>
+                                <li>
+                                  <a
+                                    href="{% url 'hrm:department_locations' %}"
+                                    aria-label="DepartmentLocations"
+                                  >Departments Locations</a
+                                    >
+                                  </li>
                                 <li>
                                   <a
                                     href="employees-attendance.html"
@@ -380,13 +351,7 @@
                                   >Attendance</a
                                     >
                                   </li>
-                                  <li>
-                                    <a
-                                      href="employees-departments.html"
-                                      aria-label="Departments"
-                                    >Departments</a
-                                      >
-                                    </li>
+                                  
                                     <li>
                                       <a
                                         href="employees-loan.html"

@@ -29,7 +29,7 @@ def department_create(request):
             return redirect('hrm:departments')
       
     else:
-        messages.error(request,'Department created successfully')
+        messages.error(request,'unable to  delete department')
         return redirect('hrm:departments')
   
 
@@ -41,10 +41,9 @@ def department_update(request, pk):
         form = DepartmentForm(request.POST, instance=department)
         if form.is_valid():
             form.save()
-            return redirect('department_list')
+            return redirect('hrm:departments')
     else:
-        form = DepartmentForm(instance=department)
-    return render(request, 'department_form.html', {'form': form})
+       return redirect('hrm:departments')
 
 
 # Delete a department
@@ -52,15 +51,22 @@ def department_delete(request, pk):
     department = get_object_or_404(Department, pk=pk)
     if request.method == 'POST':
         department.delete()
-        return redirect('department_list')
-    return render(request, 'department_confirm_delete.html', {'department': department})
+        messages.success(request, 'Department deleted successfully')
+        return redirect('hrm:departments')
+    messages.error(request, 'Unable to delete selected department')
+    return redirect('hrm:departments')
 
 
 
 # List all department locations
 def department_location_list(request):
     locations = DepartmentLocation.objects.all()
-    return render(request, 'department_location_list.html', {'locations': locations})
+    form  = DepartmentLocationForm()
+    context = {
+        'locations': locations,
+        'form':form,
+        }
+    return render(request, 'pages/department_location.html', context)
 
 
 # Create a new department location
@@ -69,11 +75,11 @@ def department_location_create(request):
         form = DepartmentLocationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('department_location_list')
+            messages.success(request, 'location for the department added succesfully')
+            return redirect('hrm:department_location')
     else:
-        form = DepartmentLocationForm()
-    return render(request, 'department_location_form.html', {'form': form})
-
+        messages.error(request, 'unable to Location for the department')
+        return redirect('hrm:department_location')
 
 # Update an existing department location
 def department_location_update(request, pk):
@@ -82,10 +88,13 @@ def department_location_update(request, pk):
         form = DepartmentLocationForm(request.POST, instance=location)
         if form.is_valid():
             form.save()
-            return redirect('department_location_list')
+            messages.success(request, 'location for the department updated succesfully')
+            return redirect('hrm:department_location')
     else:
         form = DepartmentLocationForm(instance=location)
-    return render(request, 'department_location_form.html', {'form': form})
+        messages.error(request, "Unable to update the department location")
+        return redirect('hrm:department_location')
+    
 
 
 # Delete a department location
@@ -93,14 +102,24 @@ def department_location_delete(request, pk):
     location = get_object_or_404(DepartmentLocation, pk=pk)
     if request.method == 'POST':
         location.delete()
-        return redirect('department_location_list')
-    return render(request, 'department_location_confirm_delete.html', {'location': location})
+        messages.success(request, "department location was deleted successfully")
+        return redirect('hrm:department_location')
+    
+    else:
+        messages.error(request, "unable to delete department location ")
+        return redirect('hrm:department_location')
 
 
 # List all employees
 def employee_list(request):
     employees = Employee.objects.all()
-    return render(request, 'employee_list.html', {'employees': employees})
+    form = EmployeeForm()
+    context = {
+        'employees': employees,
+        'form':form,
+        }
+    
+    return render(request, 'pages/employee_list.html', context)
 
 
 # Create a new employee
@@ -109,10 +128,11 @@ def employee_create(request):
         form = EmployeeForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('employee_list')
+            messages.success(request, "Employee Added Successfully")
+            return redirect('hrm:employee_list')
     else:
-        form = EmployeeForm()
-    return render(request, 'employee_form.html', {'form': form})
+        messages.error(request, "unable to add employee")
+        return redirect('hrm:employee_list')
 
 
 # Update an existing employee
@@ -122,10 +142,11 @@ def employee_update(request, pk):
         form = EmployeeForm(request.POST, instance=employee)
         if form.is_valid():
             form.save()
-            return redirect('employee_list')
+            messages.success(request,'employee information updated successfully')
+            return redirect('hrm:employee_list')
     else:
-        form = EmployeeForm(instance=employee)
-    return render(request, 'employee_form.html', {'form': form})
+        messages.success(request,'Unable to Update employee Information')
+        return redirect('hrm:employee_list')
 
 
 # Delete an employee
@@ -133,8 +154,11 @@ def employee_delete(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     if request.method == 'POST':
         employee.delete()
-        return redirect('employee_list')
-    return render(request, 'employee_confirm_delete.html', {'employee': employee})
+        messages.success('Employee deleted succcessfully')
+        return redirect('hrm:employee_list')
+    else:
+        messages.error('Unable to delete Employee')
+        return redirect('hrm:employee_list')
 
 
 
