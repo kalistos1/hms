@@ -1,0 +1,319 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+{% block title %} Frontdesk | room Bookings {% endblock %}
+
+{% block content %}
+    <main class="container-fluid px-0">
+    {% comment %} sidebar here {% endcomment %}
+        {% if request.user.is_admin %}
+            {% include '../partials/menubars/admin_sidebar.html' %}
+
+        {% elif request.user.is_supervisor %}
+            {% include '../partials/menubars/supervisor_sidebar.html' %}
+
+        {% elif request.user.is_account_officer %}
+            {% include '../partials/menubars/accounting_sidebar.html' %}
+
+        {% else %}
+            {% include '../partials/menubars/frontdesk_sidebar.html' %}
+
+        {% endif %}
+
+    {% comment %} sidebar ends {% endcomment %}
+
+        <div class="content">
+
+
+   {% comment %} top header starts {% endcomment %}
+            {% include '../partials/top_header.html' %}
+   {% comment %} top header ends {% endcomment %}
+
+
+   {% comment %} body content starts {% endcomment %}
+
+			<!-- start: page body area -->
+            <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
+                <div class="row g-3">
+                    <form action="" method ="post"  enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="col-sm-12">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                <h3 class="fw-bold mb-0 p-4">Fill Out Booking Details</h3>
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+
+                            <div class="card">
+
+                                <div class="card-body">
+                                    <div class="row g-3">
+
+                                        <div class="col-md-12 col-lg-6 d-flex">
+                                            <div class="card flex-fill w-100 border">
+                                                <div class="card-header py-3">
+                                                    <h6 class="card-title">Guest Details</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row g-3">
+
+
+
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label class="form-label text-muted">Title</label>
+                                                                <div class="input-group">
+                                                                    {{ profile_info_form.title}}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label class="form-label text-muted">First Name <span class="text-danger">*</span></label>
+                                                                <div class="input-group">
+                                                                    <span class="input-group-text"><i class="bi bi-person-circle"></i></span>
+                                                                    {{ basic_info_form.first_name}}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label class="form-label text-muted">Last Name</label>
+                                                                <div class="input-group">
+                                                                    <span class="input-group-text"><i class="bi bi-person-circle"></i></span>
+                                                                    {{ basic_info_form.last_name}}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-md-6 align-self-center">
+                                                            <label class="form-label text-muted w-100">Gender</label>
+                                                            {{ profile_info_form.gender}}
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label class="form-label text-muted">Occupation</label>
+                                                                <div class="input-group">
+                                                                    <span class="input-group-text"><i class="bi bi-briefcase"></i></span>
+                                                                    {{ profile_info_form.occupation}}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label class="form-label text-muted">Email</label>
+                                                                <div class="input-group">
+                                                                    <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                                                    {{ basic_info_form.email}}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label class="form-label text-muted">Mobile No.</label>
+                                                                <div class="input-group">
+                                                                    <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                                                                    {{basic_info_form.phone}}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+
+
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 col-lg-6 d-flex">
+                                            <div class="card flex-fill w-100 border">
+                                                <div class="card-header py-3">
+                                                    <h6 class="card-title">Booking Details</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <div class="input-group">
+                                                                    {{ booking_choice_form.choice }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="card-title">Reservation / Booking Details</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+
+                                        <div class="col-md-12 col-lg-6 d-flex">
+                                            <div class="card flex-fill w-100 border booking-form">
+                                                <div class="card-header py-3">
+                                                    <h6 class="card-title">Booking</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12">
+
+                                                            <div class="form-group">
+                                                                <label class="form-label text-muted">Room Type</label>
+                                                                <div class="input-group">
+                                                                    {{ room_booking_form.room_type }}
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <label class="form-label text-muted"> Available Rooms</label>
+                                                                <div class="input-group">
+
+                                                                    <select id="room-select" name="room" multiple class="form-control"  hx-get="/dashboard/get-room-price/" hx-target="#payment-amount" hx-trigger="change">
+                                                                            <!-- Room options will be dynamically populated here -->
+                                                                    </select>
+                                                                </div>
+
+
+                                                            </div>
+
+
+                                                            <div class="form-group">
+                                                                <label class="form-label text-muted">Check-in Date</label>
+                                                                <div class="input-group">
+                                                                    {{ room_booking_form.check_in_date }}
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <label class="form-label text-muted">Check-out Date</label>
+                                                                <div class="input-group">
+                                                                    {{ room_booking_form.check_out_date }}
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label class="form-label text-muted">Number of Adults</label>
+                                                                <div class="input-group">
+                                                                    {{ room_booking_form.num_adults }}
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label class="form-label text-muted">Number of Children</label>
+                                                                <div class="input-group">
+                                                                    {{ room_booking_form.num_children }}
+                                                                </div>
+                                                            </div>
+
+
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {% comment %} <div class="card flex-fill w-100 border reservation-form">
+                                                <div class="card-header py-3">
+                                                    <h6 class="card-title">Reservation</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12">
+                                                            <div class="form-group">
+                                                                {{ room_reservation_form.as_p }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div> {% endcomment %}
+                                        </div>
+
+                                        <div class="col-md-12 col-lg-6 d-flex">
+                                            <div class="card flex-fill w-100 border">
+                                                <div class="card-header py-3">
+                                                    <h6 class="card-title">Payment Information</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12 col-lg-12 d-flex">
+                                                            <div class="card flex-fill w-100 border">
+
+                                                                <div class="card-body">
+                                                                    <div class="row g-3">
+                                                                        <div class="col-md-12">
+                                                                            <div class="form-group">
+
+                                                                                {{ payment_form.amount }}
+
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+
+                        <div class="col-sm-12 text-end">
+                            <button type="submit" class="btn btn-info">Save Details</button>
+                        </div>
+                    </div><!-- Row End -->
+                </form>
+            </div>
+
+   {% comment %} body content ends {% endcomment %}
+
+
+        </div>
+
+
+
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Get elements by their IDs or classes
+                const bookingOption = document.querySelector('input[value="booking"]');
+                const reservationOption = document.querySelector('input[value="reservation"]');
+                const bookingForm = document.querySelector('.booking-form');
+                const reservationForm = document.querySelector('.reservation-form');
+
+                // Function to toggle visibility based on the selected option
+                function toggleForms() {
+                    if (bookingOption.checked) {
+                        bookingForm.style.display = 'block';
+                        reservationForm.style.display = 'none';
+                    } else if (reservationOption.checked) {
+                        reservationForm.style.display = 'block';
+                        bookingForm.style.display = 'none';
+                    }
+                }
+
+                // Attach event listeners to the radio buttons
+                bookingOption.addEventListener('change', toggleForms);
+                reservationOption.addEventListener('change', toggleForms);
+
+                // Initialize visibility based on the current selection
+                toggleForms();
+            });
+        </script>
+
+    </main>
+
+
+{% endblock %}

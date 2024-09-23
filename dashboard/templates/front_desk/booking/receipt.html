@@ -1,0 +1,176 @@
+{% extends 'dashboard_base.html' %}
+{% load my_filters %}
+{% load static %}
+
+{% block title %} Frontdesk | Booking List{% endblock %}
+
+{% block content %}
+    <main class="container-fluid px-0">
+        {% if request.user.is_admin %}
+            {% include '../../partials/menubars/admin_sidebar.html' %}
+
+        {% elif request.user.is_supervisor %}
+            {% include '../../partials/menubars/supervisor_sidebar.html' %}
+
+        {% elif request.user.is_account_officer %}
+            {% include '../../partials/menubars/accounting_sidebar.html' %}
+
+        {% else %}
+            {% include '../../partials/menubars/frontdesk_sidebar.html' %}
+
+        {% endif %}
+
+        <div class="content">
+            {% include '../../partials/top_header.html' %}
+
+            <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
+                <div class="row justify-content-center g-3">
+                    <div class="col-sm-12">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap">
+                            <h3 class="fw-bold mb-0 p-4">Room Booking/Reservation Receipt</h3>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="card" id="printable">
+                            <div class="card-body">
+                                <div class="container">
+                                    <h1>Receipt</h1>
+                                    <div class="col-md-12 col-lg-8">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6 class="card-title">Billing Details {{ prices }}</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm table-bordered mb-0">
+                                                        <tbody>
+                                                            <tr>
+                                                                <th scope="row">Booking ID: </th>
+                                                                <td>{{ booking.booking_id }}</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">Customer</th>
+                                                                <td>{{ booking.user.username }}</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">Booking Date</th>
+                                                                <td>{{ booking.date }}</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">Check-in Date</th>
+                                                                <td>{{ booking.check_in_date }}</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">Check-out Date</th>
+                                                                <td>{{ booking.check_out_date }}</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">Occupants</th>
+                                                                <td>Adults ({{ booking.num_adults }}) // Children ({{ booking.num_children }})</td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">Room Charges</th>
+                                                                <td>
+                                                                    <ul>
+                                                                        {% for room in booking.room.all %}
+                                                                            <li>{{ room.room_type.type }} - Room {{ room.room_number }}:
+                                                                                {{ room.price }} x {{ booking.get_duration }} days = {{ room.price|multiply:booking.get_duration }}</li>
+                                                                        {% endfor %}
+                                                                    </ul>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">Additional Charges</th>
+                                                                <td>
+                                                                    {% for charge in booking.additional_charges.all %}
+                                                                        <li>{{ charge.description }}: {{ charge.amount }}</li>
+                                                                    {% endfor %}
+                                                                </td>
+                                                                <td>Total: {{ total_additional_charges }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">Service Charges</th>
+                                                                <td>
+                                                                    <ul>
+                                                                        {% for service in booking.roomservice_set.all %}
+                                                                            <li>{{ service.type }}: {{ service.price }}</li>
+                                                                        {% endfor %}
+                                                                    </ul>
+                                                                </td>
+                                                                <td>Total: {{ total_service_charges }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">Total Amount Payable:</th>
+                                                                <td><span class="badge bg-primary">{{ total_amount_payable }}</span></td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">Amount Paid:</th>
+                                                                <td><span class="badge bg-success">{{ amount_paid }}</span></td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">Payment Status:</th>
+                                                                <td><span class="badge bg-success">{{ payment_status }}</span></td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr class="table-danger bg-info">
+                                                                <th scope="row">Remaining Balance:</th>
+                                                                <td><span class="badge bg-danger">{{ remaining_balance }}</span></td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- Row End -->
+
+                <!-- Print Button -->
+                <div class="text-center mt-4">
+                    <button onclick="printDiv('printable')" class="btn btn-primary">Print Receipt</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function printDiv(divId) {
+            var divContents = document.getElementById(divId).innerHTML;
+            var printWindow = window.open('', '', 'height=800,width=800');
+
+            // Basic styles
+            printWindow.document.write('<html><head><title>Print</title>');
+            printWindow.document.write('<style>');
+            printWindow.document.write('@media print {');
+            printWindow.document.write('body { background-color: #333; color: #fff; margin: 0; padding: 0; }');
+            printWindow.document.write('#printable { background-color: #333; color: #fff; padding: 20px; }');
+            printWindow.document.write('table { width: 100%; border-collapse: collapse; margin-top: 20px; }');
+            printWindow.document.write('th, td { border: 1px solid #fff; padding: 10px; text-align: left; }');
+            printWindow.document.write('tr:nth-child(even) { background-color: #444; }');
+            printWindow.document.write('th { background-color: #555; color: #fff; }');
+            printWindow.document.write('}'); // Close @media print
+            printWindow.document.write('</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write('<div id="printable">' + divContents + '</div>');
+            printWindow.document.write('</body></html>');
+
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        }
+    </script>
+
+{% endblock %}

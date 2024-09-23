@@ -1,0 +1,275 @@
+{% extends 'pages_base.html' %}
+{% load static %}
+{% block title %}Room List{% endblock %}
+
+{% block content %}
+    <style>
+        .background {
+            width: 100%;
+            height: 40vh;
+            position: relative;
+            background-color: #2C3E50;
+            color: #ffffff;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: url('{{ room_type.banner_img.url }}');
+            background-size: cover;
+            background-position: center;
+            box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.5);
+        }
+
+        .background h2 {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .background p {
+            font-size: 1.2rem;
+        }
+
+        .card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+
+        .utf_listing_payment_section h3 {
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .utf_listing_section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .utf_listing_section li {
+            background: #f7f7f7;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .utf_listing_section li h5 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .utf_listing_section li p {
+            margin: 0;
+            color: #777;
+        }
+
+        .utf_listing_section li span {
+            font-weight: 600;
+            color: #2980b9;
+        }
+
+        .utf_booking_listing_section_form input[type="text"],
+        .utf_booking_listing_section_form input[type="date"],
+        .utf_booking_listing_section_form select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            background-color: #2980b9;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .button:hover {
+            background-color: #3498db;
+        }
+
+        .utf_booking_listing_item_container {
+            background-color: #2C3E50;
+            color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .utf_booking_listing_item_container h3 {
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .utf_star_rating_section {
+            color: #f39c12;
+        }
+
+        .summary {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+
+        .summary ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .summary li {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .summary li.total-costs {
+            font-weight: 700;
+            color: #e74c3c;
+            font-size: 1.2rem;
+        }
+    </style>
+
+    <div class="background">
+        <div class="content">
+            <h2 class="text-light">All Room Selection</h2>
+            <p>Hotel  >>  Rooms  >>  My Selected Room</p>
+        </div>
+    </div>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-8 col-md-8 utf_listing_payment_section">
+                <div class="card p-4 mb-4">
+                    <h3><i class="fas fa-bed"></i> Selected Rooms</h3>
+                    <div class="utf_listing_section">
+                        <div class="utf_pricing_list_section">
+                            <ul>
+                                {% for id, item in data.items %}
+                                    <li>
+                                        <h5>Room: {{item.room_name}}  <small><a style="cursor: pointer;" class="delete-item" data-item="{{ id }}"><i class="fas fa-trash" style="color: red;"></i></a></small> </h5>
+                                        <p><strong>Beds :</strong> {{item.number_of_beds}}  </p>
+                                        <span>${{item.room_price}} </span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="utf_booking_listing_section_form card p-4 mb-4">
+                    <h3><i class="fas fa-check-circle"></i> Update Selection</h3>
+                    <form method="POST" action="{% url 'booking:check_room_availability' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="hotel-id" value="{{hotel.id}}">
+                        <div>
+                            <label>Check-in Date</label>
+                            <input type="date" name="checkin" value="{{checkin}}">
+                        </div>
+                        <div>
+                            <label>Check-out Date</label>
+                            <input type="date" name="checkout" value="{{checkout}}">
+                        </div>
+
+                        <div>
+                            <div class="col-lg-12 col-md-12">
+                                <a href="#">Guests <span class="qtyTotal" style="visibility: hidden;" name="qtyTotal"></span></a>
+                                <div class="panel-dropdown-content">
+                                    <div class="qtyButtons">
+                                        <div class="qtyTitle">Adults</div>
+                                        <input type="text" name="adult" {% if adult == None %}value="1"{% else %}value="{{adult}}"{% endif %}>
+                                    </div>
+                                    <div class="qtyButtons">
+                                        <div class="qtyTitle">Childrens</div>
+                                        <input type="text" name="children" {% if children == None %}value="1"{% else %}value="{{children}}"{% endif %}>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label>Select Room Type (*required)</label>
+                            <select name="room-type">
+                                <option value="">Select Room</option>
+                                {% for r in hotel.hotel_room_types %}
+                                    <option value="{{r.slug}}">{{r.type}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="button">Update Selection</button>
+                    </form>
+                </div>
+
+                <form method="POST" class="utf_booking_listing_section_form card p-4 mb-4">
+                    {% csrf_token %}
+                    <h3><i class="fas fa-user"></i> Billing Information</h3>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label>Full Name</label>
+                            <input name="full_name" type="text" value="{{request.user.profile.full_name|title}}" placeholder="Full Name">
+                        </div>
+                        <div class="col-md-6">
+                            <label>Email</label>
+                            <input name="email" type="text" value="{{request.user.email}}" placeholder="Email">
+                        </div>
+                        <div class="col-md-6">
+                            <label>Phone</label>
+                            <input name="phone" type="text" value="{{request.user.phone}}" placeholder="Phone">
+                        </div>
+                        <div class="col-lg-12">
+                            <button type="submit" class="button">Continue to checkout <i class="fas fa-right-arrow"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-lg-4 col-md-4 utf_listing_payment_section">
+                <div class="utf_booking_listing_item_container compact utf_order_summary_widget_section">
+                    <div class="listing-item">
+
+
+                        <a href="{{ room_type.banner_img.url }}" class="room-img position-relative d-block" data-fancybox data-caption="Twin Room">
+                            <img src="{{room_type.banner_img.url}}" alt class="img-fluid img-fluid-custome width_200 w-sm-100" width="320">
+                        </a>
+                        <div class="icon-content position-absolute d-flex">
+                            <a class="zoom-icon mr-2" href="https://hotel.bdtask-demo.com/xainhotel/application/modules/room_setting/assets/images/2021-02-24/b1.jpg" data-fancybox data-caption="Twin Room"><i class="fas fa-search-plus"></i></a>
+                        </div>
+
+
+
+                        <div class="utf_listing_item_content">
+                            <br>
+                            <h3 class=" text-light">{{room_type}}</h3>
+
+
+                            <div class="utf_star_rating_section" data-rating="4.5">
+                                <div class="utf_counter_star_rating">(18) Reviews</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary mt-4">
+                    <h3><i class="fa fa-calendar-check-o"></i> Booking Summary</h3>
+                    <ul>
+                        <li>Check-in <span>{{checkin}}</span></li>
+                        <li>Check-out <span>{{checkout}}</span></li>
+                        <li>Total Days <span>{{total_days}} Days</span></li>
+                        <li>Adults <span>{{ adult }} Adult</span></li>
+                        <li>Children <span>{{ children }} Children</span></li>
+                        <li>V.A.T <span>$0.00</span></li>
+                        <li class="total-costs">Total Cost <span>${{ total }}</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends 'pages_base.html' %}
+{% load static %}
+{% block title %} Our Gallery{% endblock %}
+
+{% block content %}
+
+
+
+    <section class="hero_single">
+        <div class="container d-flex justify-content-between align-items-end">
+            <h1 class="h3 mb-0">Gallery</h1>
+        </div>
+    </section>
+
+    <div class="section-gallery">
+        <div class="container-fluid p-0">
+            <div class="filters my-5 px-3 text-center">
+                <label class="font-weight-600 text-dark mr-3"><input type="radio" name="filter" value="*" checked="checked"> Show All</label>
+                <label class="font-weight-600 text-dark mr-3"><input type="radio" name="filter" value=".twin_room"> Twin Room</label>
+                <label class="font-weight-600 text-dark mr-3"><input type="radio" name="filter" value=".single_room"> Single Room</label>
+                <label class="font-weight-600 text-dark mr-3"><input type="radio" name="filter" value=".deluxe_double_room"> Deluxe Double Room</label>
+                <label class="font-weight-600 text-dark mr-3"><input type="radio" name="filter" value=".double_deluxe_romm"> Double Deluxe Romm</label>
+                <label class="font-weight-600 text-dark mr-3"><input type="radio" name="filter" value=".vip_suite"> VIP Suite</label>
+            </div>
+            <div class="grid row">
+                <div class="grid-sizer Twin Room" data-category="transition"></div>
+                <div class="grid-item grid-item--width2 twin_room" data-category="transition">
+                    <a href="{% static 'frontpage/assets/img/banner/2021-02-22/b1.jpg' %}" class="d-block position-relative" data-fancybox="images" data-caption="Twin Room">
+                        <img src="{% static 'frontpage/assets/img/banner/2021-02-22/b1.jpg' %}" alt class="img-fluid">
+                        <div class="gallery-info text-center position-absolute top-0 left-0 h-100 w-100">
+                            <div class="moreinfo h-100 w-100 position-relative d-flex align-items-center justify-content-center">
+                                <div class="user-name text-white font-weight-500">Twin Room</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="grid-item  single_room" data-category="transition">
+                    <a href="{% static 'frontpage/assets/img/banner/2021-02-22/b3.jpg' %}" class="d-block position-relative" data-fancybox="images" data-caption="Single Room">
+                        <img src="{% static 'frontpage/assets/img/banner/2021-02-22/b3.jpg' %}" alt class="img-fluid">
+                        <div class="gallery-info text-center position-absolute top-0 left-0 h-100 w-100">
+                            <div class="moreinfo h-100 w-100 position-relative d-flex align-items-center justify-content-center">
+                                <div class="user-name text-white font-weight-500">Single Room</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="grid-item  twin_room" data-category="transition">
+                    <a href="{% static 'frontpage/assets/img/banner/2021-02-22/g.jpg' %}" class="d-block position-relative" data-fancybox="images" data-caption="Twin Room">
+                        <img src="{% static 'frontpage/assets/img/banner/2021-02-22/g.jpg' %}" alt class="img-fluid">
+                        <div class="gallery-info text-center position-absolute top-0 left-0 h-100 w-100">
+                            <div class="moreinfo h-100 w-100 position-relative d-flex align-items-center justify-content-center">
+                                <div class="user-name text-white font-weight-500">Twin Room</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="grid-item grid-item--width2 deluxe_double_room" data-category="transition">
+                    <a href="{% static 'frontpage/assets/img/banner/2019-06-16/04.jpg' %}" class="d-block position-relative" data-fancybox="images" data-caption="Deluxe Double Room">
+                        <img src="{% static 'frontpage/assets/img/banner/2019-06-16/04.jpg' %}" alt class="img-fluid">
+                        <div class="gallery-info text-center position-absolute top-0 left-0 h-100 w-100">
+                            <div class="moreinfo h-100 w-100 position-relative d-flex align-items-center justify-content-center">
+                                <div class="user-name text-white font-weight-500">Deluxe Double Room</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="grid-item  single_room" data-category="transition">
+                    <a href="{% static 'frontpage/assets/img/banner/2021-02-22/b2.jpg' %}" class="d-block position-relative" data-fancybox="images" data-caption="Single Room">
+                        <img src="{% static 'frontpage/assets/img/banner/2021-02-22/b2.jpg' %}" alt class="img-fluid">
+                        <div class="gallery-info text-center position-absolute top-0 left-0 h-100 w-100">
+                            <div class="moreinfo h-100 w-100 position-relative d-flex align-items-center justify-content-center">
+                                <div class="user-name text-white font-weight-500">Single Room</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="grid-item  twin_room" data-category="transition">
+                    <a href="{% static 'frontpage/assets/img/banner/2019-06-16/11.jpg' %}" class="d-block position-relative" data-fancybox="images" data-caption="Twin Room">
+                        <img src="{% static 'frontpage/assets/img/banner/2019-06-16/11.jpg' %}" alt class="img-fluid">
+                        <div class="gallery-info text-center position-absolute top-0 left-0 h-100 w-100">
+                            <div class="moreinfo h-100 w-100 position-relative d-flex align-items-center justify-content-center">
+                                <div class="user-name text-white font-weight-500">Twin Room</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="grid-item grid-item--width2 single_room" data-category="transition">
+                    <a href="{% static 'frontpage/assets/img/banner/2021-02-22/h.jpg' %}" class="d-block position-relative" data-fancybox="images" data-caption="Single Room">
+                        <img src="{% static 'frontpage/assets/img/banner/2021-02-22/h.jpg' %}" alt class="img-fluid">
+                        <div class="gallery-info text-center position-absolute top-0 left-0 h-100 w-100">
+                            <div class="moreinfo h-100 w-100 position-relative d-flex align-items-center justify-content-center">
+                                <div class="user-name text-white font-weight-500">Single Room</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="grid-item  twin_room" data-category="transition">
+                    <a href="{% static 'frontpage/assets/img/banner/2021-02-22/h1.jpg' %}" class="d-block position-relative" data-fancybox="images" data-caption="Twin Room">
+                        <img src="{% static 'frontpage/assets/img/banner/2021-02-22/h1.jpg' %}" alt class="img-fluid">
+                        <div class="gallery-info text-center position-absolute top-0 left-0 h-100 w-100">
+                            <div class="moreinfo h-100 w-100 position-relative d-flex align-items-center justify-content-center">
+                                <div class="user-name text-white font-weight-500">Twin Room</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="grid-item  twin_room" data-category="transition">
+                    <a href="{% static 'frontpage/assets/img/banner/2021-02-22/v1.jpg' %}" class="d-block position-relative" data-fancybox="images" data-caption="Twin Room">
+                        <img src="{% static 'frontpage/assets/img/banner/2021-02-22/v1.jpg' %}" alt class="img-fluid">
+                        <div class="gallery-info text-center position-absolute top-0 left-0 h-100 w-100">
+                            <div class="moreinfo h-100 w-100 position-relative d-flex align-items-center justify-content-center">
+                                <div class="user-name text-white font-weight-500">Twin Room</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="grid-item grid-item--width2 double_deluxe_romm" data-category="transition">
+                    <a href="{% static 'frontpage/assets/img/banner/2021-11-18/d.jpg' %}" class="d-block position-relative" data-fancybox="images" data-caption="Double Deluxe Romm">
+                        <img src="{% static 'frontpage/assets/img/banner/2021-11-18/d.jpg' %}" alt class="img-fluid">
+                        <div class="gallery-info text-center position-absolute top-0 left-0 h-100 w-100">
+                            <div class="moreinfo h-100 w-100 position-relative d-flex align-items-center justify-content-center">
+                                <div class="user-name text-white font-weight-500">Double Deluxe Romm</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="grid-item  double_deluxe_romm" data-category="transition">
+                    <a href="{% static 'frontpage/assets/img/banner/2021-11-18/i1.jpg' %}" class="d-block position-relative" data-fancybox="images" data-caption="Double Deluxe Romm">
+                        <img src="{% static 'frontpage/assets/img/banner/2021-11-18/i1.jpg' %}" alt class="img-fluid">
+                        <div class="gallery-info text-center position-absolute top-0 left-0 h-100 w-100">
+                            <div class="moreinfo h-100 w-100 position-relative d-flex align-items-center justify-content-center">
+                                <div class="user-name text-white font-weight-500">Double Deluxe Romm</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="grid-item  double_deluxe_romm" data-category="transition">
+                    <a href="{% static 'frontpage/assets/img/banner/2021-11-18/d1.jpg' %}" class="d-block position-relative" data-fancybox="images" data-caption="Double Deluxe Romm">
+                        <img src="{% static 'frontpage/assets/img/banner/2021-11-18/d1.jpg' %}" alt class="img-fluid">
+                        <div class="gallery-info text-center position-absolute top-0 left-0 h-100 w-100">
+                            <div class="moreinfo h-100 w-100 position-relative d-flex align-items-center justify-content-center">
+                                <div class="user-name text-white font-weight-500">Double Deluxe Romm</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="grid-item grid-item--width2 vip_suite" data-category="transition">
+                    <a href="{% static 'frontpage/assets/img/banner/2021-11-18/d2.jpg' %}" class="d-block position-relative" data-fancybox="images" data-caption="VIP Suite">
+                        <img src="{% static 'frontpage/assets/img/banner/2021-11-18/d2.jpg' %}" alt class="img-fluid">
+                        <div class="gallery-info text-center position-absolute top-0 left-0 h-100 w-100">
+                            <div class="moreinfo h-100 w-100 position-relative d-flex align-items-center justify-content-center">
+                                <div class="user-name text-white font-weight-500">VIP Suite</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+
+{% endblock %}

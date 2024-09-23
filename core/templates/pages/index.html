@@ -1,0 +1,319 @@
+{% extends 'pages_base.html' %}
+{% load static %}
+{% block title %}Home | Hotel website  {% endblock %}
+
+{% block content %}
+
+<!-- ===============slide button=============== -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8 text-center">
+            </div>
+        </div>
+    </div>
+<!-- ===============endslide button=============== -->
+
+<!-- =========================hero section========================= -->
+    <div class="hero-header">
+        <div class="header-slider header-slider-preloader slider-two" id="home">
+            <div class="animation-slide owl-carousel owl-theme" id="animation-slide">
+                <div class="item bg-img-hero" data-image-src="https://hotel.bdtask-demo.com/xainhotel/assets/img/banner/2019-05-27/s1.jpg">
+                </div>
+                <div class="item bg-img-hero" data-image-src="https://hotel.bdtask-demo.com/xainhotel/assets/img/banner/2019-05-27/s2.jpg">
+                </div>
+                <div class="item bg-img-hero" data-image-src="https://hotel.bdtask-demo.com/xainhotel/assets/img/banner/2020-02-26/b.jpg">
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="hero-header_wrap">
+                <div class="row align-items-center">
+                    <div class="col-12 col-md-7">
+                        <div class="header-text my-5">
+                            <h6 class="header-subtitle">BEYOND IMAGINABLE </h6>
+                            <h1 class="header-title">Enjoy Your Vacation With Us</h1>
+                            <p class="header-des mb-0">It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-5 d-none d-md-block">
+                        <div class="offer-carousel owl-carousel owl-theme">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slider_preloader">
+            <div class="slider_preloader_status">&nbsp;</div>
+        </div>
+
+    </div>
+<!-- =========================end hero section========================= -->
+
+<!-- ==================== check out check in section======================= -->
+    <div class="container">
+        <div class="search-area">
+            <form method="post" action="{% url 'booking:check_room_availability' %}" >
+                {% csrf_token %}
+                <input type="hidden" value="{{hotel.id}}" name="hotel-id" id="">
+                <div class="row no-gutters custom-search-input-2 search-form-content">
+                    <div class="search-option col-12 col-sm-6 col-lg-2">
+                        <label>Check In </label>
+                        {% comment %} <input id="daterangepicker" class="form-control" type="text" name="checkin" value> {% endcomment %}
+                        <input type="date" id="date-picker" name="checkin" class="form-control" placeholder="Select Date">
+                    </div>
+                    <div class="search-option col-12 col-sm-6 col-lg-2">
+                        <label>Check Out </label>
+                        {% comment %} <input id="daterangepicker2" class="form-control" type="text" name="checkout" value> {% endcomment %}
+                        <input type="date" name="checkout" id="date-picker" class="form-control" placeholder="Select Date">
+                    </div>
+
+                    <div class="search-option col-12 col-sm-6 col-lg-3">
+
+                        <div class="d-flex align-items-center justify-content-between h-50 border-bottom w-100 px-lg-3 px-xl-4">
+                            <div class="search-title fs-13 text-uppercase">Adults</div>
+                            <div class="d-flex justify-content-center align-items-center number-spinner">
+                                <a class=" btn-pm" data-dir="dwn"><span class="ti-minus"></span></a>
+                                <input type="text" class="spinner" name="adult" value="1">
+                                <a class=" btn-pm" data-dir="up"><span class="ti-plus"></span></a>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between h-50 w-100 px-lg-3 px-xl-4">
+                            <div class="search-title fs-13 text-uppercase">Children</div>
+                            <div class="d-flex justify-content-center align-items-center children">
+                                <a class=" btn-pm" data-dir="dwn"><span class="ti-minus"></span></a>
+                                <input type="text" class="spinner"  name="children" value="1">
+                                <a class=" btn-pm" data-dir="up"><span class="ti-plus"></span></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="search-option col-2 col-sm-6 col-lg-2">
+                        <br>
+                        <a href="#" class="search-title fs-13 text-uppercase">Select Room Type</a>
+                        <br>
+                        <select  style="width:150px; border:5px solid black; padding:5px;" class=" border" name="room-type" required>
+                            <option class ="form-control" value="">Room Type</option>
+                            {% for r in hotel.hotel_room_types %}
+                                <option class ="form-control" value="{{r.slug}}">{{r.type}}</option>
+                            {% endfor %}
+                        </select>
+
+
+                    </div>
+
+                    <div class="col-lg-2" style="background-color:#fee277;">
+                        <button type="submit" class=" btn btn-info d-flex flex-column align-items-center justify-content-around " >
+
+                            Check Availability </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+<!-- ====================end check out check in section======================= -->
+
+    <div class="section section-feature bg-gray position-relative">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6 col-md-3 mb-4 mb-md-0">
+                    <div class="feature-box text-center">
+                        <div class="feature-box-icon mb-3">
+                            <img src="assets/img/banner/2021-11-18/p1.png" alt="Card image" class="img-fluid">
+                        </div>
+                        <h4 class="feature-box-title fs-21 font-weight-600">
+                            Save up to 10%</h4>
+                        <p class="mb-0">Members get access to an exclusive discounts on Radissonblu.com. Not a member yet? Hurry Up!</p>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-md-3 mb-4 mb-md-0">
+                    <div class="feature-box text-center">
+                        <div class="feature-box-icon mb-3">
+                            <img src="{% static 'frontpage/assets/img/banner/2021-01-12/t.png' %}" alt="Card image" class="img-fluid">
+                        </div>
+                        <h4 class="feature-box-title fs-21 font-weight-600 t">Best Rate Guarantee </h4>
+                        <p class="mb-0">If you find a lower online rate, we will match it and give you an additional 25% off on your stay.</p>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-md-3 mb-4 mb-sm-0">
+                    <div class="feature-box text-center">
+                        <div class="feature-box-icon mb-3">
+                            <img src="{% static 'frontpage/assets/img/banner/2021-01-12/w.png' %}" alt="Card image" class="img-fluid">
+                        </div>
+                        <h4 class="feature-box-title fs-21 font-weight-600">Free Wi-Fi </h4>
+                        <p class="mb-0">If you find a lower online rate, we will match it and give you an additional 25% off on your stay.</p>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-md-3">
+                    <div class="feature-box text-center">
+                        <div class="feature-box-icon mb-3">
+                            <img src="{% static 'frontpage/assets/img/banner/2021-01-12/m.png' %}" alt="Card image" class="img-fluid">
+                        </div>
+                        <h4 class="feature-box-title fs-21 font-weight-600">Enjoy Free Nights </h4>
+                        <p class="mb-0">If you find a lower online rate, we will match it and give you an additional 25% off on your stay.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="section section-about">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-5 col-md-6 col-12">
+                    <div class="position-relative">
+                        <img src="{% static 'frontpage/assets/img/banner/2021-11-18/a.jpg' %}" class="rounded img-fluid mx-auto d-block" alt>
+                        <div class="play-icon">
+                            <a href="#" class="play-btn video-play-icon">
+                                <i class="mdi mdi-play text-primary rounded-circle bg-white shadow"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7 col-md-6 col-12 mt-4 mt-sm-0 pt-2 pt-sm-0">
+                    <div class="ml-lg-5 ml-md-4">
+                        <div class="section-title">
+                            <span class="badge badge-pill badge-soft-primary">About</span>
+                            <h4 class="title mt-3 mb-4"><span class="text-primary">Comfort are Perfectly Combined Here</span></h4>
+                            <p class="text-muted para-desc mx-auto mb-0">
+                                This charming private 19th-century mansion, which originally belonged to the family, has been completely renovated with care &amp;amp; passion while respecting the spirit of place.
+                                Divo Hotel surrounded herself by a team of French artisans to create a sophisticated place in a refined.</p>
+                            <div class="mt-4">
+                                <a href="#" class="btn btn-primary">We Provide</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="section container rounded join-content box-shadow mb-5 shadow">
+        <div class="text-center col-middle">
+            <h2 class="fs-32 text-white mb-4 ">This charming private 19th century mansion, which originally </h2>
+            <a href="user/login.html" class="btn btn-outline-white mr-3">Sign In</a>
+            <a href="register.html" class="btn btn-white">Join Us</a>
+        </div>
+    </div>
+
+    <div class="section bg-gray">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-10 offset-md-1">
+                    <div class="section-title text-center mb-5 col-middle">
+                        <h2 class="block-title fs-25 mb-2 font-weight-bold">
+                            This Week&#039;s Top Offers</h2>
+                        <div class="sub-title fs-18">
+                            A resort is a self-contained destination that can provide for all of your travel needs in one location. </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="row justify-content-center">
+
+                {% if room_types %}
+                    {% for room_type in room_types %}
+
+                        <div class="col-lg-4 col-md-4 col-sm-6">
+                            <div class="card border-0 box-shadow rounded-0 mb-4">
+                                <a href="{% url 'core:room_type_list' room_type.slug %}" class="card-img position-relative">
+                                    <img src="{{ room_type.banner_img.url }}" class="img-fluid wd_xs_100" alt="...">
+                                    <button type="button" class="position-absolute btn btn-primary btn-sm">Book Now</button>
+                                </a>
+                                <div class="card-body">
+                                    <h3 class="text-center card-title mb-0 weeklyoffer-title  "><a href="#" class="text-dark fw-bolder">{{ room_type.type }}</a></h3>
+                                </div>
+                            </div>
+                        </div>
+
+                    {% endfor %}
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+    <div class="section section-destination">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-10 offset-md-1">
+                    <div class="section-title text-center mb-5 col-middle">
+                        <h2 class="block-title fs-25 mb-2 font-weight-bold">
+                            Explore Destinations &amp; Experiences</h2>
+                        <div class="sub-title fs-18">
+                            Our guests always travel the world in style. Mention @Kempinski on Instagram for a chance to be featured! </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="destinations-carousel owl-carousel owl-theme">
+                <div class="card card-poster text-white flex-row align-items-end border-0">
+                    <a href="#" class="tile-link position-absolute w-100 h-100 top-0 left-0"></a>
+                    <img src="{% static 'frontpage/assets/img/banner/2019-06-15/0.jpg' %}" alt="Card image" class="bg-image">
+                    <div class="card-body overlay-content position-relative">
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-primary btn-sm book-btn">Book Now</button>
+                        </div>
+                        <span class="item-tag text-uppercase bg-white font-weight-500 mb-2 d-inline-block">Scenic Travel</span>
+                        <h5 class="card-title font-weight-bold text-white">It uses a dictionary of over 200 Latin words </h5>
+                    </div>
+                </div>
+                <div class="card card-poster text-white flex-row align-items-end border-0">
+                    <a href="#" class="tile-link position-absolute w-100 h-100 top-0 left-0"></a>
+                    <img src="{% static 'frontpage/assets/img/banner/2019-06-15/01.jpg' %}" alt="Card image" class="bg-image">
+                    <div class="card-body overlay-content position-relative">
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-primary btn-sm book-btn">Book Now</button>
+                        </div>
+                        <span class="item-tag text-uppercase bg-white font-weight-500 mb-2 d-inline-block">Southern Travel</span>
+                        <h5 class="card-title font-weight-bold text-white">Many desktop publishing packages and web page </h5>
+                    </div>
+                </div>
+                <div class="card card-poster text-white flex-row align-items-end border-0">
+                    <a href="#" class="tile-link position-absolute w-100 h-100 top-0 left-0"></a>
+                    <img src="{% static 'frontpage/assets/img/banner/2019-06-15/02.jpg' %}" alt="Card image" class="bg-image">
+                    <div class="card-body overlay-content position-relative">
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-primary btn-sm book-btn">Book Now</button>
+                        </div>
+                        <span class="item-tag text-uppercase bg-white font-weight-500 mb-2 d-inline-block">Scenic Travel</span>
+                        <h5 class="card-title font-weight-bold text-white">Contrary to popular belief, Lorem Ipsum is </h5>
+                    </div>
+                </div>
+                <div class="card card-poster text-white flex-row align-items-end border-0">
+                    <a href="#" class="tile-link position-absolute w-100 h-100 top-0 left-0"></a>
+                    <img src="{% static 'frontpage/assets/img/banner/2019-06-15/03.jpg' %}" alt="Card image" class="bg-image">
+                    <div class="card-body overlay-content position-relative">
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-primary btn-sm book-btn">Book Now</button>
+                        </div>
+                        <span class="item-tag text-uppercase bg-white font-weight-500 mb-2 d-inline-block">Scenic Travel</span>
+                        <h5 class="card-title font-weight-bold text-white">Various versions have evolved over the years </h5>
+                    </div>
+                </div>
+                <div class="card card-poster text-white flex-row align-items-end border-0">
+                    <a href="#" class="tile-link position-absolute w-100 h-100 top-0 left-0"></a>
+                    <img src="{% static 'frontpage/assets/img/banner/2019-06-17/0.jpg' %}" alt="Card image" class="bg-image">
+                    <div class="card-body overlay-content position-relative">
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-primary btn-sm book-btn">Book Now</button>
+                        </div>
+                        <span class="item-tag text-uppercase bg-white font-weight-500 mb-2 d-inline-block">Scenic Travel</span>
+                        <h5 class="card-title font-weight-bold text-white">Find the credit card that&#039;s right for you. </h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+
+

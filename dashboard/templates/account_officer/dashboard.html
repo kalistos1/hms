@@ -1,0 +1,189 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+{% block title %} Hotel | Accountant {% endblock %}
+
+{% block content %}
+    <main class="container-fluid px-0">
+    {% comment %} sidebar here {% endcomment %}
+        {% if request.user.is_admin %}
+            {% include '../partials/menubars/admin_sidebar.html' %}
+
+        {% elif request.user.is_supervisor %}
+            {% include '../partials/menubars/supervisor_sidebar.html' %}
+
+        {% elif request.user.is_account_officer %}
+            {% include '../partials/menubars/accounting_sidebar.html' %}
+
+        {% elif request.user.is_pos_officer %}
+            {% include '../partials/menubars/pos_sidebar.html' %}
+
+        {% else %}
+            {% include '../partials/menubars/frontdesk_sidebar.html' %}
+
+        {% endif %}
+
+    {% comment %} sidebar ends {% endcomment %}
+
+        <div class="content">
+
+
+   {% comment %} top header starts {% endcomment %}
+            {% include '../partials/top_header.html' %}
+   {% comment %} top header ends {% endcomment %}
+
+
+
+   {% comment %} body content starts {% endcomment %}
+
+            <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
+	                      <!-- start: page body area -->
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">Today Booking</h6>
+                            </div>
+                            <div class="card-body">
+                                <h2>1,587</h2>
+                                <span class="badge bg-primary">+11% </span>
+                                <span class="text-muted">From previous period</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">Total Amount</h6>
+                            </div>
+                            <div class="card-body">
+                                <h2>$2,258</h2>
+                                <span class="badge bg-info">+05% </span>
+                                <span class="text-muted">New income</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">Total Customer</h6>
+                            </div>
+                            <div class="card-body">
+                                <h2>2.3k</h2>
+                                <span class="badge bg-warning">+11% </span>
+                                <span class="text-muted">From previous period</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">Total Revenue</h6>
+                            </div>
+                            <div class="card-body">
+                                <h2>11,5587</h2>
+                                <span class="badge bg-success">+21% </span>
+                                <span class="text-muted">From previous period</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="card-title">Total Incomes</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="reservations" style="height: 280px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="card-title">Today Booking List</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table dataTable align-middle table-hover table-body" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Room Type</th>
+                                            <th>Check In</th>
+                                            <th>Check Out</th>
+                                            <th>Paid Amount</th>
+                                            <th>Due Amount</th>
+                                            <th>Payment Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                Frank Baker
+                                            </td>
+                                            <td>Single</td>
+                                            <td>12/03/2024</td>
+                                            <td>13/03/2024</td>
+                                            <td>0.00</td>
+                                            <td>$230</td>
+                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Rya Randall
+                                            </td>
+                                            <td>Deluxe</td>
+                                            <td>12/03/2024</td>
+                                            <td>24/03/2024</td>
+                                            <td>0.00</td>
+                                            <td>$430</td>
+                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Phil Glover
+                                            </td>
+                                            <td>Studio</td>
+                                            <td>12/03/2024</td>
+                                            <td>21/03/2024</td>
+                                            <td>0.00</td>
+                                            <td>$4450</td>
+                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Victor Rampling
+                                            </td>
+                                            <td>Junior Suite</td>
+                                            <td>12/03/2024</td>
+                                            <td>15/03/2024</td>
+                                            <td>0.00</td>
+                                            <td>$530</td>
+                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Sally Graham
+                                            </td>
+                                            <td>Queen</td>
+                                            <td>12/03/2024</td>
+                                            <td>17/03/2024</td>
+                                            <td>$1550</td>
+                                            <td>0.00</td>
+                                            <td><span class="badge text-bg-success">Success</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+                   {% comment %} body content ends {% endcomment %}
+
+
+        </div>
+    </main>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% load static %}
+<div class="h-100 d-flex flex-column p-0">
+    <div class="pos-sidebar-header">
+        <div class="back-btn">
+            <button type="button" data-dismiss-class="pos-sidebar-mobile-toggled" data-target="#pos" class="btn border-0">
+                <i class="fa fa-chevron-left"></i>
+            </button>
+        </div>
+
+        <div class="order"> <b>Check-Out</b></div>
+    </div>
+    <div class="pos-sidebar-nav">
+        <ul class="nav nav-tabs nav-fill">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" data-bs-toggle="tab" data-bs-target="#newOrderTab">ITEMS ({{ cart.items.count }})</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#orderHistoryTab">Order History (0)</a>
+            </li>
+        </ul>
+    </div>
+
+
+    <form hx-post="{% url 'pos:process_checkout' %}" hx-target="#checkout-result" hx-swap="innerHTML">
+        {% csrf_token %}
+
+        <div class="pos-sidebar-body tab-content" data-scrollbar="true" data-height="100%">
+            <div class="tab-pane fade h-100 show active" id="newOrderTab">
+                <div class="pos-table">
+
+                    <div class="col-11">
+                        <div class="pos-product-thumb">
+
+                            <div class="info d-flex justify-content-between mt-3">
+                                <div class="pt-2" > <h6 class="fw-bolder">Total Number of items: </h6></div>
+                                <div class=" bg-info px-3 text-light pt-2"><h4>{{ cart.total_items }}</h4></div>
+                            </div>
+                            <hr>
+                            <div class="info d-flex justify-content-between ">
+                                <div class="pt-2" > <h6 class="fw-bolder">Total Number Payable: </h6></div>
+                                <div class=" bg-danger px-2 text-light pt-2"><h5>{{ cart.total }}</h5></div>
+                            </div>
+                            <hr>
+                        </div>
+                    </div>
+
+
+                </div>
+
+
+                <div class="container text-center mb-2 mt-5 ">
+                    <h6> Please fill the from below to checkout </h6>
+
+                    <input type="hidden" name="cart_id" value="{{ cart.id }}">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="FirstName" name="first_name">
+                    </div>
+
+                    <br>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="last name" name="last_name">
+                    </div>
+                    <br>
+
+                    <div class="form-group">
+                        <input type="phone" class="form-control" placeholder="Phone Number" name="phone_number" required>
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <input type="email" class="form-control" placeholder="Email" name="email" required>
+                    </div>
+                    <br>
+                    <div class="form-group">
+
+                        <select class="form-control" name="payment_method" id="payment_method" required>
+                            <option value="">Select Payment Method</option>
+                            <option value="CASH">Cash</option>
+                            <option value="CARD">Card</option>
+                            <option value="ROOM_CHARGE">Room Charge</option>
+                        </select>
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="pos-sidebar-footer">
+        {% comment %} <form action="" method="post mb-3">
+            <p class="text-center"> Apply Discount Code  if Any</p>
+
+            <div class="form-group">
+              <input type="text" class="form-control " placeholder="Discount Code" name="coupon">
+              
+              <button class=" mx-auto d-block btn btn-success text-center  mt-1"> Apply Code </button>
+            </div>
+
+        </form> {% endcomment %}
+
+            <div id="checkout-result"></div>
+
+            <div class="d-flex align-items-center mt-3">
+            {% comment %} <a href="" class="btn btn-default rounded-3 text-center me-10px w-70px"><i class="fa fa-bell d-block fs-18px my-1"></i> Service</a>
+            <a href="" class="btn btn-default rounded-3 text-center me-10px w-70px"><i class="fa fa-receipt d-block fs-18px my-1"></i> Bill</a> {% endcomment %}
+
+                <button type="submit" class="btn btn-theme rounded-3 text-center flex-1">Checkout</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,38 @@
+<!-- Add: Room Service -->
+<div
+    class="offcanvas offcanvas-end"
+    tabindex="-1"
+    id="add-additional-charge"
+    aria-labelledby="add-additional-charge"
+>
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Additional Charge Form</h5>
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+        ></button>
+    </div>
+    <div class="offcanvas-body">
+        <form action ="{% url 'dashboard:frontdesk_add_additional_charge' 0 %}" method ="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group mb-3">
+
+
+                {{ additional_charge_form.as_p}}
+
+            </div>
+
+
+            <div class="d-flex">
+                <button type="button" class="btn w-100 me-1 py-2 btn-primary">
+                    Clear
+                </button>
+                <button type="submit" class="btn w-100 ms-1 py-2 btn-dark">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+Summary of Accounting Types
+
+    Revenue Accounting:
+        Room, Event, and Service Revenue
+        Deferred Revenue
+        POS Sales Revenue
+
+    Expense Accounting:
+        Payroll and Benefits
+        Inventory and COGS
+        Procurement and Operating Expenses
+
+    Accounts Receivable and Accounts Payable:
+        Customer Invoices and Supplier Payments
+        Credit and Prepayments
+
+    Tax Accounting:
+        Sales Tax, Payroll Tax, and Occupancy Tax
+
+    Inventory and Asset Accounting:
+        Inventory Valuation
+        Fixed Asset Depreciation
+
+    Financial Reporting:
+        Income Statements
+        Balance Sheets
+        Cash Flow Statements

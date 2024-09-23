@@ -1,0 +1,51 @@
+{% extends 'pos_base.html' %}
+{% load static %}
+{% block title %} Hotel | POS - Customer Order System   {% endblock %}
+
+{% block content %}
+
+    <div id="app" class="app app-content-full-height app-without-sidebar app-without-header">
+
+        <div id="content" class="app-content p-0">
+
+            <div class="pos pos-with-menu pos-with-sidebar" id="pos">
+
+
+        {% comment %} }side bar here {% endcomment %}
+                {% include '../partials/_menu_bar.html' %}
+        {% comment %} side bar ends {% endcomment %}
+
+        {% comment %} contents dispaplay {% endcomment %}
+
+                <div class="pos-content">
+                    <div class="pos-content-container h-100" id="product-list">
+                        {% include '../partials/htmx/product_list.html' %}
+                    </div>
+                </div>
+
+        {% comment %} content display ends {% endcomment %}
+
+           {% comment %} cart side bar {% endcomment %}
+                <div class="pos-sidebar">
+                    {% include '../partials/htmx/_cart_sidebar.html' %}
+                </div>
+           {% comment %} cart side bar ends {% endcomment %}
+
+
+
+            </div>
+
+            <a href="#" class="pos-mobile-sidebar-toggler" data-toggle-class="pos-sidebar-mobile-toggled" data-target="#pos">
+                <iconify-icon class="display-6" icon="solar:bag-smile-bold-duotone"></iconify-icon>
+                <span class="badge">{{total_items}}</span>
+            </a>
+
+        </div>
+
+
+        <a href="javascript:;" class="btn btn-icon btn-circle btn-theme btn-scroll-to-top" data-toggle="scroll-to-top"><i class="fa fa-angle-up"></i></a>
+
+    </div>
+
+
+{% endblock %}

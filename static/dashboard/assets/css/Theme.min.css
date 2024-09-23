@@ -1,0 +1,35 @@
+:root {
+    --body-color: #ffffff;
+    --reverse-color: #17161a;
+    --reverse-color-white: 255, 255, 255;
+    --reverse-color-black: 0, 0, 0;
+    --bs-border-color: #e4e9ed;
+    --light-bg1: #efefef;
+    --light-bg2: #E3E3EB;
+    --light-bg3: #E2F2E8;
+    --light-bg4: #E7EAEE;
+    --light-bg5: #F7F2ED;
+    --light-bg6: #E3F1F5;
+}
+
+[data-theme="theme-Custom"] {
+    --primary-color: #FFC107; /* Bright yellow */
+    --accent-color: #FF8F00;  /* Light yellow */
+    --primary-rgb: 255, 193, 7; /* RGB for primary color */
+    --accent-rgb: 254, 226, 119; /* RGB for accent color */
+    
+    /* Additional theme colors */
+    --theme-color1: #FFC107;
+    --theme-color2: #FFB300;
+    --theme-color3: #FFA000;
+    --theme-color4: #FEE277;
+    --theme-color5: #FF6F00;
+    --theme-color6: #FF5722;
+    
+    /* Hover colors */
+    --primary-hover: #FFD54F; /* Slightly lighter shade for hover */
+    --accent-hover: #FFECB3;  /* Lightest yellow shade for hover */
+    
+    /* Gradient */
+    --primary-gradient: linear-gradient(-45deg, var(--primary-color), var(--accent-color));
+}
