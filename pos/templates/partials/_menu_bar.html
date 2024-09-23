@@ -9,22 +9,22 @@
         <div data-scrollbar="true" data-height="100%" data-skip-mobile="true">
             <ul class="nav nav-tabs">
                 {% for category in categories %}
-                <li class="nav-item">
-                    <a class="nav-link active" href="{% url 'pos:category-products' category.slug %}" 
-                    hx-get="{% url 'pos:category-products' category.slug %}" 
-                    hx-target="#product-list" 
-                    hx-swap="innerHTML">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'pos:category-products' category.slug %}"
+                           hx-get="{% url 'pos:category-products' category.slug %}"
+                           hx-target="#product-list"
+                           hx-swap="innerHTML">
 
-                        <div class="nav-icon"><i class="fa fa-fw {{ category.icon_class }}"></i></div>
-                        <div class="nav-text">{{ category.name }}</div>
-                    </a>
-                </li>
+                            <div class="nav-icon"><i class="fa fa-fw {{ category.icon_class }}"></i></div>
+                            <div class="nav-text">{{ category.name }}</div>
+                        </a>
+                    </li>
                 {% endfor %}
-                
-                
-                
-                
-                
+
+
+
+
+
             </ul>
         </div>
     </div>

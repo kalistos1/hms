@@ -85,6 +85,7 @@ class Customer(User):
 
 
 # POSUser
+
 class POSUser(models.Model):
     user = models.OneToOneField(Employee, on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now_add=True)
@@ -92,8 +93,6 @@ class POSUser(models.Model):
 
     def __str__(self):
         return self.user.username
-
-
 
 # Discount
 
@@ -111,7 +110,6 @@ class Discount(models.Model):
     def clean(self):
         if self.discount_percentage > 100:
             raise ValidationError("Discount percentage cannot exceed 100%.")
-
 
 
 # Order 
@@ -202,27 +200,6 @@ class Refund(models.Model):
         if self.refund_amount > total_paid:
             raise ValidationError('Refund amount cannot exceed total payment.')
         
-
-# Shift 
-class Shift(models.Model):
-    staff = models.ForeignKey(POSUser, on_delete=models.CASCADE)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField(null=True, blank=True)  # Active until manually closed
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_modified = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f'Shift {self.id} by {self.staff}'
-
-    @property
-    def shift_duration(self):
-        if self.end_time:
-            return self.end_time - self.start_time
-        return 'Shift still ongoing'
-
-
-
-
 
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)

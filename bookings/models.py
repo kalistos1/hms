@@ -55,7 +55,7 @@ class Hotel(models.Model):
         if self.slug == "" or self.slug == None:
             uuid_key = shortuuid.uuid()
             uniqueid = uuid_key[:4]
-            self.slug = slugify(self.title) + "-" + str(uniqueid.lower())
+            self.slug = slugify(self.name) + "-" + str(uniqueid.lower())
             
         super(Hotel, self).save(*args, **kwargs) 
 
@@ -138,10 +138,10 @@ class RoomAmenity(models.Model):
 class RoomType(models.Model):
     
     ROOM_TYPES = (
-        ('King', 'King'),
-        ('Luxury', 'Luxury'),
-        ('Normal', 'Normal'),
-        ('Economic', 'Economic'),
+        ('Delux', 'Delux'),
+        ('Executive', 'Executive'),
+        ('Presidential', 'Presidential'),
+        
     )
 
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
@@ -207,11 +207,11 @@ class Room(models.Model):
 
 class Payment(models.Model):
     PAYMENT_STATUS_CHOICES = [
-        ('pending', 'Pending'),
+        ('pending', 'pending'),
         ('advance', 'advance'),
         ('completed', 'completed'),
         ('failed', 'Failed'),
-        ('refunded', 'Refunded'),
+        ('refunded', 'refunded'),
     ]
     PAYMENT_MODE_CHOICES = [
         ('cash', 'Cash'),
@@ -444,6 +444,8 @@ class Booking(Transaction):
             self.coupon = reservation.payment.booking.coupon  # Copy the coupon from the reservation if it exists
         
         self.save()
+        
+        
     def are_rooms_available(self, rooms, check_in_date, check_out_date):
         """
         Check if all the specified rooms are available for the selected date range.
@@ -461,15 +463,32 @@ class Booking(Transaction):
         return True, None
 
         
-
     def save(self, *args, **kwargs):
-        if self.pk:  # Existing booking, so check room availability
-            available, unavailable_room = self.are_rooms_available(self.room.all(), self.check_in_date, self.check_out_date)
-            if not available:
-                raise ValueError(f"Room {unavailable_room.room_number} is not available for the selected dates.")
-        
-        # Ensure that the booking's total amount is calculated before saving
+        # If it's a new booking (i.e., no primary key assigned yet)
+        if not self.pk:
+            # Save the booking to generate the primary key (id)
+            super(Booking, self).save(*args, **kwargs)
+
+        # Now that the booking has an id, check room availability
+        available, unavailable_room = self.are_rooms_available(self.room.all(), self.check_in_date, self.check_out_date)
+        if not available:
+            raise ValueError(f"Room {unavailable_room.room_number} is not available for the selected dates.")
+
+        # Ensure that the booking's total amount is calculated
         self.total_amount = self.get_total_payable_after_discount()
+
+        # Save again to update the fields after all checks
+        super(Booking, self).save(*args, **kwargs)
+        
+        
+    # def save(self, *args, **kwargs):
+    #     if self.pk:  # Existing booking, so check room availability
+    #         available, unavailable_room = self.are_rooms_available(self.room.all(), self.check_in_date, self.check_out_date)
+    #         if not available:
+    #             raise ValueError(f"Room {unavailable_room.room_number} is not available for the selected dates.")
+        
+    #     # Ensure that the booking's total amount is calculated before saving
+    #     self.total_amount = self.get_total_payable_after_discount()
 
 
         super(Booking, self).save(*args, **kwargs)

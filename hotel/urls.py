@@ -10,6 +10,7 @@ urlpatterns = [
     path('', include('core.urls')),
     path('auth/', include('accounts.urls')),
     path('dashboard/', include('dashboard.urls')),
+    path('hrm/', include('hrm.urls')),
     path('booking/', include('bookings.urls')),
     path('Inventory/', include('inventory.urls')),
     
@@ -20,7 +21,6 @@ urlpatterns = [
     path('pos/', include('pos.urls')),
 
 ]
-
 
 if settings.DEBUG: # new
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
