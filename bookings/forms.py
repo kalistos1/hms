@@ -83,7 +83,7 @@ class BookingChoiceForm(forms.Form):
 class RoomBookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        fields = ['room_type', 'room', 'check_in_date', 'check_out_date','num_adults', 'num_children']
+        fields = ['room_type', 'room', 'check_in_date', 'check_out_date', 'num_adults', 'num_children']
         widgets = {
             'check_in_date': DateInput(attrs={'class': 'form-control', 'placeholder': 'Check-in Date'}),
             'check_out_date': DateInput(attrs={'class': 'form-control', 'placeholder': 'Check-out Date'}),
@@ -100,7 +100,7 @@ class RoomBookingForm(forms.ModelForm):
     )
 
     room = forms.ModelMultipleChoiceField(
-        queryset=Room.objects.none(),
+        queryset=Room.objects.none(),  # Initially empty
         widget=forms.SelectMultiple(attrs={
             'id': 'room-select',
             'class': 'form-control',
@@ -110,12 +110,18 @@ class RoomBookingForm(forms.ModelForm):
             'hx-swap': 'outerHTML',
         })
     )
+
     def __init__(self, *args, **kwargs):
+        room_type_id = kwargs.pop('room_type_id', None)
         super(RoomBookingForm, self).__init__(*args, **kwargs)
+        
+        if room_type_id:
+            # Update the queryset for the room field based on the selected room_type
+            self.fields['room'].queryset = Room.objects.filter(room_type_id=room_type_id, is_available=True)
         
         self.fields['num_adults'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Adults'})
         self.fields['num_children'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Children'})
-       
+
    
     
    

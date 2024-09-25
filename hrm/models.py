@@ -95,6 +95,8 @@ class Attendance(models.Model):
         ('afternoon', 'Afternoon'),
         ('night', 'Night')
     )
+
+   
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='attendances')
     check_in = models.DateTimeField(auto_now_add= True)
     check_out = models.DateTimeField(null=True, blank=True)
@@ -132,19 +134,26 @@ class StaffSchedules(models.Model):
         ('Hr_shift', 'hr_shift'),
         ('Manager', 'Manager'), 
     )
+
+    SCHEDULE_STATUS = (
+        ('True','True'),
+        ('False','False'),
+        ('Ended','Ended'),
+    )
     
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='schedules')
-    schedule_date = models.DateField()
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    schedule_start_date = models.DateField()
+    start_time = models.TimeField()
+    schedule_end_date = models.DateField()
+    end_time = models.TimeField()
     schedule_shift_type = models.CharField(max_length=50, choices =SCHEDULESHIFTTYPE, blank=True, null=True)
     schedule_type = models.CharField(max_length=50, choices= scheduletype,blank=True, null=True)
     date_created = models.DateTimeField(auto_now_add=True)
-    active = models.BooleanField(default=False)
+    active = models.CharField(max_length =20, default="False", choices = SCHEDULE_STATUS)
     date_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Schedule for {self.employee.user.get_full_name()} - {self.schedule_date}"
+        return f"Schedule for {self.employee.user.get_full_name()} - {self.schedule_start_date}"
 
 
 class LeaveRequest(models.Model):

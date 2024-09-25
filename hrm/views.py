@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth import logout
 
 
 
@@ -205,8 +206,12 @@ def leave_request_delete(request, pk):
 # List all staff schedules
 def staff_schedule_list(request):
     schedules = StaffSchedules.objects.all()
-    return render(request, 'staff_schedule_list.html', {'schedules': schedules})
-
+    form = StaffScheduleForm(request.POST)
+    context={
+        'schedules': schedules,
+        'form':form,
+        }
+    return render(request, 'pages/schedule_list.html', context)
 
 # Create a new staff schedule
 def staff_schedule_create(request):
@@ -214,10 +219,16 @@ def staff_schedule_create(request):
         form = StaffScheduleForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('staff_schedule_list')
+            messages.success(request, "Roaster item created successfully")
+            return redirect('hrm:staff_schedule')
+        else:
+            # Print out the form errors for debugging
+            print("dddddddddddddddddddddddddddddddddddddddddddddddForm errors:", form.errors)
+            messages.error(request, "Unable to create Roaster")
+            return redirect('hrm:staff_schedule')
     else:
-        form = StaffScheduleForm()
-    return render(request, 'staff_schedule_form.html', {'form': form})
+        messages.error(request, "Unable to create roaster item")
+        return redirect('hrm:staff_schedule')
 
 
 # Update an existing staff schedule
@@ -227,10 +238,11 @@ def staff_schedule_update(request, pk):
         form = StaffScheduleForm(request.POST, instance=schedule)
         if form.is_valid():
             form.save()
-            return redirect('staff_schedule_list')
+            messages.success(request,"roaster item updated successfully")
+            return redirect('hrm:staff_schedule')
     else:
-        form = StaffScheduleForm(instance=schedule)
-    return render(request, 'staff_schedule_form.html', {'form': form})
+        messages.error(request,"Unable to update roaster item")
+        return redirect('hrm:staff_schedule')
 
 
 # Delete a staff schedule
@@ -238,65 +250,85 @@ def staff_schedule_delete(request, pk):
     schedule = get_object_or_404(StaffSchedules, pk=pk)
     if request.method == 'POST':
         schedule.delete()
-        return redirect('staff_schedule_list')
-    return render(request, 'staff_schedule_confirm_delete.html', {'schedule': schedule})
+        messages.success(request,"roaster item deleted successfully")
+        return redirect('hrm:staff_schedule')
+    else:
+        messages.success(request,"Unable to roaster item")
+        return redirect('hrm:staff_schedule')
 
 
+# work sign attendance view
 
 # @login_required
 def check_in(request):
-   
     user = request.user
     employee = get_object_or_404(Employee, user=user)
     
     # Get today's schedule for the employee
     today = timezone.now().date()
-    schedule = StaffSchedules.objects.filter(employee=employee, schedule_date=today).first()
+    schedule = StaffSchedules.objects.filter(employee=employee, active="False", schedule_start_date=today).first()
 
     if not schedule:
         messages.error(request, "No schedule found for today.")
-        return redirect('home') 
+        return redirect('signin') 
     
-
     # Check if employee already checked in today
     if Attendance.objects.filter(employee=employee, check_in__date=today, check_out__isnull=True).exists():
         messages.warning(request, "You have already checked in.")
-        return redirect('home')  # redirect to a relevant page
+        return redirect('signin')  # redirect to a relevant page
     
     # Check for lateness based on schedule
     scheduled_start_time = timezone.make_aware(timezone.datetime.combine(today, schedule.start_time))
     current_time = timezone.now()
     late_arrival = current_time > scheduled_start_time
+
+    # Check if user is trying to sign in before their time
+    if current_time < scheduled_start_time:
+        messages.error(request, "It is not yet time for you to sign in!")
+        return redirect('signin')
     
-  
+    # Retrieve the employee's department location (linked via DepartmentLocation)
+    department_location = employee.department  
+
     Attendance.objects.create(
         employee=employee,
         shift_type=schedule.schedule_shift_type,
-        shift_location=schedule.employee.department.locations.first(),
+        shift_location=department_location,  # Use employee's department location directly
         late_arrival=late_arrival,
+        active=True,
+
     )
-    
-    messages.success(request, "Check-in successful!")
-    return redirect('home')
+
+    # Update schedule status
+    schedule.active = "True"
+    schedule.save()
+    messages.success(request, "Attendance Signed successfully!")
+    return redirect('signin')
 
 
 
 # @login_required
 def check_out(request):
-    user = request.user
-
-    employee = get_object_or_404(Employee, user=user)
-    
     today = timezone.now().date()
-    attendance = Attendance.objects.filter(employee=employee, check_in__date=today, check_out__isnull=True).first()
+    user = request.user
+    employee = get_object_or_404(Employee, user=user)
+    schedule = StaffSchedules.objects.filter(employee=employee, schedule_end_date=today).first()
+   
+    attendance = Attendance.objects.filter(employee=employee, check_out__isnull=True).first() # check_in__date=today,
 
     if not attendance:
         messages.error(request, "No active check-in found.")
-        return redirect('home')  
+        return redirect('signin')  
     
     # Update the attendance record with the check-out time
     attendance.check_out = timezone.now()
+    attendance.active=False
     attendance.save()
-    
-    messages.success(request, "Check-out successful!")
-    return redirect('home')
+
+    schedule.active = "Ended"
+    schedule.save()
+
+    logout(request)
+    return redirect('core:index')
+
+   

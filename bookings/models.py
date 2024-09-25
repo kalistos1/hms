@@ -268,20 +268,6 @@ class Payment(models.Model):
         super(Payment, self).save(*args, **kwargs)
 
 
-    # def save(self, *args, **kwargs):
-    #     """
-    #     Ensure the availability of rooms before saving the booking,
-    #     and use a database-level lock to prevent race conditions.
-    #     """
-    #     # Access rooms via the related booking
-    #     booking = self.booking
-    #     available, unavailable_room = booking.are_rooms_available(booking.room.all(), booking.check_in_date, booking.check_out_date)
-        
-    #     if not available:
-    #         raise ValueError(f"Room {unavailable_room.room_number} is not available for the selected dates.")
-        
-    #     super(Payment, self).save(*args, **kwargs)
-
 class PaymentCompletion(models.Model):
 
     PAYMENT_MODE_CHOICES = [
