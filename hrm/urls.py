@@ -20,7 +20,10 @@ urlpatterns = [
     path('departments/delete_employee/<int:pk>/', views.employee_delete, name='employee_delete'),
     path('departments/update_employee/<int:pk>/', views.employee_update, name='employee_update'),
     
-    
+    path('departments/schedules/', views.staff_schedule_list, name='staff_schedule'),
+    path('departments/create_schedule/', views.staff_schedule_create, name='schedule_create'),
+    path('departments/delete_schedule/<int:pk>/', views.staff_schedule_delete, name='schedule_delete'),
+    path('departments/update_schedule/<int:pk>/', views.staff_schedule_update, name='schedule_update'),
     
     path('check-in/', views.check_in, name='check_in'),
     path('check-out/', views.check_out, name='check_out'),

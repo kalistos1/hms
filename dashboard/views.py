@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 from django.contrib import messages
 from dashboard . models import *
+from hrm .models import *
 from accounts.models import *
 from bookings.models import *
 import string
@@ -22,6 +23,10 @@ from bookings.forms import (
 )
 from django.utils import timezone
 from django.http import JsonResponse,HttpResponse
+import datetime
+
+
+today = datetime.date.today()
 
 
 
@@ -462,54 +467,128 @@ def account_dashboard(request):
 
 
 
+# def frontdesk_dashboard(request):
+#     template = "front_desk/dashboard.html"
+    
+#     if request.user.is_frontdesk_officer:
+       
+#         today = timezone.now().date()
+
+#         all_bookings = Booking.objects.filter( check_in_date =today)
+#         user = request.user
+
+#         employee = Employee.objects.get(user=user)
+    
+#         # Get the active attendance records
+#         active_attendance = Attendance.objects.filter(employee=employee, check_in__date=today, active=True).first()
+
+
+#         # Bookings created today
+#         todays_bookings = Booking.objects.filter(date_created__date=today)
+
+#         # Payments with status 'advance' or 'completed'
+#         todays_payments = Payment.objects.filter(
+#             Q(booking__in=todays_bookings) & (Q(status='advance') | Q(status='completed'))
+#         )
+
+#         # Sum of advance payments
+#         advance_payments_total = todays_payments.filter(status='advance').aggregate(total=Sum('amount'))['total'] or 0
+
+#         # Sum of completed payments
+#         completed_payments_total = todays_payments.filter(status='completed').aggregate(total=Sum('amount'))['total'] or 0
+
+#         # Sum of payment completions
+#         payment_completion_total = PaymentCompletion.objects.filter(payment__booking__in=todays_bookings).aggregate(
+#             total=Sum('amount')
+#         )['total'] or 0
+
+#         # Calculate the total money realized for today
+#         todays_total_money = advance_payments_total + completed_payments_total + payment_completion_total
+
+#         # Get all customers excluding specific user roles
+#         customers = User.objects.filter(
+#             is_admin=False,
+#             is_supervisor=False,
+#             is_account_officer=False,
+#             is_frontdesk_officer=False,
+#             is_pos_officer=False
+#         )
+
+#         context = {
+#             'all_bookings': all_bookings.count(),
+#             'todays_bookings': todays_bookings,
+#             'total_todays_booking':todays_bookings.count(),
+#             'todays_total_money': todays_total_money,
+#             'customers': customers.count(),
+#             'active_attendance':active_attendance,
+#         }
+
+#         return render(request, template, context)
+
+
 def frontdesk_dashboard(request):
     template = "front_desk/dashboard.html"
     
     if request.user.is_frontdesk_officer:
-        all_bookings = Booking.objects.all()
         today = timezone.now().date()
+        user = request.user
+        employee = Employee.objects.get(user=user)
 
-        # Bookings created today
-        todays_bookings = Booking.objects.filter(date_created__date=today)
+        # Get the active attendance record for today
+        active_attendance = Attendance.objects.filter(employee=employee, active=True).first()
 
-        # Payments with status 'advance' or 'completed'
-        todays_payments = Payment.objects.filter(
-            Q(booking__in=todays_bookings) & (Q(status='advance') | Q(status='completed'))
-        )
+        if active_attendance:
+            check_in_time = active_attendance.check_in
+            check_out_time = active_attendance.check_out or timezone.now()  # If checked out, use check-out time; otherwise, use current time
 
-        # Sum of advance payments
-        advance_payments_total = todays_payments.filter(status='advance').aggregate(total=Sum('amount'))['total'] or 0
+            # Ensure to use the correct date field from the Booking model
+            todays_bookings = Booking.objects.filter(
+                date_created__date=today,  # Adjust according to your model structure
+                date_created__range=(check_in_time, check_out_time)
+            )
 
-        # Sum of completed payments
-        completed_payments_total = todays_payments.filter(status='completed').aggregate(total=Sum('amount'))['total'] or 0
+            # Payments made for these bookings within the same time range
+            todays_payments = Payment.objects.filter(
+                booking__in=todays_bookings,
+                date__range=(check_in_time, check_out_time)
+            )
 
-        # Sum of payment completions
-        payment_completion_total = PaymentCompletion.objects.filter(payment__booking__in=todays_bookings).aggregate(
-            total=Sum('amount')
-        )['total'] or 0
+            # Sum of payments by status
+            advance_payments_total = todays_payments.filter(status='advance').aggregate(total=Sum('amount'))['total'] or 0
+            completed_payments_total = todays_payments.filter(status='completed').aggregate(total=Sum('amount'))['total'] or 0
+            payment_completion_total = PaymentCompletion.objects.filter(
+                payment__in=todays_payments
+            ).aggregate(total=Sum('amount'))['total'] or 0
 
-        # Calculate the total money realized for today
-        todays_total_money = advance_payments_total + completed_payments_total + payment_completion_total
+            # Calculate total money realized during the active session
+            todays_total_money = advance_payments_total + completed_payments_total + payment_completion_total
 
-        # Get all customers excluding specific user roles
-        customers = User.objects.filter(
-            is_admin=False,
-            is_supervisor=False,
-            is_account_officer=False,
-            is_frontdesk_officer=False,
-            is_pos_officer=False
-        )
+            
+            customers = User.objects.filter(
+                is_admin=False,
+                is_supervisor=False,
+                is_account_officer=False,
+                is_frontdesk_officer=False,
+                is_pos_officer=False,
+                date_joined__date=today,
+                date_joined__range=(check_in_time, check_out_time)
 
-        context = {
-            'all_bookings': all_bookings.count(),
-            'todays_bookings': todays_bookings,
-            'total_todays_booking':todays_bookings.count(),
-            'todays_total_money': todays_total_money,
-            'customers': customers.count(),
-        }
+            )
 
-        return render(request, template, context)
-
+            context = {
+                'all_bookings': todays_bookings.count(),
+                'todays_bookings': todays_bookings,
+                'total_todays_booking': todays_bookings.count(),
+                'todays_total_money': todays_total_money,
+                'customers': customers.count(),
+                'active_attendance': active_attendance,
+            }
+            
+            return render(request, template, context)
+        
+        else:
+            # Handle case where there is no active attendance for the employee
+            return render(request, template, {'error': 'No active attendance found for the session.'})
 
 #room status 
 def frontdesk_room_status(request):
@@ -563,12 +642,7 @@ def frontdesk_checkout_list(request):
     
 
     if request.user.is_frontdesk_officer:
-        
-        # Filtering bookings where:
-        # check_out_date is today or in the past 
-        # is_active is True
-        # checked_in is True
-        
+ 
        
         booking_list = Booking.objects.filter(
             check_out_date__lte=timezone.now(),
@@ -590,14 +664,15 @@ def generate_unique_username(base_username):
     return username
 
 
-#htmx view for avaiilable room 
+# #htmx view for avaiilable room 
+
 def available_rooms_view(request):
     room_type_id = request.GET.get('room_type')
     rooms = Room.objects.filter(room_type_id=room_type_id, is_available=True)
 
     return render(request, 'partials/htmx/available-rooms.html', {'rooms': rooms})
 
-
+# htmx for room price
 def get_room_price_view(request):
     room_type_id = request.GET.get('room_type')
     room_id = request.GET.get('room')
@@ -615,7 +690,6 @@ def get_room_price_view(request):
         # Fetch price from RoomType model
         room_type = RoomType.objects.filter(id=room_type_id).first()
         base_price = room_type.base_price if room_type else 0
-    print('fffffffffffffffffffffffffffffffffffffff',base_price)
     # Return the updated input field HTML with the base price
     html = render_to_string('partials/htmx/payment_amount_input.html', {'base_price': base_price})
     return HttpResponse(html)
@@ -623,15 +697,18 @@ def get_room_price_view(request):
 #htmx view for room price
 
 def front_desk_booking(request):
+    room_type_id = request.POST.get('room_type') if request.method == 'POST' else None
+
     if request.method == 'POST':
         basic_info_form = BasicUserInfoForm(request.POST)
         profile_info_form = ProfileInfoForm(request.POST)
         booking_choice_form = BookingChoiceForm(request.POST)
-        room_booking_form = RoomBookingForm(request.POST)
+        room_booking_form = RoomBookingForm(request.POST, room_type_id=room_type_id)  # Pass room_type_id
         room_reservation_form = RoomReservationForm(request.POST)
         payment_form = PaymentForm(request.POST)
 
         if basic_info_form.is_valid() and profile_info_form.is_valid() and booking_choice_form.is_valid():
+ 
             # Step 1: Check if the user already exists by email or phone number
             email = basic_info_form.cleaned_data['email']
             phone = basic_info_form.cleaned_data['phone']
@@ -658,12 +735,16 @@ def front_desk_booking(request):
 
             # Step 2: Save booking or reservation once
             if choice == 'booking':
+              
                 if room_booking_form.is_valid():
                     booking = room_booking_form.save(commit=False)
                     booking.user = user
                     booking.save()
+                
                     room_booking_form.instance = booking 
                     room_booking_form.save_m2m()  # Save ManyToMany fields
+                else:
+                    print('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy', room_booking_form.errors)
             elif choice == 'reservation':
                 if room_reservation_form.is_valid():
                     reservation = room_reservation_form.save(commit=False)
@@ -681,12 +762,12 @@ def front_desk_booking(request):
                 payment.save()
 
             return redirect('dashboard:receipt', booking_id=booking.booking_id if booking else reservation.id)
+
     else:
-       
         basic_info_form = BasicUserInfoForm()
         profile_info_form = ProfileInfoForm()
         booking_choice_form = BookingChoiceForm()
-        room_booking_form = RoomBookingForm()
+        room_booking_form = RoomBookingForm(room_type_id=room_type_id)  # Pass room_type_id
         room_reservation_form = RoomReservationForm()
         payment_form = PaymentForm()
 
@@ -698,7 +779,6 @@ def front_desk_booking(request):
         'room_reservation_form': room_reservation_form,
         'payment_form': payment_form
     })
-
 
 
 

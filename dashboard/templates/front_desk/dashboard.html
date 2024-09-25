@@ -34,8 +34,13 @@
 
 
    {% comment %} body content starts {% endcomment %}
+   {% include '../partials/_messages.html' %}
+            {% if active_attendance  and active_attendance.active == True %}
 
             <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5 ">
+                <div >
+                    <p class="text-end text-warning"> Make sure to sign-out before going home <a  href="{% url 'hrm:check_out' %}" class="btn btn-danger btn-sm">Sign Out </a></p>
+                </div>
                 <div class="row g-3 mb-3">
                     <div class="col-md-6 col-lg-3">
                         <div class="card">
@@ -57,7 +62,7 @@
                             <div class="card-body">
                                 <h2><span>&#8358;</span> {{todays_total_money }}</h2>
                                 {% comment %} <span class="badge bg-info">+05% </span> {% endcomment %}
-                                <span class="text-muted">New income</span>
+                                {% comment %} <span class="text-muted">New income</span> {% endcomment %}
                             </div>
                         </div>
                     </div>
@@ -70,7 +75,7 @@
                                 <h2>{{ customers }}</h2>
 
                                 {% comment %} <span class="badge bg-warning">+11% </span> {% endcomment %}
-                                <span class="text-muted">From previous period</span>
+                                {% comment %} <span class="text-muted">From previous period</span> {% endcomment %}
                             </div>
                         </div>
                     </div>
@@ -82,7 +87,7 @@
                             <div class="card-body">
                                 <h2>{{ all_bookings }}</h2>
                                 {% comment %} <span class="badge bg-success">+21% </span> {% endcomment %}
-                                <span class="text-muted">From previous period</span>
+                                {% comment %} <span class="text-muted">From previous period</span> {% endcomment %}
                             </div>
                         </div>
                     </div>
@@ -148,6 +153,15 @@
                     </div>
                 </div>
             </div>
+            {% else %}
+
+            <div class="text-center mt-5 ">
+                <p>Hi, <mark> {{ request.user.username }} </mark> You Are Yet to Sign the Attendance Form.<br>Click on the button below to sign  form.</p>
+                <a href="{% url 'hrm:check_in' %}" class="btn btn-danger "> Sign Form </a>
+                 
+            </div>
+           
+            {% endif %}
    {% comment %} body content ends {% endcomment %}
 
 
