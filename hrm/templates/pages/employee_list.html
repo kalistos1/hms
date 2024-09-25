@@ -31,6 +31,7 @@
    {% comment %} body content starts {% endcomment %}
 <!-- start: page body area -->
             <div class="px-xl-5 px-lg-4 px-3 py-3 mt-5 page-body">
+                {% include '../partials/_messages.html' %}
                 <div class="row g-3">
                     <div class="col-sm-12">
                         <div class="d-flex align-items-center justify-content-between flex-wrap">
@@ -63,7 +64,7 @@
 
                                                     <td>
                                                         <button type="button" class="btn" data-bs-toggle="offcanvas" data-bs-target="#edit-room" aria-controls="edit-room"><i class="fa fa-pencil-square fa-2x"></i></button>
-                                                        <a href="#" data-url="{% url 'dashboard:admin_delete_room' 0 %}" onclick="deleteRoom(event, {{ room.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
+                                                        <a href="#" data-url="{% url 'hrm:employee_delete' 0 %}" onclick="deleteEmployee(event, {{ employee.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
                                                     </td>
                                                 </tr>
                                             {% endfor %}
@@ -156,7 +157,7 @@
 
                 </div>
                 <script>
-                    function deleteRoom(event, amenityId) {
+                    function deleteEmployee(event, amenityId) {
                         event.preventDefault(); // Prevent the default link behavior
 
             // Get the URL template from the data attribute and replace the placeholder
@@ -164,7 +165,7 @@
 
                         Swal.fire({
                             title: 'Are you sure?',
-                            text: 'Do you want to delete this Room?',
+                            text: 'Do you want to delete this Employee?',
                             icon: 'warning',
                             showCancelButton: true,
                             confirmButtonText: 'Yes, delete it!',

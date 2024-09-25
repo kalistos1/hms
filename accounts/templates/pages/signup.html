@@ -26,6 +26,7 @@
                             </div>
                             {% if form %}
                                 <form action="" method="post" accept-charset="utf-8">
+                                    {% include '../partials/_messages.html' %}
                                     {% csrf_token %}
 
                                     <input type="hidden" name="csrf_test_name" value="12915a6050b21283d01046f8816ab66a" />

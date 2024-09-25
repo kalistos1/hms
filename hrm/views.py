@@ -50,7 +50,7 @@ def department_update(request, pk):
 # Delete a department
 def department_delete(request, pk):
     department = get_object_or_404(Department, pk=pk)
-    if request.method == 'POST':
+    if request.method == 'GET':
         department.delete()
         messages.success(request, 'Department deleted successfully')
         return redirect('hrm:departments')
@@ -101,7 +101,7 @@ def department_location_update(request, pk):
 # Delete a department location
 def department_location_delete(request, pk):
     location = get_object_or_404(DepartmentLocation, pk=pk)
-    if request.method == 'POST':
+    if request.method == 'GET':
         location.delete()
         messages.success(request, "department location was deleted successfully")
         return redirect('hrm:department_location')
@@ -153,7 +153,7 @@ def employee_update(request, pk):
 # Delete an employee
 def employee_delete(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
-    if request.method == 'POST':
+    if request.method == 'GET':
         employee.delete()
         messages.success('Employee deleted succcessfully')
         return redirect('hrm:employee_list')
@@ -197,7 +197,7 @@ def leave_request_update(request, pk):
 # Delete a leave request
 def leave_request_delete(request, pk):
     leave_request = get_object_or_404(LeaveRequest, pk=pk)
-    if request.method == 'POST':
+    if request.method == 'GET':
         leave_request.delete()
         return redirect('leave_request_list')
     return render(request, 'leave_request_confirm_delete.html', {'leave_request': leave_request})
@@ -248,7 +248,7 @@ def staff_schedule_update(request, pk):
 # Delete a staff schedule
 def staff_schedule_delete(request, pk):
     schedule = get_object_or_404(StaffSchedules, pk=pk)
-    if request.method == 'POST':
+    if request.method == 'GET':
         schedule.delete()
         messages.success(request,"roaster item deleted successfully")
         return redirect('hrm:staff_schedule')

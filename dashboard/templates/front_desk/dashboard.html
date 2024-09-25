@@ -38,6 +38,7 @@
             {% if active_attendance  and active_attendance.active == True %}
 
             <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5 ">
+                {% include '../partials/_messages.html' %}
                 <div >
                     <p class="text-end text-warning"> Make sure to sign-out before going home <a  href="{% url 'hrm:check_out' %}" class="btn btn-danger btn-sm">Sign Out </a></p>
                 </div>
