@@ -1,0 +1,40 @@
+  coupon_code = request.POST.get('coupon_code', None)  # Get the coupon code from the form if available
+
+
+
+
+        # Apply coupon discount if a valid coupon code is provided
+        discount_amount = 0
+        if coupon_code:
+            try:
+                coupon = Coupon.objects.get(code=coupon_code, active=True)
+                
+                # Check coupon validity and apply discount
+                if coupon.is_valid():
+                    discount_amount = coupon.discount
+                    total_amount -= discount_amount  # Apply the discount to the total
+                    # Track coupon usage
+                    CouponUsers.objects.create(
+                        coupon=coupon,
+                        booking=None,  # You can replace this with the relevant booking if needed
+                        full_name=f"{first_name} {last_name}",
+                        email=email,
+                        mobile=phone_number
+                    )
+            except Coupon.DoesNotExist:
+                # Handle invalid coupon
+                return JsonResponse({'status': 'error', 'message': 'Invalid coupon code'}, status=400)
+
+
+
+       {% comment %} <form action="" method="post mb-3">
+            <p class="text-center"> Apply Discount Code  if Any</p>
+
+            <div class="form-group">
+              <input type="text" class="form-control " placeholder="Discount Code" name="coupon">
+              
+              <button class=" mx-auto d-block btn btn-success text-center  mt-1"> Apply Code </button>
+            </div>
+
+        </form> {% endcomment %}
+

@@ -147,5 +147,25 @@ class AddAccountOfficerForm(forms.ModelForm):
         self.fields['is_account_officer'].widget.attrs.update({}),
         self.fields['active_status'].widget.attrs.update({}),
       
+
+
+class AddWorkerForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput())
+    
+
+    class Meta:
+        model = get_user_model()
+        fields = ('first_name', 'last_name','username', 'email', 'password', 'is_worker','active_status',)
+
+    def __init__(self, *args, **kwargs):
+        super(AddWorkerForm, self).__init__(*args, **kwargs)
+        self.fields['first_name'].widget.attrs.update({'class':'form-control','placeholder':'First Name'}),
+        self.fields['last_name'].widget.attrs.update({'class':'form-control','placeholder':'Last name'}),
+        self.fields['username'].widget.attrs.update({'class':'form-control','placeholder':'Username'}),
+        self.fields['email'].widget.attrs.update({'class':'form-control','placeholder':'Email'}),
+        self.fields['password'].widget.attrs.update({'class':'form-control','placeholder':'Passsword'}),
+        self.fields['is_worker'].widget.attrs.update({}),
+        self.fields['active_status'].widget.attrs.update({}),
+      
   
    

@@ -290,6 +290,7 @@ def admin_users_list(request):
     frontdesk_form = AddFrontdeskForm()
     pos_officer_form = AddPosOfficerForm()
     account_officer_form = AddAccountOfficerForm()
+    worker_form = AddWorkerForm()
     
     privilage_users = User.objects.filter(
                             is_admin=True
@@ -297,6 +298,8 @@ def admin_users_list(request):
                             is_supervisor=True
                         ) | User.objects.filter(
                             is_account_officer=True
+                        ) | User.objects.filter(
+                            is_worker=True
                         ) | User.objects.filter(
                             is_frontdesk_officer=True
                         ) | User.objects.filter(
@@ -310,7 +313,8 @@ def admin_users_list(request):
         'supervisor_form':supervisor_form,
         'frontdesk_form':frontdesk_form,
         'pos_officer_form':pos_officer_form,  
-        'account_officer_form':account_officer_form       
+        'account_officer_form':account_officer_form,
+        'worker_form':worker_form,
     }
     return render(request, template, context)
 
@@ -323,6 +327,7 @@ def add_admin_privilaged_user(request):
     frontdesk_form = AddFrontdeskForm()
     pos_officer_form = AddPosOfficerForm()
     account_officer_form = AddAccountOfficerForm()
+    worker_form = AddWorkerForm()
 
     if request.method == "POST":
         # Determine which form was submitted based on form data
@@ -367,6 +372,15 @@ def add_admin_privilaged_user(request):
             if account_officer_form.is_valid():
                 user = account_officer_form.save(commit=False)
                 user.set_password(account_officer_form.cleaned_data['password'])
+                user.save()
+                messages.success(request, f"Account Officer {user.username} was created successfully")
+                return redirect('dashboard:admin_users_list')
+            
+        elif 'worker_submit' in request.POST:
+            worker_form = AddWorkerForm(request.POST)
+            if worker_form.is_valid():
+                user = worker_form.save(commit=False)
+                user.set_password(worker_form.cleaned_data['password'])
                 user.save()
                 messages.success(request, f"Account Officer {user.username} was created successfully")
                 return redirect('dashboard:admin_users_list')
@@ -570,6 +584,7 @@ def frontdesk_dashboard(request):
                 is_account_officer=False,
                 is_frontdesk_officer=False,
                 is_pos_officer=False,
+                 is_worker=False,
                 date_joined__date=today,
                 date_joined__range=(check_in_time, check_out_time)
 

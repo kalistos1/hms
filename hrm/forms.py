@@ -43,21 +43,21 @@ class DepartmentLocationForm(forms.ModelForm):
 class EmployeeForm(forms.ModelForm):
     class Meta:
         model = Employee
-        fields = ['user', 'department', 'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_phone','skills','certifications','contract_type','contract_start_date','contract_end_date','contract_renewal_date']
+        fields = ['user', 'department_location', 'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_phone','skills','certifications','contract_type','contract_start_date','contract_end_date','contract_renewal_date']
 
     def __init__(self, *args, **kwargs):
         super(EmployeeForm, self).__init__(*args, **kwargs)
         self.fields['user'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select User'})
-        self.fields['department'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select Department Location'})
+        self.fields['department_location'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select Department Location'})
         self.fields['emergency_contact_name'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Emergency Contact Name'})
         self.fields['emergency_contact_relationship'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Relationship with Emergency Contact'})
         self.fields['emergency_contact_phone'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Emergency Contact Phone Number'})
         self.fields['skills'].widget.attrs.update({'class': 'form-control', 'placeholder': 'skill'})
         self.fields['certifications'].widget.attrs.update({'class': 'form-control', 'placeholder': 'certification'})
         self.fields['contract_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Contract Type'})
-        self.fields['contract_start_date'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Contract Start Date'})
-        self.fields['contract_end_date'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Contract end date'})
-        self.fields['contract_renewal_date'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Contract Renewal Date'})
+        self.fields['contract_start_date'].widget = DateInput(attrs={'class': 'form-control', 'placeholder': 'contract Start Date'})
+        self.fields['contract_end_date'].widget = DateInput(attrs={'class': 'form-control', 'placeholder': 'Contract End Date'})
+        self.fields['contract_renewal_date'].widget = DateInput(attrs={'class': 'form-control', 'placeholder': 'Contract Renewal Date'})
        
         
         

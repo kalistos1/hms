@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 from uuid import uuid4
-from hrm.models import Employee
+from hrm.models import Employee,DepartmentLocation
 
 
 # ProductCategory 
@@ -47,6 +47,8 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to="pos", default = "pos.jpg", null=True, blank =True)
     stock_quantity = models.PositiveIntegerField()
+    department_location = models.ForeignKey(DepartmentLocation, on_delete=models.CASCADE, null=True, blank = True)
+
     slug = models.SlugField(max_length=150, unique=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
@@ -68,31 +70,26 @@ pre_save.connect(pre_save_product_slug, sender=Product)
 
 
 # Customer 
-class Customer(User):
-    room_number = models.CharField(max_length=10, blank=True)  # If room is assigned
-    pos_customer = models.BooleanField(default=True)
-    slug = models.SlugField(max_length=150, unique=True, blank=True)
-
-
-    def __str__(self):
-        return f'{self.first_name} {self.last_name}'
-
-# def pre_save_customer_slug(sender, instance, *args, **kwargs):
-#     if not instance.slug:
-#         instance.slug = slugify(f"{instance.first_name} {instance.last_name}")
-
-# pre_save.connect(pre_save_customer_slug, sender=Customer)
-
+class PosCustomer(models.Model):
+    customer_room_number = models.CharField(max_length=10, null=True, blank=True)  # If room is assigned
+    pos_customer = models.BooleanField(default=True, blank = True, null = True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
 # POSUser
 
 class POSUser(models.Model):
-    user = models.OneToOneField(Employee, on_delete=models.CASCADE)
+    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, related_name='pos_user', null=True, blank=True)
+    waiter = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="pos_waiter", null=True , blank=True)  # Employee acting as the waiter
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
+    
+
     def __str__(self):
-        return self.user.username
+        employee_name = self.employee.user.get_full_name() if self.employee else ""
+        waiter_name = self.waiter.user.get_full_name() if self.waiter else ""
+        return f"{employee_name} {waiter_name}".strip()
 
 # Discount
 
@@ -114,8 +111,10 @@ class Discount(models.Model):
 
 # Order 
 class Order(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True)
-    staff = models.ForeignKey(POSUser, on_delete=models.CASCADE,null=True, blank=True)  # User handling the transaction
+    customer = models.ForeignKey(PosCustomer, on_delete=models.CASCADE, null=True, blank=True)
+    staff = models.ForeignKey(POSUser, on_delete=models.CASCADE, null=True, blank=True)  # POS staff handling the transaction
+    waiter = models.ForeignKey(POSUser, related_name="orders", on_delete=models.CASCADE, null=True, blank=True)  # Waiter attending the order
+
     created_at = models.DateTimeField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     discount = models.ForeignKey(Discount, on_delete=models.SET_NULL, null=True, blank=True)
@@ -160,7 +159,7 @@ class OrderItem(models.Model):
 
 # Payment
 
-class Payment(models.Model):
+class PosPayment(models.Model):
     
     
     PAYMENT_METHODS = (

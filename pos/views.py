@@ -8,20 +8,33 @@ from django.db import transaction
 from accounts.models import User  
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
+from hrm .models import *
+from .forms import WaiterCheckoutForm
 
 
 
 def pos_index(request, slug=None):
+    
     categories = ProductCategory.objects.all()
     cart = get_user_cart(request)
     total_items = cart.total_items
+    
+    try: 
+        pos_user_location = request.user.employee_profile.department_location
+        if slug:
+            category = get_object_or_404(ProductCategory, slug=slug)
+            products = Product.objects.filter(category=category, department_location=pos_user_location)
+        else:
+            products = Product.objects.filter(department_location=pos_user_location)
 
+    except:
     # Load all products 
-    if slug:
-        category = get_object_or_404(ProductCategory, slug=slug)
-        products = Product.objects.filter(category=category)
-    else:
-        products = Product.objects.all() 
+        if slug:
+            category = get_object_or_404(ProductCategory, slug=slug)
+            products = Product.objects.filter(category=category)
+        else:
+            products = Product.objects.all() 
 
     context = {
         'categories': categories,
@@ -95,135 +108,133 @@ def decrease_item_quantity(request, item_id):
 
 
 
-
 def checkout_view(request):
     cart = get_user_cart(request)
+    current_user = request.user
+    department_location = None
+    waiter_form = None
+
+    # Determine if the user is a customer or privileged user
+    if not current_user.is_admin and not current_user.is_supervisor and \
+       not current_user.is_account_officer and not current_user.is_frontdesk_officer and \
+       not current_user.is_pos_officer and not current_user.is_worker:
+        is_customer = True
+    else:
+        is_customer = False
+        # Check if they are POS users with valid schedules and attendance
+        if hasattr(current_user, 'employee_profile'):
+            try:
+                pos_user = current_user.employee_profile.pos_user
+            except AttributeError:
+                return HttpResponse('<div style="padding:20px;"><p style="color:red; font-weight:bold; font-size:14px;" class="alert alert-danger alert-dismissible fade show" role="alert"> You have not been given permission to work as a POS Officer </p></div>')
+
+            department_location = current_user.employee_profile.department_location
+            now = timezone.now()
+
+            # Check if the POS user has a valid schedule for either 'Pos_shift' or 'Waiter_shift'
+            pos_schedule = StaffSchedules.objects.filter(
+                employee=pos_user.employee,
+                schedule_type__in=['Pos_shift', 'Waiter_shift'],  # Include both 'Pos_shift' and 'Waiter_shift'
+                schedule_start_date__lte=now.date(),
+                schedule_end_date__gte=now.date(),
+                active=True
+            ).first()
+
+            if pos_schedule and pos_schedule.start_time <= now.time() <= pos_schedule.end_time:
+                # Check if the POS user has checked in for attendance
+                attendance = Attendance.objects.filter(
+                    employee=pos_user.employee,
+                    active=True,
+                    check_in__date=now.date()
+                ).first()
+
+                if attendance:
+                    # The POS user has a valid schedule and is checked in, display the waiter form
+                    if request.method == 'POST':
+                        waiter_form = WaiterCheckoutForm(request.POST, department_location=department_location)
+                        if waiter_form.is_valid():
+                            waiter = waiter_form.cleaned_data['waiter']
+                            # Handle waiter selection for the checkout process
+                    else:
+                        waiter_form = WaiterCheckoutForm(department_location=department_location)
+
+    # Render the cart checkout page along with the waiter form (if applicable)
+    html = render_to_string('partials/htmx/_cart_checkout.html', {
+        'cart': cart,
+        'waiter_form': waiter_form if not is_customer else None  # Display the form only if not a customer
+    })
     
-    # Render the cart checkout page
-    html = render_to_string('partials/htmx/_cart_checkout.html', {'cart': cart})
     return HttpResponse(html)
 
 
-
-# @transaction.atomic
-# def process_checkout(request):
-    
-#     customer = None
-#     if request.method == 'POST':
-#         # Extract form data from the request
-#         email = request.POST.get('email')
-#         first_name = request.POST.get('first_name')
-#         last_name = request.POST.get('last_name')
-#         phone_number = request.POST.get('phone_number')
-#         payment_method = request.POST.get('payment_method')
-#         cart_id = request.POST.get('cart_id')
-      
-#         try:
-            
-#             # user = User.objects.get(email=email)
-#             user = User.objects.filter(email=email).first() 
-#         except ObjectDoesNotExist:
-#             password = make_password(phone_number) 
-#             user = User.objects.create(email=email, first_name=first_name, last_name=last_name, password=password)
-#             # Create a new customer associated with the new user
-#             customer = Customer.objects.create(user=user)
-        
-#         # Fetch the cart using cart_id
-#         cart = Cart.objects.get(id=cart_id)
-#         cart_items = CartItem.objects.filter(cart=cart)
-        
-#         # Create the order for the customer
-      
-#         order = Order.objects.create(
-#             customer=customer,
-#             total_amount=cart.total_amount,  # Based on cart total
-#             order_status='PENDING',  # Default status
-#             room_charge=True if payment_method == 'ROOM_CHARGE' else False
-#         )
-
-#         # Create the order items for each item in the cart
-#         for item in cart_items:
-#             OrderItem.objects.create(
-#                 order=order,
-#                 product=item.product,
-#                 quantity=item.quantity,
-#                 price=item.price
-#             )
-#             # Update stock quantity of the product
-#             item.product.stock_quantity -= item.quantity
-#             item.product.save()
-
-#         # Handle payment based on the payment method
-#         payment_status = 'PAID' if payment_method in ['CASH', 'CARD'] else 'UNPAID'
-#         Payment.objects.create(
-#             order=order,
-#             payment_method=payment_method,
-#             amount_paid=order.total_amount,
-#             payment_status=payment_status
-#         )
-
-#         # Clear the cart after checkout
-#         cart_items.delete()
-
-#         # Send a success response using HTMX
-#         return JsonResponse({
-#             'status': 'success',
-#             'message': 'Checkout completed successfully!',
-#             'order_id': order.id
-#         })
-
-#     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
-
-
-from django.contrib.auth.hashers import make_password
-from django.db import transaction
-from django.http import JsonResponse
-
 @transaction.atomic
 def process_checkout(request):
-    customer = None
-    
+
     if request.method == 'POST':
-        # Extract form data from the request
-        email = request.POST.get('email')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        phone_number = request.POST.get('phone_number')
+        # Extract form data
         payment_method = request.POST.get('payment_method')
         cart_id = request.POST.get('cart_id')
+        waiter = None
+        
+        # Validate POSUser's schedule and check-in status
+        pos_user = request.user.employee_profile.pos_user
+        now = timezone.now()
 
-        # Fetch or create the user
-        user = User.objects.filter(email=email).first()
+        # Check if the POS user is within their scheduled shift
+        pos_schedule = StaffSchedules.objects.filter(
+            employee=pos_user.employee,
+            schedule_type='Pos_shift',
+            schedule_start_date__lte=now.date(),
+            schedule_end_date__gte=now.date(),
+            active=True
+        ).first()
 
-        if user:
-            # If user exists, create a new Customer linked to this User
-            customer = Customer.objects.create(user=user)
-        else:
-            # Create a new User if it doesn't exist
-            password = make_password(phone_number)  # Use phone number as the password
-            user = User.objects.create(
-                email=email,
-                username=email,  # Set email as the username
-                first_name=first_name,
-                last_name=last_name,
-                password=password
-            )
-            # Create a new Customer associated with the new User
-            customer = Customer.objects.create(user=user)
+        if not pos_schedule:
+            return JsonResponse({'status': 'error', 'message': 'You are not scheduled for a shift currently.'}, status=403)
 
-        # Fetch the cart using cart_id
+        # Check if the current time is within their scheduled shift hours
+        if not (pos_schedule.start_time <= now.time() <= pos_schedule.end_time):
+            return JsonResponse({'status': 'error', 'message': 'You are not within your scheduled hours.'}, status=403)
+
+        # Check if the POS user has checked in
+        attendance = Attendance.objects.filter(
+            employee=pos_user.employee,
+            active=True,
+            check_in__date=now.date()
+        ).first()
+
+        if not attendance:
+            return JsonResponse({'status': 'error', 'message': 'You must check in to start processing orders.'}, status=403)
+
+
+        # Handle the Waiter form
+        if 'waiter' in request.POST:
+            waiter_form = WaiterCheckoutForm(request.POST)
+            if waiter_form.is_valid():
+                waiter = waiter_form.cleaned_data['waiter']
+
+        # Create an anonymous customer
+        anonymous_customer_count = PosCustomer.objects.filter(name__startswith="Customer").count()
+        customer_name = f"Customer{anonymous_customer_count + 1}"
+        customer = PosCustomer.objects.create(name=customer_name, room_number=0)
+
+        # Fetch the cart and items
         cart = Cart.objects.get(id=cart_id)
         cart_items = CartItem.objects.filter(cart=cart)
+        total_amount = cart.total_amount
 
-        # Create the order for the customer
+
+        # Create the Order with both POSUser and Waiter
         order = Order.objects.create(
             customer=customer,
-            total_amount=cart.total_amount,  # Based on cart total
-            order_status='PENDING',  # Default status
-            room_charge=True if payment_method == 'ROOM_CHARGE' else False
+            total_amount=total_amount,
+            order_status='PENDING',
+            room_charge=(payment_method == 'ROOM_CHARGE'),
+            staff=pos_user,
+            waiter=waiter  # Add waiter if applicable
         )
 
-        # Create the order items for each item in the cart
+        # Create OrderItems and adjust product stock
         for item in cart_items:
             OrderItem.objects.create(
                 order=order,
@@ -231,27 +242,31 @@ def process_checkout(request):
                 quantity=item.quantity,
                 price=item.price
             )
-            # Update stock quantity of the product
             item.product.stock_quantity -= item.quantity
             item.product.save()
 
-        # Handle payment based on the payment method
+        # Process payment
         payment_status = 'PAID' if payment_method in ['CASH', 'CARD'] else 'UNPAID'
-        Payment.objects.create(
+        PosPayment.objects.create(
             order=order,
             payment_method=payment_method,
-            amount_paid=order.total_amount,
+            amount_paid=total_amount,
             payment_status=payment_status
         )
 
-       
+        # Update order status if payment is completed
+        if payment_status == 'PAID':
+            order.order_status = 'COMPLETED'
+            order.save()
+
+        # Clear the cart after processing
         cart_items.delete()
 
-        # Send a success response using HTMX
+        # Send success response
         return JsonResponse({
             'status': 'success',
             'message': 'Checkout completed successfully!',
-            'order_id': order.id
+            'order_id': order.id,
         })
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)

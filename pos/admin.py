@@ -4,11 +4,11 @@ from .models import *
 
 admin.site.register(ProductCategory)
 admin.site.register(Product)
-admin.site.register(Customer)
+admin.site.register(PosCustomer)
 admin.site.register(POSUser)
 admin.site.register(Discount)
 admin.site.register(Order)
 admin.site.register(OrderItem)
-admin.site.register(Payment)
+admin.site.register(PosPayment)
 admin.site.register(Refund)
 

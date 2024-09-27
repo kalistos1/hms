@@ -26,14 +26,20 @@ class User(AbstractUser):
     is_account_officer = models.BooleanField(default=False)
     is_frontdesk_officer = models.BooleanField(default=False)
     is_pos_officer = models.BooleanField(default=False)
+    is_worker = models.BooleanField(default=False)
     active_status = models.BooleanField(default=False)
     t_and_c = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username
 
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}".strip()
+
+  
 
 
+    
 class Profile(models.Model):
     GENDER = (
         ("female", "Female"),

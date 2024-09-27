@@ -70,7 +70,7 @@
                                                     <td>{{ schedule.end_time }}</td>
                                                     <td>{{ schedule.schedule_shift_type }}</td>
                                                     <td>{{ schedule.schedule_type }}</td>
-                                                    <td> <button class="btn {% if schedule.active %} btn-success {% else %} btn-warning{% endif %}">{{ schedule.active }} </button></td>
+                                                    <td> <button class="btn {% if schedule.active == 'True' %} btn-success {% else %} btn-warning{% endif %}">{{ schedule.active }} </button></td>
                                                     <td>
                                                         <button type="button" class="btn" data-bs-toggle="offcanvas" data-bs-target="#edit-room" aria-controls="edit-room"><i class="fa fa-pencil-square fa-2x"></i></button>
                                                         <a href="#" data-url="{% url 'hrm:schedule_delete' 0 %}" onclick="deleteSchedule(event, {{ schedule.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>

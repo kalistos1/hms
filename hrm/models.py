@@ -12,6 +12,8 @@ class Department(models.Model):
     slug = models.SlugField(max_length=100, unique=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
 
+
+
     def __str__(self):
         return self.name
 
@@ -26,6 +28,9 @@ class DepartmentLocation(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     date_created = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('department', 'name')
 
     def __str__(self):
         return f"{self.name} - {self.department.name}"
@@ -49,12 +54,10 @@ class Certification(models.Model):
 
 class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='employee_profile', null=True, blank=True)
-    department = models.ForeignKey(DepartmentLocation, on_delete=models.CASCADE, related_name='employee_department',blank=True, null=True)
+    department_location = models.ForeignKey(DepartmentLocation, on_delete=models.CASCADE, related_name='employee_department',blank=True, null=True)
     emergency_contact_name = models.CharField(max_length=255, null=True, blank=True)
     emergency_contact_relationship = models.CharField(max_length=255, null=True, blank=True)
-    emergency_contact_phone = models.CharField(max_length=20, null=True, blank=True, validators=[
-        RegexValidator(r'^\+?1?\d{9,15}$', 'Enter a valid phone number.')
-    ])
+    emergency_contact_phone = models.CharField(max_length=20, null=True, blank=True, )
     skills = models.ManyToManyField('Skill', related_name='employees', blank=True)
     certifications = models.ManyToManyField('Certification', related_name='employees', blank=True)
     
@@ -83,7 +86,7 @@ class EmployeeRole(models.Model):
         ('security', 'security'), 
     )
     employee = models.OneToOneField(Employee, on_delete=models.CASCADE, related_name='employee_profile', null=True, blank=True)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='employees', null=True, blank=True)
+    department_location = models.ForeignKey(DepartmentLocation, on_delete=models.CASCADE, related_name='employees', null=True, blank=True)
     role = models.CharField(max_length=50, choices=WorkerRoles)
     date_created = models.DateTimeField(auto_now_add=True)
 
@@ -108,6 +111,8 @@ class Attendance(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=['check_in']), models.Index(fields=['employee'])]
+        unique_together = ('employee', 'check_in')
+
 
     def __str__(self):
         return f"{self.employee} - {self.check_in}"

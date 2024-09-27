@@ -28,7 +28,9 @@ def department_create(request):
             form.save()
             messages.success(request,'Department created successfully')
             return redirect('hrm:departments')
-      
+        else:
+            messages.error(request,'unable to create employee check form data and resubmit')
+            return redirect('hrm:departments')
     else:
         messages.error(request,'unable to  delete department')
         return redirect('hrm:departments')
@@ -125,15 +127,24 @@ def employee_list(request):
 
 # Create a new employee
 def employee_create(request):
+
     if request.method == 'POST':
         form = EmployeeForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Employee Added Successfully")
-            return redirect('hrm:employee_list')
+            return redirect('hrm:employees')
+        else:
+            # Get form errors and pass them to messages framework
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+            return redirect('hrm:employees')  # Redirect to the same page with error messages
+
+        
     else:
         messages.error(request, "unable to add employee")
-        return redirect('hrm:employee_list')
+        return redirect('hrm:employees')
 
 
 # Update an existing employee
@@ -288,7 +299,7 @@ def check_in(request):
         return redirect('signin')
     
     # Retrieve the employee's department location (linked via DepartmentLocation)
-    department_location = employee.department  
+    department_location = employee.department_location
 
     Attendance.objects.create(
         employee=employee,

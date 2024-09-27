@@ -42,6 +42,8 @@
                                 <button type="button" class="btn btn-warning" data-bs-toggle="offcanvas" data-bs-target="#add-accountant" aria-controls="add-accountant">Create Accountant</button>
                                 <button type="button" class="btn btn-warning" data-bs-toggle="offcanvas" data-bs-target="#add-frontdesk" aria-controls="add-frontdesk">Create Front-Desk </button>
                                 <button type="button" class="btn btn-warning me-2" data-bs-toggle="offcanvas" data-bs-target="#add-pos" aria-controls="add-pos">Create POS</button>
+                                <button type="button" class="btn btn-warning me-2" data-bs-toggle="offcanvas" data-bs-target="#add-worker" aria-controls="add-pos">Create Worker</button>
+                          
                             </div>
                         </div>
                     </div>
@@ -79,6 +81,8 @@
                                                             <button class="btn btn-info"> FRONT-DESK OFFICER</button>
                                                         {% elif user.is_account_officer %}
                                                             <button class="btn btn-info"> ACCOUNTING OFFICER</button>
+                                                        {% elif user.is_worker %}
+                                                            <button class="btn btn-info"> WORKER</button>
                                                         {% else %}
                                                             <button class="btn btn-info"> POS OFFICER</button>
                                                         {% endif %}
@@ -237,6 +241,51 @@
                     </form>
                 </div>
             </div>
+
+
+
+
+<!-- Add worker -->
+<div
+class="offcanvas offcanvas-end"
+tabindex="-1"
+id="add-worker"
+aria-labelledby="add-worker"
+>
+<div class="offcanvas-header">
+    <h5 class="offcanvas-title">Add Worker</h5>
+    <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+    ></button>
+</div>
+<div class="offcanvas-body">
+    <form action ="{% url 'dashboard:add_admin_privilaged_user' %}" method ="post" >
+        {% csrf_token %}
+        <div class="form-group mb-3">
+
+            {{worker_form.as_p}}
+
+        </div>
+
+        <div class="d-flex">
+            <button type="button" class="btn w-100 me-1 py-2 btn-primary">
+                Clear
+            </button>
+            <button type="submit" name="worker_submit" class="btn w-100 ms-1 py-2 btn-dark">
+                Save
+            </button>
+        </div>
+    </form>
+</div>
+</div>
+
+
+
+
+
 
 
 <!-- Add: Front desk -->
