@@ -71,6 +71,7 @@ pre_save.connect(pre_save_product_slug, sender=Product)
 
 # Customer 
 class PosCustomer(models.Model):
+    customer_name = models.CharField(max_length=50, null=True, blank=True)
     customer_room_number = models.CharField(max_length=10, null=True, blank=True)  # If room is assigned
     pos_customer = models.BooleanField(default=True, blank = True, null = True)
     date_created = models.DateTimeField(auto_now_add=True)

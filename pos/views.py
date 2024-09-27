@@ -11,6 +11,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from hrm .models import *
 from .forms import WaiterCheckoutForm
+from django.contrib import messages
+from django.urls import reverse
+from django.utils.html import escape
 
 
 
@@ -35,7 +38,7 @@ def pos_index(request, slug=None):
             products = Product.objects.filter(category=category)
         else:
             products = Product.objects.all() 
-
+   
     context = {
         'categories': categories,
         'products': products,
@@ -165,16 +168,18 @@ def checkout_view(request):
     })
     
     return HttpResponse(html)
-
+   
 
 @transaction.atomic
 def process_checkout(request):
+   
 
     if request.method == 'POST':
         # Extract form data
         payment_method = request.POST.get('payment_method')
         cart_id = request.POST.get('cart_id')
-        waiter = None
+        waiter_id = request.POST.get('waiter')
+        # waiter = None
         
         # Validate POSUser's schedule and check-in status
         pos_user = request.user.employee_profile.pos_user
@@ -206,6 +211,9 @@ def process_checkout(request):
         if not attendance:
             return JsonResponse({'status': 'error', 'message': 'You must check in to start processing orders.'}, status=403)
 
+        waiter = None
+        if waiter_id:
+            waiter = POSUser.objects.filter(id=waiter_id).first()  # Get the POSUser instance
 
         # Handle the Waiter form
         if 'waiter' in request.POST:
@@ -214,9 +222,13 @@ def process_checkout(request):
                 waiter = waiter_form.cleaned_data['waiter']
 
         # Create an anonymous customer
-        anonymous_customer_count = PosCustomer.objects.filter(name__startswith="Customer").count()
-        customer_name = f"Customer{anonymous_customer_count + 1}"
-        customer = PosCustomer.objects.create(name=customer_name, room_number=0)
+        try:
+            anonymous_customer_count = PosCustomer.objects.filter(name__startswith="Customer").count()
+            customer_name = f"Customer{anonymous_customer_count + 1}"
+        except:
+            customer_name = f"Customer"
+
+        customer = PosCustomer.objects.create(customer_name= customer_name, pos_customer=True,customer_room_number=0)
 
         # Fetch the cart and items
         cart = Cart.objects.get(id=cart_id)
@@ -261,15 +273,17 @@ def process_checkout(request):
 
         # Clear the cart after processing
         cart_items.delete()
+        
+        messages.success(request, 'Checkout completed successfully!')
 
-        # Send success response
-        return JsonResponse({
-            'status': 'success',
-            'message': 'Checkout completed successfully!',
-            'order_id': order.id,
-        })
+        # Create an HttpResponse to tell HTMX to redirect to the pos:products page
+        response = HttpResponse()
+        response['HX-Redirect'] = reverse('pos:products')
 
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+        return response
+
+    return HttpResponse('Invalid request method', status=400)
+
 
 
 def cart_view(request):

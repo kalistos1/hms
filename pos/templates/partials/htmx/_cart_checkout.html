@@ -50,7 +50,7 @@
 
                 <div class="container text-center mb-2 mt-5 ">
                     <h6 class="text-info"> Complete the form below and checkout </h6>
-                  
+                    <input type="hidden" name="cart_id" value="{{ cart.id }}">
                     <br>
                     <div class="form-group">
                         {{ waiter_form.waiter }}
@@ -80,7 +80,7 @@
             <div id="checkout-result"></div>
 
             <div class="d-flex align-items-center mt-3">
-          
+
                 <button type="submit" class="btn btn-theme rounded-3 text-center flex-1">Checkout</button>
             </div>
         </div>

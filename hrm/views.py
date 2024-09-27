@@ -29,7 +29,7 @@ def department_create(request):
             messages.success(request,'Department created successfully')
             return redirect('hrm:departments')
         else:
-            messages.error(request,'unable to create employee check form data and resubmit')
+            messages.error(request,'unable to create department check form data and resubmit')
             return redirect('hrm:departments')
     else:
         messages.error(request,'unable to  delete department')
@@ -79,10 +79,10 @@ def department_location_create(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'location for the department added succesfully')
-            return redirect('hrm:department_location')
+            return redirect('hrm:department_locations')
     else:
         messages.error(request, 'unable to Location for the department')
-        return redirect('hrm:department_location')
+        return redirect('hrm:department_locations')
 
 # Update an existing department location
 def department_location_update(request, pk):
@@ -92,11 +92,11 @@ def department_location_update(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'location for the department updated succesfully')
-            return redirect('hrm:department_location')
+            return redirect('hrm:department_locations')
     else:
         form = DepartmentLocationForm(instance=location)
         messages.error(request, "Unable to update the department location")
-        return redirect('hrm:department_location')
+        return redirect('hrm:department_locations')
     
 
 
@@ -106,11 +106,11 @@ def department_location_delete(request, pk):
     if request.method == 'GET':
         location.delete()
         messages.success(request, "department location was deleted successfully")
-        return redirect('hrm:department_location')
+        return redirect('hrm:department_locations')
     
     else:
         messages.error(request, "unable to delete department location ")
-        return redirect('hrm:department_location')
+        return redirect('hrm:department_locations')
 
 
 # List all employees

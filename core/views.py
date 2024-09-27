@@ -464,7 +464,7 @@ def invoice(request, booking_id):
 def update_room_status(request):
     today = timezone.now().date()
 
-    booking = Booking.objects.filter(is_active=True, payment_status="paid")   
+    booking = Booking.objects.filter(is_active=True)   
     for b in booking:
         if b.checked_in_tracker != True:
             if b.check_in_date > today:
