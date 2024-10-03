@@ -6,6 +6,17 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import logout
+from django.db import transaction
+from datetime import timedelta
+from django.db.models import Q
+
+def hrm_dashboard(request):
+    return render(request, )
+
+
+def hrm_quick_links(request):
+
+    return render(request,'pages/hrm_quick_links.html' )
 
 
 
@@ -234,7 +245,7 @@ def staff_schedule_create(request):
             return redirect('hrm:staff_schedule')
         else:
             # Print out the form errors for debugging
-            print("dddddddddddddddddddddddddddddddddddddddddddddddForm errors:", form.errors)
+            
             messages.error(request, "Unable to create Roaster")
             return redirect('hrm:staff_schedule')
     else:
@@ -268,7 +279,79 @@ def staff_schedule_delete(request, pk):
         return redirect('hrm:staff_schedule')
 
 
-# work sign attendance view
+def admin_worker_attendance(request):
+
+    # Get the current date or a date passed via GET parameter
+    selected_date = request.GET.get('date', timezone.now().date())
+    
+    # Find schedules that intersect with the selected date (either start or end date falls on or spans the date)
+    schedules = StaffSchedules.objects.filter(
+        Q(schedule_start_date__lte=selected_date) & Q(schedule_end_date__gte=selected_date)
+    ).select_related('employee')
+
+    # Retrieve attendances that started on the selected day or earlier but are still active on the selected date
+    attendances = Attendance.objects.filter(
+        Q(check_in__date=selected_date) | (Q(check_in__date__lte=selected_date) & Q(check_out__isnull=True))
+    ).select_related('employee')
+
+    context = {
+        'selected_date': selected_date,
+        'schedules': schedules,
+        'attendances': attendances,
+    }
+    return render(request, 'pages/daily_attendance.html', context)
+
+
+
+
+
+
+@transaction.atomic
+def checkout_employee(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    now = timezone.now()
+
+    # Fetch the active attendance record
+    attendance = Attendance.objects.filter(employee=employee, active=True).first()
+    
+    if not attendance:
+        messages.error(request, "No active attendance found for this employee.")
+        return redirect('hrm:daily_attendance')  # Adjust redirect as needed
+
+    # Update check-out time and mark attendance as inactive
+    attendance.check_out = now
+    attendance.active = False
+    attendance.save()
+
+    # Fetch the related active staff schedule
+    schedule = StaffSchedules.objects.filter(
+        employee=employee,
+        schedule_start_date__lte=now.date(),
+        schedule_end_date__gte=now.date(),
+        active='True'
+    ).first()
+
+    if schedule:
+        # Check if attendance is already processed (inactive)
+        if not attendance.active:
+            # Mark the schedule as 'Ended' regardless of the schedule end time
+            schedule.active = 'Ended'
+            schedule.save()
+        else:
+            schedule_end_datetime = datetime.combine(schedule.schedule_end_date, schedule.end_time)
+
+            # Check if the current date is after the schedule's end date or
+            # the end date is today and the end time has passed
+            if (now.date() > schedule.schedule_end_date) or (now.date() == schedule.schedule_end_date and now.time() >= schedule.end_time):
+                # Mark the schedule as 'Ended'
+                schedule.active = 'Ended'
+                schedule.save()
+
+
+    # Send success message to the user
+    messages.success(request, f"{employee.user.get_full_name()} has successfully checked out and their schedule has been ended.")
+    return redirect('hrm:daily_attendance')  # Adjust redirect as needed
+
 
 # @login_required
 def check_in(request):
@@ -320,26 +403,43 @@ def check_in(request):
 
 # @login_required
 def check_out(request):
-    today = timezone.now().date()
+    now = timezone.now()
+    today = now.date()
     user = request.user
     employee = get_object_or_404(Employee, user=user)
-    schedule = StaffSchedules.objects.filter(employee=employee, schedule_end_date=today).first()
-   
-    attendance = Attendance.objects.filter(employee=employee, check_out__isnull=True).first() # check_in__date=today,
+
+    # Fetch today's schedule
+    schedule = StaffSchedules.objects.filter(employee=employee, schedule_end_date__gte=today).first()
+
+    # Fetch active attendance record where check-out is not yet recorded
+    attendance = Attendance.objects.filter(employee=employee, check_out__isnull=True).first()
 
     if not attendance:
         messages.error(request, "No active check-in found.")
         return redirect('signin')  
-    
-    # Update the attendance record with the check-out time
-    attendance.check_out = timezone.now()
-    attendance.active=False
+
+    # Update attendance with check-out time and deactivate it
+    attendance.check_out = now
+    attendance.active = False
     attendance.save()
 
-    schedule.active = "Ended"
-    schedule.save()
+    # Check if the schedule's end date/time has passed or is the current day
+    if schedule:
+        if not attendance.active:
+            # Mark the schedule as 'Ended' regardless of the schedule end time
+            schedule.active = 'Ended'
+            schedule.save()
+        else:
+            schedule_end_datetime = datetime.combine(schedule.schedule_end_date, schedule.end_time)
+            if (now.date() > schedule.schedule_end_date) or (now.date() == schedule.schedule_end_date and now.time() >= schedule.end_time):
+                # Mark the schedule as 'Ended'
+                schedule.active = 'Ended'
+                schedule.save()
 
+
+    # Log out the user after successful check-out
     logout(request)
+    messages.success(request, "You have successfully checked out.")
     return redirect('core:index')
 
    

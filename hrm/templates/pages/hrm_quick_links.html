@@ -1,0 +1,191 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+{% block title %} HRM | Duty Roaster{% endblock %}
+
+{% block content %}
+    <main class="container-fluid px-0">
+    {% comment %} sidebar here {% endcomment %}
+        {% if request.user.is_admin %}
+            {% include '../partials/menubars/admin_sidebar.html' %}
+
+        {% elif request.user.is_supervisor %}
+            {% include '../partials/menubars/supervisor_sidebar.html' %}
+
+        {% elif request.user.is_account_officer %}
+            {% include '../partials/menubars/accounting_sidebar.html' %}
+
+        {% else %}
+            {% include '../partials/menubars/frontdesk_sidebar.html' %}
+
+        {% endif %}
+
+    {% comment %} sidebar ends {% endcomment %}
+
+        <div class="content">
+
+
+   {% comment %} top header starts {% endcomment %}
+            {% include '../partials/top_header.html' %}
+   {% comment %} top header ends {% endcomment %}
+
+   {% comment %} body content starts {% endcomment %}
+
+			<!-- start: page body area -->
+            <div class="px-xl-5 px-lg-4 px-3 py-3 page-body">
+                <ul class="row g-2 list-unstyled li_animate row-cols-lg-3 row-cols-md-3 row-cols-sm-2 row-cols-2 row-deck mb-lg-5 mb-4">
+                   
+                    <li class="col">
+                        <a class="card hr-arrow p-4" href="{% url 'dashboard:admin_users_list' %}" title="Leave" style="--dynamic-color: var(--theme-color6);">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="mb-3" width="24" viewBox="0 0 24 24"  stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M6 6m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z" />
+                                <path d="M9 6v-1a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v1" />
+                                <path d="M6 10h12" />
+                                <path d="M6 16h12" />
+                                <path d="M9 20v1" />
+                                <path d="M15 20v1" />
+                            </svg>
+                            <h6 class="title mb-1">Workers and Staffs</h6>
+                            <p class="small text-muted mb-0 d-none d-xl-inline-flex">creatre and view all workers and assign roles to them...</p>
+                            <div class="go-corner">
+                                <div class="go-arrow">→</div>
+                            </div>
+                        </a>
+                    </li>
+                   
+                    <li class="col">
+                        <a class="card hr-arrow p-4" href="{% url 'hrm:employees' %}" title="employees-add" style="--dynamic-color: var(--theme-color4);">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="mb-3" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 13a3 3 0 1 0 0 -6a3 3 0 0 0 0 6z" />
+                                <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z" />
+                                <path d="M6 20.05v-.05a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v.05" />
+                            </svg>
+                            <h6 class="title mb-1">Employees </h6>
+                            <p class="small text-muted mb-0 d-none d-xl-inline-flex">Assign all workers that are employees to there roles and departments, </p>
+                            <div class="go-corner">
+                                <div class="go-arrow">→</div>
+                            </div>
+                        </a>
+                    </li>
+                    
+                    <li class="col">
+                        <a class="card hr-arrow p-4" href="{% url 'hrm:staff_schedule' %}" title="duty-assigned" style="--dynamic-color: var(--theme-color2);">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="mb-3" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M3 12a9 9 0 0 0 5.998 8.485m12.002 -8.485a9 9 0 1 0 -18 0"></path>
+                                <path d="M12 7v5"></path><path d="M12 15h2a1 1 0 0 1 1 1v1a1 1 0 0 1 -1 1h-1a1 1 0 0 0 -1 1v1a1 1 0 0 0 1 1h2"></path>
+                                <path d="M18 15v2a1 1 0 0 0 1 1h1"></path>
+                                <path d="M21 15v6"></path>
+                            </svg>
+                            <h6 class="title mb-1">Duty Roaster</h6>
+                            <p class="small text-muted mb-0 d-none d-xl-inline-flex"> Create and  manage work roaster for all employees</p>
+                            <div class="go-corner">
+                                <div class="go-arrow">→</div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="col">
+                        <a class="card hr-arrow p-4" href="{% url 'hrm:daily_attendance' %}" title="attendance" style="--dynamic-color: var(--theme-color3);">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="mb-3" width="24"  viewBox="0 0 24 24"  stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M18.9 7a8 8 0 0 1 1.1 5v1a6 6 0 0 0 .8 3" />
+                                <path d="M8 11a4 4 0 0 1 8 0v1a10 10 0 0 0 2 6" />
+                                <path d="M12 11v2a14 14 0 0 0 2.5 8" />
+                                <path d="M8 15a18 18 0 0 0 1.8 6" />
+                                <path d="M4.9 19a22 22 0 0 1 -.9 -7v-1a8 8 0 0 1 12 -6.95" />
+                            </svg>
+                            <h6 class="title mb-1">Attendance</h6>
+                            <p class="small text-muted mb-0 d-none d-xl-inline-flex">Daily Attendance for Employees, signin and signoff emplyees...</p>
+                            <div class="go-corner">
+                                <div class="go-arrow">→</div>
+                            </div>
+                        </a>
+                    </li>
+
+                    {% comment %} <li class="col">
+                        <a class="card hr-arrow p-4" href="payroll-employee-salary.html" title="salary" style="--dynamic-color: var(--theme-color5);">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="mb-3" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M7 9m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z" />
+                                <path d="M14 14m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                                <path d="M17 9v-2a2 2 0 0 0 -2 -2h-10a2 2 0 0 0 -2 2v6a2 2 0 0 0 2 2h2" />
+                            </svg>
+                            <h6 class="title mb-1">Salary</h6>
+                            <p class="small text-muted mb-0 d-none d-xl-inline-flex">Description text here...</p>
+                            <div class="go-corner">
+                                <div class="go-arrow">→</div>
+                            </div>
+                        </a>
+                    </li> {% endcomment %}
+
+                    <li class="col">
+                        <a class="card hr-arrow p-4" href="{% url 'hrm:departments' %}" title="Reports" style="--dynamic-color: var(--theme-color1);">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="mb-3" width="24" viewBox="0 0 24 24"  stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M8 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h5.697" />
+                                <path d="M18 14v4h4" />
+                                <path d="M18 11v-4a2 2 0 0 0 -2 -2h-2" />
+                                <path d="M8 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                                <path d="M18 18m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+                                <path d="M8 11h4" />
+                                <path d="M8 15h3" />
+                            </svg>
+                            <h6 class="title mb-1">Departments</h6>
+                            <p class="small text-muted mb-0 d-none d-xl-inline-flex">Create and manage departments...</p>
+                            <div class="go-corner">
+                                <div class="go-arrow">→</div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="col">
+                        <a class="card hr-arrow p-4" href="{% url 'hrm:department_locations' %}" title="promocode" style="--dynamic-color: var(--theme-color4);">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="mb-3" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 3m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z" />
+                                <path d="M17 17m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z" />
+                                <path d="M7 5l7 0" />
+                                <path d="M10 19l7 0" />
+                                <path d="M9 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                                <path d="M15 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                                <path d="M7 5.5a5 6.5 0 0 1 5 6.5a5 6.5 0 0 0 5 6.5" />
+                            </svg>
+                            <h6 class="title mb-1">Department Loctions</h6>
+                            <p class="small text-muted mb-0 d-none d-xl-inline-flex">Create and manage Locations for departments with multiple locations ...</p>
+                            <div class="go-corner">
+                                <div class="go-arrow">→</div>
+                            </div>
+                        </a>
+                    </li>
+                   
+                </ul>
+            </div>
+
+
+        </div>
+        <script>
+            function deleteSchedule(event, amenityId) {
+                event.preventDefault(); // Prevent the default link behavior
+
+            // Get the URL template from the data attribute and replace the placeholder
+                var url = document.querySelector('[data-url]').getAttribute('data-url').replace('0', amenityId);
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'Do you want to delete this Roaster item?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'No, cancel!',
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                    // Redirect to the URL to perform the delete operation
+                        window.location.href = url;
+                    }
+                });
+            }
+        </script>
+
+    </main>
+{% endblock %}

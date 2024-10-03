@@ -104,6 +104,8 @@ def get_dashboard_url(user):
         return 'dashboard:account_dashboard'
     elif user.is_frontdesk_officer:
         return 'dashboard:frontdesk_dashboard'
+    elif user.is_pos_officer:
+        return 'dashboard:pos_user_dashboard'
     else:
         return 'core:index'
     

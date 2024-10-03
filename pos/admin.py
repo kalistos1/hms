@@ -11,4 +11,5 @@ admin.site.register(Order)
 admin.site.register(OrderItem)
 admin.site.register(PosPayment)
 admin.site.register(Refund)
+admin.site.register( PosStockReceipt)
 

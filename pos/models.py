@@ -46,6 +46,7 @@ class Product(models.Model):
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to="pos", default = "pos.jpg", null=True, blank =True)
+   
     stock_quantity = models.PositiveIntegerField()
     department_location = models.ForeignKey(DepartmentLocation, on_delete=models.CASCADE, null=True, blank = True)
 
@@ -66,6 +67,7 @@ def pre_save_product_slug(sender, instance, *args, **kwargs):
         instance.slug = slugify(instance.name)
 
 pre_save.connect(pre_save_product_slug, sender=Product)
+
 
 
 
@@ -91,6 +93,19 @@ class POSUser(models.Model):
         employee_name = self.employee.user.get_full_name() if self.employee else ""
         waiter_name = self.waiter.user.get_full_name() if self.waiter else ""
         return f"{employee_name} {waiter_name}".strip()
+
+
+# New Model: PosStockReceipt
+class PosStockReceipt(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    pos_user = models.ForeignKey(POSUser, on_delete=models.CASCADE)
+    quantity_received = models.PositiveIntegerField()
+    date_received = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.pos_user.employee.user.get_full_name()} received {self.quantity_received} of {self.product.name} on {self.date_received}'
+
+
 
 # Discount
 

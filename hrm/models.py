@@ -33,7 +33,7 @@ class DepartmentLocation(models.Model):
         unique_together = ('department', 'name')
 
     def __str__(self):
-        return f"{self.name} - {self.department.name}"
+        return f"{self.name} -> {self.department.name}"
     
     
 
@@ -90,6 +90,9 @@ class EmployeeRole(models.Model):
     role = models.CharField(max_length=50, choices=WorkerRoles)
     date_created = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+         return f"{self.employee.user.get_full_name()} -> {self.role}"
+
 
 class Attendance(models.Model):
     SHIFTTYPE = (
@@ -115,7 +118,7 @@ class Attendance(models.Model):
 
 
     def __str__(self):
-        return f"{self.employee} - {self.check_in}"
+        return f"{self.employee.user.get_full_name()} - {self.check_in}"
     
 
 # Staff Schedules Model
@@ -188,7 +191,7 @@ class LeaveRequest(models.Model):
             raise ValidationError('Start date cannot be after end date.')
 
     def __str__(self):
-        return f"{self.employee} - {self.leave_type} from {self.start_date} to {self.end_date}"
+        return f"{self.employee.user.get_full_name()} - {self.leave_type} from {self.start_date} to {self.end_date}"
 
 
 

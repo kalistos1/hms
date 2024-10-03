@@ -11,6 +11,7 @@ urlpatterns = [
     path('supervisor_dash/',views.supervisor_dashboard, name ="supervisor_dashboard"),
     path('account_dash/',views.account_dashboard, name ="account_dashboard"),
     path('front_desk_dash/',views.frontdesk_dashboard, name ="frontdesk_dashboard"),
+    path('pos_user_dash/',views.pos_user_dashboard, name ="pos_user_dashboard"),
     
     #admin views
     # amenities
@@ -60,7 +61,11 @@ urlpatterns = [
     path('frontdesk/apply-coupon/<int:pk>/', views.frontdesk_apply_coupon_to_booking, name='apply_coupon'),
     path('frontdesk/checkout/payment/<int:pk>/', views.frontdesk_checkout_payment_view, name='checkout_payment'),
     path('frontdesk/checkout/extend_booking/<int:pk>/', views.frontdesk_update_checkout_date, name='frontdesk_update_checkout_date'),
-    
+
+    #pos officer
+    path('pos/order_list/', views.pos_orders, name='pos_orders'),
+    path('pos/received_stock/', views.user_update_received_stock, name='received_stock'),
+
    
 ]
 

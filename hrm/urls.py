@@ -5,6 +5,7 @@ from . import views
 app_name = "hrm"
 
 urlpatterns = [
+    path('quick_link/', views.hrm_quick_links, name='quick_links'),
     path('departments/', views.department_list, name='departments'),
     path('departments/create_department/', views.department_create, name='department_create'),
     path('departments/delete_department/<int:pk>/', views.department_delete, name='department_delete'),
@@ -24,7 +25,10 @@ urlpatterns = [
     path('departments/create_schedule/', views.staff_schedule_create, name='schedule_create'),
     path('departments/delete_schedule/<int:pk>/', views.staff_schedule_delete, name='schedule_delete'),
     path('departments/update_schedule/<int:pk>/', views.staff_schedule_update, name='schedule_update'),
-    
+
+    path('departments/daily_attendance/', views.admin_worker_attendance, name='daily_attendance'),
+    path('departments/checkout_attendance/<int:pk>/', views.checkout_employee, name='checkout_employee'),
     path('check-in/', views.check_in, name='check_in'),
+
     path('check-out/', views.check_out, name='check_out'),
 ]

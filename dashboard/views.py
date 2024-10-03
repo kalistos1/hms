@@ -14,7 +14,7 @@ from django.db.models import Count
 from accounts.forms import *
 from formtools.wizard.views import SessionWizardView
 from datetime import timedelta
-from django.db.models import Sum, Q
+from django.db.models import Sum, Case, When, F, IntegerField,Q
 from django.contrib.auth import login
 from bookings.forms import (
     BasicUserInfoForm, ProfileInfoForm, 
@@ -24,8 +24,9 @@ from bookings.forms import (
 from django.utils import timezone
 from django.http import JsonResponse,HttpResponse
 import datetime
-
-
+from pos.models import *
+from pos.forms import updateReceivedItemForm
+from django.utils.timezone import make_aware,is_aware
 today = datetime.date.today()
 
 
@@ -36,7 +37,6 @@ today = datetime.date.today()
 
 def admin_dashboard(request):
     template = "admin_user/dashboard.html"
-    
     return render (request,template)
 
 
@@ -610,10 +610,17 @@ def frontdesk_room_status(request):
     template = "front_desk/roomstatus.html"
     
     if request.user.is_frontdesk_officer:
+        today = timezone.now().date()
+        user = request.user
+        employee = Employee.objects.get(user=user)
+
+        # Get the active attendance record for today
+        active_attendance = Attendance.objects.filter(employee=employee, active=True).first()
         
         room_status = Room.objects.all()
         context = {
-            'room_status':room_status
+            'room_status':room_status,
+             'active_attendance': active_attendance,
         }
         
         return render (request,template, context)
@@ -624,6 +631,13 @@ def frontdesk_booking_list(request):
     template = "front_desk/bookinglist.html"
   
     if request.user.is_frontdesk_officer:
+        today = timezone.now().date()
+        user = request.user
+        employee = Employee.objects.get(user=user)
+
+        # Get the active attendance record for today
+        active_attendance = Attendance.objects.filter(employee=employee, active=True).first()
+
         bookin_list = Booking.objects.all()
         room_service_form =  RoomServiceForm()
         additional_charge_form =  AdditionalChargeForm()
@@ -631,6 +645,7 @@ def frontdesk_booking_list(request):
             'bookings':bookin_list,
             'room_service_form': room_service_form,
             "additional_charge_form":additional_charge_form,
+            'active_attendance':active_attendance,
         }
         
         return render (request,template, context)
@@ -657,6 +672,12 @@ def frontdesk_checkout_list(request):
     
 
     if request.user.is_frontdesk_officer:
+        today = timezone.now().date()
+        user = request.user
+        employee = Employee.objects.get(user=user)
+
+        # Get the active attendance record for today
+        active_attendance = Attendance.objects.filter(employee=employee, active=True).first()
  
        
         booking_list = Booking.objects.filter(
@@ -669,8 +690,10 @@ def frontdesk_checkout_list(request):
         context = {
             'form': form,
             'bookings': booking_list,
+            'active_attendance':active_attendance,
         }
         return render(request, template, context)
+    
 
 def generate_unique_username(base_username):
     username = base_username
@@ -712,88 +735,97 @@ def get_room_price_view(request):
 #htmx view for room price
 
 def front_desk_booking(request):
-    room_type_id = request.POST.get('room_type') if request.method == 'POST' else None
 
-    if request.method == 'POST':
-        basic_info_form = BasicUserInfoForm(request.POST)
-        profile_info_form = ProfileInfoForm(request.POST)
-        booking_choice_form = BookingChoiceForm(request.POST)
-        room_booking_form = RoomBookingForm(request.POST, room_type_id=room_type_id)  # Pass room_type_id
-        room_reservation_form = RoomReservationForm(request.POST)
-        payment_form = PaymentForm(request.POST)
+    if request.user.is_frontdesk_officer:
+        today = timezone.now().date()
+        user = request.user
+        employee = Employee.objects.get(user=user)
 
-        if basic_info_form.is_valid() and profile_info_form.is_valid() and booking_choice_form.is_valid():
- 
-            # Step 1: Check if the user already exists by email or phone number
-            email = basic_info_form.cleaned_data['email']
-            phone = basic_info_form.cleaned_data['phone']
-            
-            user = User.objects.filter(email=email).first() 
+        # Get the active attendance record for today
+        active_attendance = Attendance.objects.filter(employee=employee, active=True).first()    
+        room_type_id = request.POST.get('room_type') if request.method == 'POST' else None
 
-            if not user:
-                # If user doesn't exist, create a new one
-                user = basic_info_form.save(commit=False)
-                user.set_password(user.phone)  # Set phone number as password
-                user.username = user.email  # Set email as the username
-                user.save()
+        if request.method == 'POST':
+            basic_info_form = BasicUserInfoForm(request.POST)
+            profile_info_form = ProfileInfoForm(request.POST)
+            booking_choice_form = BookingChoiceForm(request.POST)
+            room_booking_form = RoomBookingForm(request.POST, room_type_id=room_type_id)  # Pass room_type_id
+            room_reservation_form = RoomReservationForm(request.POST)
+            payment_form = PaymentForm(request.POST)
 
-                profile, created = Profile.objects.get_or_create(user=user)
-                profile_form_data = profile_info_form.cleaned_data
-                for field, value in profile_form_data.items():
-                    setattr(profile, field, value)
-                profile.save()
-
-            choice = booking_choice_form.cleaned_data['choice']
-
-            booking = None
-            reservation = None
-
-            # Step 2: Save booking or reservation once
-            if choice == 'booking':
-              
-                if room_booking_form.is_valid():
-                    booking = room_booking_form.save(commit=False)
-                    booking.user = user
-                    booking.save()
+            if basic_info_form.is_valid() and profile_info_form.is_valid() and booking_choice_form.is_valid():
+    
+                # Step 1: Check if the user already exists by email or phone number
+                email = basic_info_form.cleaned_data['email']
+                phone = basic_info_form.cleaned_data['phone']
                 
-                    room_booking_form.instance = booking 
-                    room_booking_form.save_m2m()  # Save ManyToMany fields
-                else:
-                    print('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy', room_booking_form.errors)
-            elif choice == 'reservation':
-                if room_reservation_form.is_valid():
-                    reservation = room_reservation_form.save(commit=False)
-                    reservation.user = user
-                    reservation.save()
+                user = User.objects.filter(email=email).first() 
 
-            # Step 3: Attach payment to booking or reservation
-            if payment_form.is_valid():
-                payment = payment_form.save(commit=False)
-                payment.user = user
-                if booking:
-                    payment.booking = booking
-                elif reservation:
-                    payment.booking = reservation 
-                payment.save()
+                if not user:
+                    # If user doesn't exist, create a new one
+                    user = basic_info_form.save(commit=False)
+                    user.set_password(user.phone)  # Set phone number as password
+                    user.username = user.email  # Set email as the username
+                    user.save()
 
-            return redirect('dashboard:receipt', booking_id=booking.booking_id if booking else reservation.id)
+                    profile, created = Profile.objects.get_or_create(user=user)
+                    profile_form_data = profile_info_form.cleaned_data
+                    for field, value in profile_form_data.items():
+                        setattr(profile, field, value)
+                    profile.save()
 
-    else:
-        basic_info_form = BasicUserInfoForm()
-        profile_info_form = ProfileInfoForm()
-        booking_choice_form = BookingChoiceForm()
-        room_booking_form = RoomBookingForm(room_type_id=room_type_id)  # Pass room_type_id
-        room_reservation_form = RoomReservationForm()
-        payment_form = PaymentForm()
+                choice = booking_choice_form.cleaned_data['choice']
 
-    return render(request, 'front_desk/roombook.html', {
-        'basic_info_form': basic_info_form,
-        'profile_info_form': profile_info_form,
-        'booking_choice_form': booking_choice_form,
-        'room_booking_form': room_booking_form,
-        'room_reservation_form': room_reservation_form,
-        'payment_form': payment_form
-    })
+                booking = None
+                reservation = None
+
+                # Step 2: Save booking or reservation once
+                if choice == 'booking':
+                
+                    if room_booking_form.is_valid():
+                        booking = room_booking_form.save(commit=False)
+                        booking.user = user
+                        booking.save()
+                    
+                        room_booking_form.instance = booking 
+                        room_booking_form.save_m2m()  # Save ManyToMany fields
+                    else:
+                        print('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy', room_booking_form.errors)
+                elif choice == 'reservation':
+                    if room_reservation_form.is_valid():
+                        reservation = room_reservation_form.save(commit=False)
+                        reservation.user = user
+                        reservation.save()
+
+                # Step 3: Attach payment to booking or reservation
+                if payment_form.is_valid():
+                    payment = payment_form.save(commit=False)
+                    payment.user = user
+                    if booking:
+                        payment.booking = booking
+                    elif reservation:
+                        payment.booking = reservation 
+                    payment.save()
+
+                return redirect('dashboard:receipt', booking_id=booking.booking_id if booking else reservation.id)
+
+        else:
+            basic_info_form = BasicUserInfoForm()
+            profile_info_form = ProfileInfoForm()
+            booking_choice_form = BookingChoiceForm()
+            room_booking_form = RoomBookingForm(room_type_id=room_type_id)  # Pass room_type_id
+            room_reservation_form = RoomReservationForm()
+            payment_form = PaymentForm()
+
+        return render(request, 'front_desk/roombook.html', {
+            'basic_info_form': basic_info_form,
+            'profile_info_form': profile_info_form,
+            'booking_choice_form': booking_choice_form,
+            'room_booking_form': room_booking_form,
+            'room_reservation_form': room_reservation_form,
+            'payment_form': payment_form,
+            'active_attendance': active_attendance,
+        })
 
 
 
@@ -1137,3 +1169,210 @@ def frontdesk_checkout_payment_view(request, pk):
 # ==========================================================================================================
 # ==========================================================================================================
 
+
+
+#pos user views
+#========================================================================================================
+#=======================================================================================================
+
+def pos_user_dashboard(request):
+    template = 'pos_officer/dashboard.html'
+
+    # Ensure the current user is a POS user and find the active schedule and attendance
+    if request.user.is_pos_officer:
+        user = request.user
+        employee = user.employee_profile
+        pos_user = employee.pos_user
+        
+        # Get active attendance and schedule
+        active_attendance = Attendance.objects.filter(employee=employee, active=True).first()
+        active_schedule = StaffSchedules.objects.filter(employee=employee, active=True).first()
+
+        if active_attendance and active_schedule:
+            # Get the current date and time
+            current_date =timezone.now().date()
+            current_time = timezone.now().time()
+
+            # Validate schedule start and end times, compare only times without date conversion
+            start_time = active_schedule.start_time
+            end_time = active_schedule.end_time
+
+            if start_time is None or end_time is None:
+                return render(request, template, {'error': 'Schedule times are missing.'})
+
+            # Assume the schedule is for the current day
+            # Total order quantity from OrderItems during active schedule and attendance
+            total_order_quantity = OrderItem.objects.filter(
+                order__staff=pos_user,
+                order__created_at__date=current_date,
+                order__created_at__time__gte=start_time,
+                order__created_at__time__lte=end_time
+            ).aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+
+            # Count of orders during active schedule and attendance
+            order_count = Order.objects.filter(
+                staff=pos_user,
+                created_at__date=current_date,
+                created_at__time__gte=start_time,
+                created_at__time__lte=end_time
+            ).count()
+
+            # Total quantity received from PosStockReceipt during active schedule and attendance
+            total_quantity_received = PosStockReceipt.objects.filter(
+                pos_user=pos_user,
+                date_received__date=current_date,
+                date_received__time__gte=start_time,
+                date_received__time__lte=end_time
+            ).aggregate(total_quantity_received=Sum('quantity_received'))['total_quantity_received'] or 0
+
+            # List of products with their quantity received and remaining stock during the active schedule and attendance
+            products = Product.objects.annotate(
+                quantity_received=Sum(
+                    Case(
+                        When(
+                            posstockreceipt__pos_user=pos_user,
+                            posstockreceipt__date_received__date=current_date,
+                            posstockreceipt__date_received__time__gte=start_time,
+                            posstockreceipt__date_received__time__lte=end_time,
+                            then=F('posstockreceipt__quantity_received')
+                        ),
+                        default=0,
+                        output_field=IntegerField()
+                    )
+                ),
+                remaining_stock=F('stock_quantity') - Sum(
+                    Case(
+                        When(
+                            orderitem__order__staff=pos_user,
+                            orderitem__order__created_at__date=current_date,
+                            orderitem__order__created_at__time__gte=start_time,
+                            orderitem__order__created_at__time__lte=end_time,
+                            then=F('orderitem__quantity')
+                        ),
+                        default=0,
+                        output_field=IntegerField()
+                    )
+                )
+            )
+
+            # Total stock remaining across all products during active schedule and attendance
+            total_stock_remaining = products.aggregate(
+                total_stock=Sum('remaining_stock')
+            )['total_stock'] or 0
+
+            # Total amount paid where payment status is PAID during active schedule and attendance
+            total_paid = PosPayment.objects.filter(
+                order__staff=pos_user,
+                payment_status='PAID',
+                order__created_at__date=current_date,
+                order__created_at__time__gte=start_time,
+                order__created_at__time__lte=end_time
+            ).aggregate(total_paid=Sum('amount_paid'))['total_paid'] or 0
+
+            context = {
+                'active_attendance': active_attendance,
+                'active_schedule': active_schedule,
+                'total_order_quantity': total_order_quantity,
+                'order_count': order_count,
+                'total_quantity_received': total_quantity_received,
+                'total_stock_remaining': total_stock_remaining,
+                'total_paid': total_paid,
+                'products': products
+            }
+
+            return render(request, template, context)
+
+    return render(request, template, {'error': 'No active attendance or schedule found.'})
+
+
+
+
+def pos_orders(request):
+    template = "pos_officer/orders.html"
+    
+    if request.user.is_pos_officer:
+        user = request.user
+        employee = get_object_or_404(Employee, user=user)
+
+        # Get the active attendance record for today
+        active_attendance = Attendance.objects.filter(employee=employee, active=True).first()
+
+        # Check if there's an active schedule
+        active_schedule = StaffSchedules.objects.filter(
+            employee=employee,
+            active='True',
+            schedule_start_date__lte=timezone.now().date(),
+            schedule_end_date__gte=timezone.now().date()
+        ).first()
+
+        orders = []
+        if active_attendance and active_schedule:
+            # Retrieve orders for this POSUser during the active attendance period
+            pos_user = POSUser.objects.filter(employee=employee).first()
+            
+            if pos_user:
+                orders = Order.objects.filter(
+                    staff=pos_user,
+                    created_at__gte=active_attendance.check_in,  # Orders made after the check-in time
+                    created_at__lte=timezone.now()  # Orders made until now
+                )
+
+        context = {
+            "active_attendance": active_attendance,
+            "orders": orders,
+        }
+
+        return render(request, template, context)
+    else:
+        return redirect('dashboard:pos_orders')
+
+
+
+
+
+def user_update_received_stock(request):
+    template = 'pos_officer/daily_stock_received.html'
+
+    if request.user.is_pos_officer:
+        user = request.user
+        employee = get_object_or_404(Employee, user=user)
+
+        # Get the active attendance record for today
+        active_attendance = Attendance.objects.filter(employee=employee, active=True).first()
+
+        # Get the POSUser linked to the employee
+        pos_user = user.employee_profile.pos_user
+
+        # Retrieve daily stock received today
+        daily_stock = PosStockReceipt.objects.filter(pos_user=pos_user, date_received__date=timezone.now().date())
+
+        if request.method == "POST":
+            form = updateReceivedItemForm(request.POST)
+            if form.is_valid():
+                receipt_form = form.save(commit=False)
+                receipt_form.pos_user = pos_user  # Assign the POSUser
+                receipt_form.save()
+
+                messages.success(request, 'Product receipt created successfully.')
+                return redirect('dashboard:received_stock')  # Redirect to a valid URL or named view
+            else:
+                messages.error(request, 'Unable to create product receipt.')
+                return redirect('dashboard:received_stock')  # Redirect to a valid URL or named view
+
+        else:
+            form = updateReceivedItemForm()
+
+        context = {
+            'daily_stock': daily_stock,
+            'active_attendance': active_attendance,
+            'form': form,
+        }
+
+        return render(request, template, context)  # Correct render function
+
+    else:
+        return redirect('dashboard:received_stock')  # Redirect unauthorized users
+
+#oos User views ends
+#=====================================================================================================
+#======================================================================================================

@@ -10,7 +10,7 @@ from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from hrm .models import *
-from .forms import WaiterCheckoutForm
+from .forms import WaiterCheckoutForm, updateReceivedItemForm
 from django.contrib import messages
 from django.urls import reverse
 from django.utils.html import escape
@@ -50,6 +50,7 @@ def pos_index(request, slug=None):
 
 
 
+
 # HTMX view to load products based on category
 def category_products_view(request, slug):
     category = get_object_or_404(ProductCategory, slug=slug)
@@ -59,7 +60,6 @@ def category_products_view(request, slug):
 
 
 # views.py
-
 def get_user_cart(request):
     if request.user.is_authenticated:
         cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -142,15 +142,18 @@ def checkout_view(request):
                 schedule_end_date__gte=now.date(),
                 active=True
             ).first()
+         
 
             if pos_schedule and pos_schedule.start_time <= now.time() <= pos_schedule.end_time:
+
                 # Check if the POS user has checked in for attendance
                 attendance = Attendance.objects.filter(
                     employee=pos_user.employee,
                     active=True,
                     check_in__date=now.date()
                 ).first()
-
+               
+ 
                 if attendance:
                     # The POS user has a valid schedule and is checked in, display the waiter form
                     if request.method == 'POST':
@@ -160,6 +163,8 @@ def checkout_view(request):
                             # Handle waiter selection for the checkout process
                     else:
                         waiter_form = WaiterCheckoutForm(department_location=department_location)
+            else:
+                print('wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww')
 
     # Render the cart checkout page along with the waiter form (if applicable)
     html = render_to_string('partials/htmx/_cart_checkout.html', {

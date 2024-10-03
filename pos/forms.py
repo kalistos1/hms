@@ -1,6 +1,6 @@
 from django import forms
 from django.utils import timezone
-from .models import POSUser
+from .models import POSUser, PosStockReceipt
 from hrm.models import StaffSchedules, Attendance
 from django.db.models import Q
 
@@ -61,3 +61,16 @@ class WaiterCheckoutForm(forms.Form):
         ).exists()
 
         return schedule_exists and attendance_exists
+
+
+class updateReceivedItemForm(forms.ModelForm):
+    
+    class Meta:
+        model =  PosStockReceipt
+        fields = ("product","quantity_received")
+
+    def __init__(self, *args, **kwargs):
+        super( updateReceivedItemForm, self).__init__(*args, **kwargs)
+        self.fields['product'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Choose Product'})
+        self.fields['quantity_received'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Quantity Received'})
+      
