@@ -132,11 +132,11 @@
                     <span class="mx-3">Inventory </span>
                   </a>
                   <ul class="collapse list-unstyled" id="ItemsManageMenu">
-                    <li><a href="" aria-label="Items Unit List">Items Unit List</a></li>
-                    <li><a href="" aria-label="Items List">Items List</a></li>
-                    <li><a href="" aria-label="Items Destroyed">Items Destroyed</a></li>
-                    <li><a href="" aria-label="Items Category">Items Category</a></li>
-                    <li><a href="" aria-label="Items Suppliers">Items Suppliers</a></li>
+                    <li><a href="{% url 'inventory:supplier_list' %}" aria-label="Items Unit List">Suppliers </a></li>
+                    <li><a href="{% url 'inventory:category_list' %}" aria-label="Items Category">Item Categories</a></li>
+                    <li><a href="{% url 'inventory:equipment_list' %}" aria-label="Items List">Equipment Inventory</a></li>
+                    <li><a href="{% url 'inventory:consumable_item_list' %}" aria-label="Items Destroyed">Consumable Inventory</a></li>
+                    <li><a href="" aria-label="Items Destroyed">Amenities Inventory</a></li>
                   </ul>
                 </li>
 

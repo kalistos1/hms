@@ -2,13 +2,18 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib import messages
-from .models import Supplier, Equipment, ConsumableItem, EquipmentUsageLog, InsurancePolicy, EquipmentAuditLog, InspectionChecklist
-from .forms import SupplierForm, EquipmentForm, ConsumableItemForm, EquipmentUsageLogForm, InsurancePolicyForm, EquipmentAuditLogForm, InspectionChecklistForm
+from .models import Supplier, Equipment, ConsumableItem, EquipmentUsageLog, InsurancePolicy, EquipmentAuditLog, InspectionChecklist,ItemCategory
+from .forms import  InventoryCategoryForm, SupplierForm, EquipmentForm, ConsumableItemForm, EquipmentUsageLogForm, InsurancePolicyForm, EquipmentAuditLogForm, InspectionChecklistForm
 
 # Supplier Views
 def supplier_list(request):
     suppliers = Supplier.objects.all()
-    return render(request, 'suppliers/supplier_list.html', {'suppliers': suppliers})
+    form = SupplierForm()
+    context =  {
+        'suppliers': suppliers,
+        'form':form
+        }
+    return render(request, 'pages/supplier_list.html',context)
 
 
 def supplier_create(request):
@@ -17,12 +22,12 @@ def supplier_create(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Supplier created successfully.')
-            return redirect('supplier_list')
+            return redirect('inventory:supplier_list')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
-        form = SupplierForm()
-    return render(request, 'suppliers/supplier_form.html', {'form': form})
+       messages.error(request,"something went wrong, check the form and try again")
+    return redirect('inventory:supplier_list')
 
 
 
@@ -33,7 +38,7 @@ def supplier_update(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Supplier updated successfully.')
-            return redirect('supplier_list')
+            return redirect('inventory:supplier_list')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
@@ -44,18 +49,79 @@ def supplier_update(request, pk):
 
 def supplier_delete(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
-    if request.method == 'POST':
+    if request.method == 'GET':
         supplier.delete()
         messages.success(request, 'Supplier deleted successfully.')
-        return redirect('supplier_list')
-    return render(request, 'suppliers/supplier_confirm_delete.html', {'supplier': supplier})
+        return redirect('inventory:supplier_list')
+    else:
+        messages.error(request,' something went wrong, Unable to delete supplier')
+    return redirect('inventory:supplier_list')
+
+
+
+# Category Views
+def category_list(request):
+    categories = ItemCategory.objects.all()
+    form =  InventoryCategoryForm()
+    context =  {
+        'categories': categories,
+        'form':form
+        }
+    return render(request, 'pages/item_category.html',context)
+
+
+def category_create(request):
+    if request.method == 'POST':
+        form = InventoryCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Category created successfully.')
+            return redirect('inventory:category_list')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+       messages.error(request,"something went wrong, check the form and try again")
+    return redirect('inventory:category_list')
+
+
+
+def category_update(request, pk):
+    category = get_object_or_404(ItemCategory, pk=pk)
+    if request.method == 'POST':
+        form = InventoryCategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Category updated successfully.')
+            return redirect('inventory:category_list')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = SupplierForm(instance=category)
+    return render(request, 'suppliers/supplier_form.html', {'form': form})
+
+
+
+def category_delete(request, pk):
+    category = get_object_or_404(ItemCategory, pk=pk)
+    if request.method == 'GET':
+        category.delete()
+        messages.success(request, 'Category deleted successfully.')
+        return redirect('inventory:category_list')
+    else:
+        messages.error(request,' something went wrong, Unable to delete supplier')
+    return redirect('inventory:category_list')
 
 
 
 # Equipment Views
 def equipment_list(request):
     equipments = Equipment.objects.all()
-    return render(request, 'equipments/equipment_list.html', {'equipments': equipments})
+    form = EquipmentForm()
+    context =  {
+        'equipments': equipments,
+        'form':form,
+        }
+    return render(request, 'pages/equipment_list.html',context)
 
 
 
@@ -65,12 +131,12 @@ def equipment_create(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Equipment created successfully.')
-            return redirect('equipment_list')
+            return redirect('inventory:equipment_list')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
-        form = EquipmentForm()
-    return render(request, 'equipments/equipment_form.html', {'form': form})
+        messages.error(request, 'Something went Wrong Unable to Add Equipment.')
+    return  redirect('inventory:equipment_list')
 
 
 
@@ -81,7 +147,7 @@ def equipment_update(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Equipment updated successfully.')
-            return redirect('equipment_list')
+            return redirect('inventory:equipment_list')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
@@ -91,19 +157,24 @@ def equipment_update(request, pk):
 
 def equipment_delete(request, pk):
     equipment = get_object_or_404(Equipment, pk=pk)
-    if request.method == 'POST':
+    if request.method == 'GET':
         equipment.delete()
         messages.success(request, 'Equipment deleted successfully.')
-        return redirect('equipment_list')
-    return render(request, 'equipments/equipment_confirm_delete.html', {'equipment': equipment})
+        return redirect('inventory:equipment_list')
+    return redirect('inventory:equipment_list')
 
 
 
 # Consumable Item Views
 def consumable_item_list(request):
     consumable_items = ConsumableItem.objects.all()
-    return render(request, 'consumable_items/consumable_item_list.html', {'consumable_items': consumable_items})
+    form = ConsumableItemForm()
+    context = {
+        'consumable_items': consumable_items,
+        'form':form,
+        }
 
+    return render(request, 'pages/consumable_item_list.html', context)
 
 
 def consumable_item_create(request):
@@ -112,12 +183,12 @@ def consumable_item_create(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Consumable item created successfully.')
-            return redirect('consumable_item_list')
+            return redirect('inventory:consumable_item_list')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
-        form = ConsumableItemForm()
-    return render(request, 'consumable_items/consumable_item_form.html', {'form': form})
+        messages.error(request, 'Something went wrong check form and resubmit')
+    return redirect ('inventory:consumable_item_list')
 
 
 def consumable_item_update(request, pk):
@@ -127,21 +198,22 @@ def consumable_item_update(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Consumable item updated successfully.')
-            return redirect('consumable_item_list')
+            return redirect('inventory:consumable_item_list')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
         form = ConsumableItemForm(instance=consumable_item)
-    return render(request, 'consumable_items/consumable_item_form.html', {'form': form})
+    return render(request, 'pages/consumable_item_form.html', {'form': form})
 
 
 def consumable_item_delete(request, pk):
     consumable_item = get_object_or_404(ConsumableItem, pk=pk)
-    if request.method == 'POST':
+    if request.method == 'GET':
         consumable_item.delete()
         messages.success(request, 'Consumable item deleted successfully.')
-        return redirect('consumable_item_list')
-    return render(request, 'consumable_items/consumable_item_confirm_delete.html', {'consumable_item': consumable_item})
+        return redirect('inventory:consumable_item_list')
+    messages.error(request, 'Unable to delete item something went wrong.')
+    return redirect('inventory:consumable_item_list')
 
 
 

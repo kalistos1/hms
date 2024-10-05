@@ -11,6 +11,12 @@ urlpatterns = [
     path('suppliers/<int:pk>/update/', views.supplier_update, name='supplier_update'),
     path('suppliers/<int:pk>/delete/', views.supplier_delete, name='supplier_delete'),
 
+    # categor URLs
+    path('categories/', views.category_list, name='category_list'),
+    path('category/create/', views.category_create, name='category_create'),
+    path('category/<int:pk>/update/', views.category_update, name='category_update'),
+    path('category/<int:pk>/delete/', views.category_delete, name='category_delete'),
+
     # Equipment URLs
     path('equipments/', views.equipment_list, name='equipment_list'),
     path('equipments/create/', views.equipment_create, name='equipment_create'),

@@ -144,7 +144,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # mailing system
 
-DEFAULT_FROM_EMAIL = 'n'
+DEFAULT_FROM_EMAIL = 'n'  # Default from email for sending notifications
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = ''
@@ -152,6 +152,7 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' 
+NOTIFICATION_EMAIL = 'notify@example.com'  # Email to receive notifications
 
 
 

@@ -1,34 +1,54 @@
 from django import forms
 from .models import *
 
+class DateInput(forms.DateInput):
+    input_type = 'date'
+
+class InventoryCategoryForm(forms.ModelForm):
+
+    class Meta:
+        model =  ItemCategory
+        fields = ['name', 'parent',]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder':'Category Name',}),
+            'parent': forms.Select(attrs={'class': 'form-control', 'placeholder':'Category Parent If Any',}),
+            
+        }
+        
+
 class SupplierForm(forms.ModelForm):
+
     class Meta:
         model = Supplier
         fields = ['name', 'contact_person', 'email', 'notes', 'phone', 'address']
         widgets = {
-            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control'}),
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'contact_person': forms.TextInput(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder':'Suppliers name',}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder':'suppliers Email',}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder':'Suppliers Phone',}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder':'suppliers Address',}),
+            'contact_person': forms.TextInput(attrs={'class': 'form-control', 'placeholder':'Contact Persons Number',}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'placeholder':'additional information', 'rows': 2}),
         }
         
-        
+
+   
         
 class EquipmentForm(forms.ModelForm):
     class Meta:
         model = Equipment
-        fields = ['name', 'description', 'purchase_date', 'purchase_price', 'supplier', 'status', 'warranty_period', 'warranty_expiry_date']
+        fields = ['category','name', 'description', 'purchase_date', 'purchase_price', 'supplier','purchase_receipt', 'status', 'warranty_period', 'warranty_expiry_date']
         widgets = {
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'purchase_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'purchase_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'supplier': forms.Select(attrs={'class': 'form-control'}),
-            'status': forms.Select(attrs={'class': 'form-control'}),
-            'warranty_period': forms.NumberInput(attrs={'class': 'form-control'}),
-            'warranty_expiry_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-control','placeholder':'Equipment Category',}),
+            'name': forms.TextInput(attrs={'class': 'form-control','placeholder':'Name',}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3,'placeholder':'Description',}),
+            'supplier': forms.Select(attrs={'class': 'form-control','placeholder':'Supplier',}),
+            'status': forms.Select(attrs={'class': 'form-control','placeholder':'Status',}),
+            'purchase_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder':'Purchase Date',}),
+            'purchase_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01','placeholder':'Purchase price',}),
+            'purchase_receipt': forms.ClearableFileInput(attrs={'class': 'form-control', 'placeholder': 'Upload Receipt'}),
+            'warranty_period': forms.NumberInput(attrs={'class': 'form-control','placeholder':'warranty period in years',}),
+            'warranty_expiry_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder':'Warranty Expirey date',}),
+           
         }
 
     def clean_purchase_price(self):
@@ -42,14 +62,17 @@ class EquipmentForm(forms.ModelForm):
 class ConsumableItemForm(forms.ModelForm):
     class Meta:
         model = ConsumableItem
-        fields = ['name', 'description', 'stock_quantity', 'unit_price', 'total_cost', 'hotel']
+        fields = ['category','name', 'description', 'stock_quantity', 'unit_price', 'purchase_receipt', 'purchase_date']
         widgets = {
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'stock_quantity': forms.NumberInput(attrs={'class': 'form-control'}),
-            'unit_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'total_cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'hotel': forms.Select(attrs={'class': 'form-control'}),
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            
+            'category': forms.Select(attrs={'class': 'form-control','placeholder':'item Category',}),
+            'name': forms.TextInput(attrs={'class': 'form-control','placeholder':'Name',}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3,'placeholder':'Description',}),
+            'stock_quantity': forms.NumberInput(attrs={'class': 'form-control','placeholder':'Stock Quantity',}),
+            'unit_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01','placeholder':'Unit Price',}),
+            'purchase_receipt': forms.ClearableFileInput(attrs={'class': 'form-control', 'placeholder': 'Upload Receipt'}),
+            'purchase_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder':'Purchase Date',}),
+         
         }
 
     def clean_unit_price(self):
@@ -69,13 +92,14 @@ class ConsumableItemForm(forms.ModelForm):
 class EquipmentUsageLogForm(forms.ModelForm):
     class Meta:
         model = EquipmentUsageLog
-        fields = ['equipment', 'user', 'usage_start_time', 'usage_end_time', 'remarks']
+        fields = ['equipment', 'usage_start_time', 'usage_end_time', 'remarks']
         widgets = {
-            'usage_start_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'usage_end_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'remarks': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-            'equipment': forms.Select(attrs={'class': 'form-control'}),
-            'user': forms.Select(attrs={'class': 'form-control'}),
+             'equipment': forms.Select(attrs={'class': 'form-control','placeholder':'Equipment',}),
+            'usage_start_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local','placeholder':'Usage Start Time',}),
+            'usage_end_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local','placeholder':'Usage End Time',}),
+            'remarks': forms.Textarea(attrs={'class': 'form-control', 'rows': 2,'placeholder':'Additional Remark',}),
+           
+           
         }
 
 
@@ -84,12 +108,13 @@ class InsurancePolicyForm(forms.ModelForm):
         model = InsurancePolicy
         fields = ['equipment', 'policy_number', 'provider', 'coverage_amount', 'start_date', 'expiry_date']
         widgets = {
-            'policy_number': forms.TextInput(attrs={'class': 'form-control'}),
-            'provider': forms.TextInput(attrs={'class': 'form-control'}),
-            'coverage_amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'expiry_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'equipment': forms.Select(attrs={'class': 'form-control'}),
+            'equipment': forms.Select(attrs={'class': 'form-control','placeholder':'Insured Equipment',}),
+            'policy_number': forms.TextInput(attrs={'class': 'form-control','placeholder':'Policy Number',}),
+            'provider': forms.TextInput(attrs={'class': 'form-control','placeholder':'Insurance provider',}),
+            'coverage_amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01','placeholder':'Coverage Amount',}),
+            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder':'Insurance Start Date',}),
+            'expiry_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder':'Insurance Expiry Date',}),
+           
         }
 
     def clean_coverage_amount(self):
@@ -103,20 +128,22 @@ class InsurancePolicyForm(forms.ModelForm):
 class EquipmentAuditLogForm(forms.ModelForm):
     class Meta:
         model = EquipmentAuditLog
-        fields = ['equipment', 'changed_by', 'change_description']
+        fields = ['equipment', 'change_description']
         widgets = {
-            'change_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'equipment': forms.Select(attrs={'class': 'form-control'}),
-            'changed_by': forms.Select(attrs={'class': 'form-control'}),
+            'change_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3,'placeholder':'description',}),
+            'equipment': forms.Select(attrs={'class': 'form-control','placeholder':'Equipment',}),
+            
         }
 
 
 class InspectionChecklistForm(forms.ModelForm):
     class Meta:
         model = InspectionChecklist
-        fields = ['equipment', 'checklist_item', 'is_passed', 'remarks']
+        fields = ['inspector','equipment', 'checklist_item', 'is_passed', 'remarks']
         widgets = {
+            'inspector': forms.TextInput(attrs={'class': 'form-control'}),
+            'equipment': forms.Select(attrs={'class': 'form-control'}),
             'checklist_item': forms.TextInput(attrs={'class': 'form-control'}),
             'remarks': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-            'equipment': forms.Select(attrs={'class': 'form-control'}),
+           
         }

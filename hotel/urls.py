@@ -12,7 +12,7 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('hrm/', include('hrm.urls')),
     path('booking/', include('bookings.urls')),
-    path('Inventory/', include('inventory.urls')),
+    path('inventory/', include('inventory.urls')),
     
     #ckeditor 5
     path("ckeditor5/", include('django_ckeditor_5.urls')),
