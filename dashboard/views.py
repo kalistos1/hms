@@ -27,6 +27,7 @@ import datetime
 from pos.models import *
 from pos.forms import updateReceivedItemForm
 from django.utils.timezone import make_aware,is_aware
+from accounting . models import *
 today = datetime.date.today()
 
 
@@ -59,18 +60,18 @@ def admin_create_room_amenity(request):
 
 
 def admin_list_room_amenities(request):
-    amenities = RoomAmenity.objects.all()
+    amenities =  RoomInventory.objects.all()
     form = RoomAmenityForm()   
     context = {
         'amenities': amenities,
         'form':form,
         }
-    return render(request, 'admin_user/amenities_list.html',context)
+    return render(request, 'admin_user/room_amenities_list.html',context)
 
 
 
 def admin_update_room_amenity(request, pk):
-    amenity = get_object_or_404(RoomAmenity, pk=pk)
+    amenity = get_object_or_404( RoomInventory, pk=pk)
     if request.method == 'POST':
         form = RoomAmenityForm(request.POST, instance=amenity)
         if form.is_valid():
@@ -88,7 +89,7 @@ def admin_update_room_amenity(request, pk):
 
 def admin_delete_room_amenity(request, pk):
     
-    amenity = get_object_or_404(RoomAmenity, pk=pk)
+    amenity = get_object_or_404( RoomInventory, pk=pk)
     if request.method == 'GET':
         amenity.delete()
         messages.success(request, 'Room Amenity deleted successfully!')
@@ -133,9 +134,9 @@ def admin_list_room(request):
 
 
 def admin_update_room(request, pk):
-    amenity = get_object_or_404(RoomAmenity, pk=pk)
+    room = get_object_or_404(Room, pk=pk)
     if request.method == 'POST':
-        form = RoomAmenityForm(request.POST, instance=amenity)
+        form = RoomAmenityForm(request.POST, instance=room)
         if form.is_valid():
             form.save()
             messages.success(request, 'Room Amenity updated successfully!')
@@ -143,7 +144,7 @@ def admin_update_room(request, pk):
         else:
             messages.error(request, 'Error updating Room Amenity. Please correct the errors below.')
     else:
-        form = RoomAmenityForm(instance=amenity)
+        form = RoomAmenityForm(instance=room)
 
     return render(request, 'room_amenities/update.html', {'form': form})
 
@@ -462,9 +463,261 @@ def supervisor_dashboard(request):
 
 
 
+# def account_dashboard(request):
+#     template = "account_officer/dashboard.html"    
+    
+#     today = timezone.now().date()
+
+#     # 1. Get all bookings done today
+#     todays_bookings = Booking.objects.filter(date_created__date=today)
+
+#     # 2. Get all payments made today
+#     todays_payments = Payment.objects.filter(date_created__date=today)
+
+#     # 3. Get the last ended session of the front desk user
+#     last_ended_session = Attendance.objects.filter(
+#         employee__employee_profile__role='front_desk',
+#         check_out__isnull=False
+#     ).order_by('-check_out').first()
+
+#     last_session_bookings = last_session_payments = None
+#     if last_ended_session:
+#         last_session_bookings = Booking.objects.filter(
+#             date_created__range=(last_ended_session.check_in, last_ended_session.check_out)
+#         )
+#         last_session_payments = Payment.objects.filter(
+#             date_created__range=(last_ended_session.check_in, last_ended_session.check_out)
+#         )
+
+#     # 4. Get the active session of the front desk user
+#     current_active_session = Attendance.objects.filter(
+#         employee__employee_profile__role='front_desk',
+#         active=True
+#     ).first()
+
+#     active_session_bookings = active_session_payments = None
+#     if current_active_session:
+#         active_session_bookings = Booking.objects.filter(
+#             date_created__range=(current_active_session.check_in, timezone.now())
+#         )
+#         active_session_payments = Payment.objects.filter(
+#             date_created__range=(current_active_session.check_in, timezone.now())
+#         )
+
+#     context = {
+#         'todays_bookings': todays_bookings,
+#         'todays_payments': todays_payments,
+#         'last_session_bookings': last_session_bookings,
+#         'last_session_payments': last_session_payments,
+#         'active_session_bookings': active_session_bookings,
+#         'active_session_payments': active_session_payments,
+#     }
+
+
+#     return render (request,template, context)
+
+
+
 def account_dashboard(request):
     template = "account_officer/dashboard.html"    
-    return render (request,template)
+    
+    today = timezone.now().date()
+
+    customers = User.objects.filter(
+                is_admin=False,
+                is_supervisor=False,
+                is_account_officer=False,
+                is_frontdesk_officer=False,
+                is_pos_officer=False,
+                is_worker=False,
+            ).count()
+    
+    staff_roles_filter = Q(is_admin=True) | Q(is_supervisor=True) | Q(is_account_officer=True) | \
+                        Q(is_frontdesk_officer=True) | Q(is_pos_officer=True) | Q(is_worker=True)
+    # Get the count of staff
+    staff_count = User.objects.filter(staff_roles_filter).count()
+
+    # 1. Get all bookings done today
+    todays_bookings = Booking.objects.filter(date_created__date=today)
+
+    first_day_of_month = today.replace(day=1)
+    # Filter PaymentRecords for the current month and statuses 'advance' or 'completed'
+    monthly_income = PaymentRecord.objects.filter(
+        payment_date__date__gte=first_day_of_month,  # Payments in the current month
+        status__in=['advance', 'completed']  # Payments with status 'advance' or 'completed'
+    ).aggregate(monthly_income=Sum('amount'))['monthly_income'] or 0
+
+
+    # 2. Get all payments made today, considering 'advance' and 'completed' payments
+    todays_booking_payments = Payment.objects.filter(
+        date__date=today, 
+        status__in=['advance', 'completed']
+    )
+
+    todays_booking_payment_completions = PaymentCompletion.objects.filter(
+        completion_date__date=today
+    )
+
+    todays_payment_sum = todays_booking_payments.aggregate(total=Sum('amount'))['total'] or 0.00
+    todays_payment_completion_sum = todays_booking_payment_completions.aggregate(total=Sum('amount'))['total'] or 0.00
+    todays_total_booking_payments = todays_payment_sum + todays_payment_completion_sum
+
+
+    # 1. Sum of all orders done today
+    total_pos_orders_today = Order.objects.filter(created_at__date=today).aggregate(total=Sum(F('total_amount')))['total'] or 0
+
+    # 2. Sum of all payments made today
+    total_pos_orders_payments_today = PosPayment.objects.filter(payment_date__date=today).aggregate(total=Sum(F('amount_paid')))['total'] or 0
+
+    # Initialize data structure to hold totals for each department
+    department_data = []
+
+    # Get all departments
+    departments = Department.objects.all()
+
+    for department in departments:
+        department_location = department.location
+
+        # 3. Sum of orders and payments for the most recently ended session based on department location
+        last_pos_ended_session = Attendance.objects.filter(
+            employee__employee_profile__role='pos_staff',
+            check_out__isnull=False,
+            shift_location=department_location  # Filter by department location
+        ).order_by('-check_out').first()
+
+        total_pos_orders_recent_session = 0
+        total_pos_payments_recent_session = 0
+
+        if last_pos_ended_session:
+            session_start = last_pos_ended_session.check_in
+            session_end = last_pos_ended_session.check_out
+
+            # Sum orders for the recent session and department
+            total_pos_orders_recent_session = Order.objects.filter(
+                staff=last_pos_ended_session.employee.user,
+                staff__employee_profile__department_location=department_location,
+                created_at__range=[session_start, session_end]
+            ).aggregate(total=Sum(F('total_amount')))['total'] or 0
+
+            # Sum payments for the recent session and department
+            total_pos_payments_recent_session = PosPayment.objects.filter(
+                order__staff=last_pos_ended_session.employee.user,
+                order__staff__employee_profile__department_location=department_location,
+                payment_date__range=[session_start, session_end]
+            ).aggregate(total=Sum(F('amount_paid')))['total'] or 0
+
+
+        # 4. Sum of orders and payments for the currently active session based on department location
+        pos_active_session = Attendance.objects.filter(
+            employee__employee_profile__role='pos_staff',
+            check_out__isnull=True,
+            shift_location=department_location  # Filter by department location
+        ).order_by('-check_in').first()
+
+        total_pos_orders_active_session = 0
+        total_pos_payments_active_session = 0
+
+        if pos_active_session:
+            session_start = pos_active_session.check_in
+
+            # Sum orders for the active session and department
+            total_pos_orders_active_session = Order.objects.filter(
+                staff=pos_active_session.employee.user,
+                staff__employee_profile__department_location=department_location,
+                created_at__gte=session_start
+            ).aggregate(total=Sum(F('total_amount')))['total'] or 0
+
+            # Sum payments for the active session and department
+            total_pos_payments_active_session = PosPayment.objects.filter(
+                order__staff=pos_active_session.employee.user,
+                order__staff__employee_profile__department_location=department_location,
+                payment_date__gte=session_start
+            ).aggregate(total=Sum(F('amount_paid')))['total'] or 0
+
+        # Append data for this department
+        department_data.append({
+            'department_name': department.name,
+            'total_orders_recent_session': total_pos_orders_recent_session,
+            'total_payments_recent_session': total_pos_payments_recent_session,
+            'total_orders_active_session': total_pos_orders_active_session,
+            'total_payments_active_session': total_pos_payments_active_session,
+        })
+
+
+    # 3. Get the last ended session of the front desk user
+    last_ended_session = Attendance.objects.filter(
+        employee__employee_profile__role='front_desk',
+        check_out__isnull=False
+    ).order_by('-check_out').first()
+
+
+    last_session_bookings = last_session_payments = last_session_payment_completions = None
+    if last_ended_session:
+        last_session_bookings = Booking.objects.filter(
+            date_created__range=(last_ended_session.check_in, last_ended_session.check_out)
+        )
+        last_session_payments = Payment.objects.filter(
+            date__range=(last_ended_session.check_in, last_ended_session.check_out),
+            status__in=['advance', 'completed']
+        )
+        last_session_payment_completions = PaymentCompletion.objects.filter(
+            completion_date__range=(last_ended_session.check_in, last_ended_session.check_out)
+        )
+
+    # 5. Get the active session of the front desk user
+    current_active_session = Attendance.objects.filter(
+        employee__employee_profile__role='front_desk',
+        active=True
+    ).first()
+
+    active_session_bookings = active_session_payments = active_session_payment_completions = None
+    if current_active_session:
+        active_session_bookings = Booking.objects.filter(
+            date_created__range=(current_active_session.check_in, timezone.now())
+        )
+        active_session_payments = Payment.objects.filter(
+            date__range=(current_active_session.check_in, timezone.now()),
+            status__in=['advance', 'completed']
+        )
+        active_session_payment_completions = PaymentCompletion.objects.filter(
+            completion_date__range=(current_active_session.check_in, timezone.now())
+        )
+
+    # Summarize last session total payments (Payment + PaymentCompletion)
+    last_session_payment_sum = last_session_payments.aggregate(total=Sum('amount'))['total'] if last_session_payments else 0.00
+    last_session_payment_completion_sum = last_session_payment_completions.aggregate(total=Sum('amount'))['total'] if last_session_payment_completions else 0.00
+    last_session_total_payments = last_session_payment_sum + last_session_payment_completion_sum
+
+    # Summarize active session total payments (Payment + PaymentCompletion)
+    active_session_payment_sum = active_session_payments.aggregate(total=Sum('amount'))['total'] if active_session_payments else 0.00
+    active_session_payment_completion_sum = active_session_payment_completions.aggregate(total=Sum('amount'))['total'] if active_session_payment_completions else 0.00
+    active_session_total_payments = active_session_payment_sum + active_session_payment_completion_sum
+
+    context = {
+        #bookings
+        'todays_bookings': todays_bookings,
+        'todays_bookings_payments':  todays_total_booking_payments,
+        'last_session_bookings': last_session_bookings,
+        'last_session_payments': last_session_payments,
+
+        'active_session_bookings': active_session_bookings,
+        'active_session_payments': active_session_payments,
+        
+        'last_session_total_payments': last_session_total_payments,
+        'active_session_total_payments': active_session_total_payments,
+
+        #  pos
+        'total_orders_today': total_pos_orders_today,
+        'total_pos_payments_today':  total_pos_orders_payments_today,
+        'department_data': department_data,  # Pass data for all departments
+
+       # others
+       'customers':customers,
+       'staff_count':staff_count,
+       'monthly_income': monthly_income,
+    }
+
+    return render(request, template, context)
 
 
 
@@ -557,13 +810,13 @@ def frontdesk_dashboard(request):
 
             # Ensure to use the correct date field from the Booking model
             todays_bookings = Booking.objects.filter(
-                date_created__date=today,  # Adjust according to your model structure
+                # date_created__date=today, 
                 date_created__range=(check_in_time, check_out_time)
             )
 
             # Payments made for these bookings within the same time range
             todays_payments = Payment.objects.filter(
-                booking__in=todays_bookings,
+                # booking__in=todays_bookings,
                 date__range=(check_in_time, check_out_time)
             )
 

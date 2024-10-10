@@ -12,16 +12,22 @@ class DateInput(forms.DateInput):
         
 class RoomAmenityForm(forms.ModelForm):
     class Meta:
-        model = RoomAmenity
-        fields = '__all__'
+        model =  RoomInventory
+        fields = ['room','equipment','amenity','consumable','quantity','status']
+    
 
     def __init__(self, *args, **kwargs):
         super(RoomAmenityForm, self).__init__(*args, **kwargs)
-        self.fields['name'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Amenity Name'})
-        self.fields['description'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Description'})
+       
+        self.fields['room'].widget.attrs.update({'class': 'form-control', 'placeholder': 'room'})
+        self.fields['equipment'].widget.attrs.update({'class': 'form-control', 'placeholder': 'equipment'})
+        self.fields['amenity'].widget.attrs.update({'class': 'form-control', 'placeholder': 'amenity'})
+        self.fields['consumable'].widget.attrs.update({'class': 'form-control', 'placeholder': 'consumable'})
+        self.fields['quantity'].widget.attrs.update({'class': 'form-control', 'placeholder': 'quantity'})
+        self.fields['status'].widget.attrs.update({'class': 'form-control', 'placeholder': 'status'})
         
     
-
+        
 class RoomTypeForm(forms.ModelForm):
     
     class Meta:
@@ -43,7 +49,7 @@ class RoomForm(forms.ModelForm):
  
     class Meta:
         model = Room
-        fields = ['room_type','banner_img','room_number','floor','amenities',]
+        fields = ['room_type','banner_img','room_number','floor',]
 
     def __init__(self, *args, **kwargs):
         super(RoomForm, self).__init__(*args, **kwargs)
@@ -52,10 +58,9 @@ class RoomForm(forms.ModelForm):
         self.fields['banner_img'].widget.attrs.update({'class': 'form-control-file'})
         self.fields['room_number'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Number'})
         self.fields['floor'].widget.attrs.update({'class': 'form-control'})
-        self.fields['amenities'].widget.attrs.update({'class': 'form-control'})
+      
        
-        
-        
+                
 class CreateCouponForm(forms.ModelForm):
  
     class Meta:

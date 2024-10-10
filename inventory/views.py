@@ -2,8 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib import messages
-from .models import Supplier, Equipment, ConsumableItem, EquipmentUsageLog, InsurancePolicy, EquipmentAuditLog, InspectionChecklist,ItemCategory
-from .forms import  InventoryCategoryForm, SupplierForm, EquipmentForm, ConsumableItemForm, EquipmentUsageLogForm, InsurancePolicyForm, EquipmentAuditLogForm, InspectionChecklistForm
+from .models import Amenity, Supplier, Equipment, ConsumableItem, EquipmentUsageLog, InsurancePolicy, EquipmentAuditLog, InspectionChecklist,ItemCategory
+from .forms import AmenityForm, InventoryCategoryForm, SupplierForm, EquipmentForm, ConsumableItemForm, EquipmentUsageLogForm, InsurancePolicyForm, EquipmentAuditLogForm, InspectionChecklistForm
 
 # Supplier Views
 def supplier_list(request):
@@ -214,6 +214,85 @@ def consumable_item_delete(request, pk):
         return redirect('inventory:consumable_item_list')
     messages.error(request, 'Unable to delete item something went wrong.')
     return redirect('inventory:consumable_item_list')
+
+
+
+
+
+# Amenity Item Views
+def amenity_item_list(request):
+    amenities = Amenity.objects.all()
+    form = AmenityForm()
+    context = {
+        'amenities': amenities,
+        'form':form,
+        }
+
+    return render(request, 'pages/amenity_list.html', context)
+
+
+def amenity_item_create(request):
+    if request.method == 'POST':
+        form = AmenityForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Amenity created successfully.')
+            return redirect('inventory:amenity_item_list')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        messages.error(request, 'Something went wrong check form and resubmit')
+    return redirect ('inventory:amenity_item_list')
+
+
+def amenity_item_update(request, pk):
+    amenity = get_object_or_404(Amenity, pk=pk)
+    if request.method == 'POST':
+        form = AmenityForm(request.POST, instance=amenity)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Amenity updated successfully.')
+            return redirect('inventory:amenity_item_list')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ConsumableItemForm(instance=amenity)
+    return render(request, 'pages/amenity_item_form.html', {'form': form})
+
+
+def amenity_item_delete(request, pk):
+    amenity = get_object_or_404(Amenity, pk=pk)
+    if request.method == 'GET':
+        amenity.delete()
+        messages.success(request, 'amnenity deleted successfully.')
+        return redirect('inventory:amenity_item_list')
+    messages.error(request, 'Unable to delete item something went wrong.')
+    return redirect('inventory:amenity_item_list')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

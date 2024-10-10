@@ -181,19 +181,17 @@ class Amenity(models.Model):
     name = models.CharField(max_length=255)
     category = models.ForeignKey(ItemCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='amenities')
     description = models.TextField(null=True, blank=True)
-    icon = models.ImageField(upload_to='amenity_icons/', null=True, blank=True)
     cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Cost for using the amenity, if applicable.")
     is_available = models.BooleanField(default=True, help_text="Indicates if the amenity is available for use.")
     is_active = models.BooleanField(default=True, help_text="Controls if the amenity is active and visible.")
-    display_order = models.PositiveIntegerField(default=0, help_text="Order for displaying amenities in the system.")
+    id_code = models.PositiveIntegerField(default=0, help_text="Order for displaying amenities in the system.")
 
     # Inventory-related fields
     stock_quantity = models.PositiveIntegerField(default=0, help_text="Quantity available for tangible items.")
-    reorder_level = models.PositiveIntegerField(default=0, help_text="Stock level that triggers reorder alert for tangible items.")
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True, help_text="Supplier of this amenity.")
     
     class Meta:
-        ordering = ['display_order', 'name']
+        ordering = ['id_code', 'name']
 
     def __str__(self):
         return self.name
@@ -209,18 +207,7 @@ class Amenity(models.Model):
         self.is_available = True
         self.save()
 
-    # Reorder logic similar to ConsumableItem
-    def check_reorder(self):
-        """Check if stock level has fallen below reorder point."""
-        if self.stock_quantity <= self.reorder_level:
-            return f"Reorder alert for {self.name}! Stock is low."
-        return None
 
-    def reorder(self, amount):
-        """Reorder stock if needed."""
-        if self.check_reorder():
-            self.stock_quantity += amount
-            self.save()
 
     @classmethod
     def get_active_amenities(cls, hotel):

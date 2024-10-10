@@ -36,9 +36,9 @@
                 <div class="row g-3">
                     <div class="col-sm-12">
                         <div class="d-flex align-items-center justify-content-between flex-wrap">
-                            <h3 class="fw-bold mb-0">Room Amenities List</h3>
+                            <h3 class="fw-bold mb-0">Room Facilities List</h3>
                             <div class="col-auto d-flex w-sm-100">
-                                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#add-amenities">Add Amenity</button>
+                                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#add-amenities">Add room facility</button>
                             </div>
                         </div>
                     </div>
@@ -70,7 +70,7 @@
                                             {% endfor %}
                                         {% else %}
                                             <div class="text-center">
-                                                <h4> No Amenity Added Yet! </h4>
+                                                <h4> No Room Facility Added Yet! </h4>
 
                                             </div>
                                         {% endif %}
@@ -99,7 +99,7 @@
                     <div class="modal-content">
                         <form action="{% url 'dashboard:admin_create_room_amenity' %}" method = "post">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-5">Add New Amenity</h1>
+                                <h1 class="modal-title fs-5">Add Amenity to Room</h1>
                                 <button
                                     type="button"
                                     class="btn-close"
@@ -111,14 +111,11 @@
 
 
                                 {% csrf_token %}
-                                <div class="form-group">
-                                    <label class="form-label text-muted">Amenity Name</label>
-                                    {{form.name}}
-                                </div>
+
 
                                 <div class="form-group">
-                                    <label class="form-label text-muted">Amenity Description</label>
-                                    {{form.description}}
+
+                                    {{form.as_p}}
                                 </div>
 
                             </div>

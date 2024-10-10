@@ -7,11 +7,11 @@ app_name = "dashboard"
 urlpatterns = [
     #dshboards
     
-    path('admin_dash/',views.admin_dashboard, name="admin_dashboard"),
-    path('supervisor_dash/',views.supervisor_dashboard, name ="supervisor_dashboard"),
-    path('account_dash/',views.account_dashboard, name ="account_dashboard"),
-    path('front_desk_dash/',views.frontdesk_dashboard, name ="frontdesk_dashboard"),
-    path('pos_user_dash/',views.pos_user_dashboard, name ="pos_user_dashboard"),
+    path('admin_dashboard/',views.admin_dashboard, name="admin_dashboard"),
+    path('supervisor_dashboard/',views.supervisor_dashboard, name ="supervisor_dashboard"),
+    path('account_dashboard/',views.account_dashboard, name ="account_dashboard"),
+    path('front_desk_dashboard/',views.frontdesk_dashboard, name ="frontdesk_dashboard"),
+    path('pos_user_dashboard/',views.pos_user_dashboard, name ="pos_user_dashboard"),
     
     #admin views
     # amenities

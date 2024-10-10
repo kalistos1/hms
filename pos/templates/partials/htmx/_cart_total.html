@@ -1,13 +1,13 @@
 <div class="d-flex align-items-center mb-2">
     <div>Subtotal</div>
-    <div class="flex-1 text-end h6 mb-0">${{ cart.subtotal }}</div>
+    <div class="flex-1 text-end h6 mb-0">&#8358 {{ cart.subtotal }}</div>
 </div>
 <div class="d-flex align-items-center">
-    <div>Taxes (6%)</div>
-    <div class="flex-1 text-end h6 mb-0">${{ cart.taxes }}</div>
+    {% comment %} <div>Taxes (6%)</div> {% endcomment %}
+    {% comment %} <div class="flex-1 text-end h6 mb-0">${{ cart.taxes }}</div> {% endcomment %}
 </div>
 <hr class="opacity-1 my-10px">
 <div class="d-flex align-items-center mb-2">
     <div>Total</div>
-    <div class="flex-1 text-end h4 mb-0">${{ cart.total }}</div>
+    <div class="flex-1 text-end h4 mb-0">&#8358 {{ cart.total }}</div>
 </div>

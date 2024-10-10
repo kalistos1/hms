@@ -36,7 +36,7 @@
               <h6 class="fl-title title-font ps-2 small text-uppercase text-muted py-3" style="--dynamic-color: var(--theme-color1)">Universal</h6>
               <ul class="list-unstyled mb-4 menu-list">
                 <li>
-                  <a class="active" href="" aria-label="Hotel Dashboard">
+                  <a class="active" href="{% url 'dashboard:account_dashboard' %}" aria-label="Hotel Dashboard">
                     <svg class="svg-stroke" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                       <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                       <path d="M5 12l-2 0l9 -9l9 9l-2 0"></path>
@@ -93,9 +93,6 @@
                 </li>
 
 
-
-               
-
                 <li class="py-2 mt-2">
                   <a href="#Roomsettings" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
                     <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24"  viewBox="0 0 24 24"  stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -117,7 +114,7 @@
 
                   </ul>
                 </li>
-                
+
                 <li>
                   <a href="#ItemsManageMenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
                     <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -135,7 +132,8 @@
                     <li><a href="{% url 'inventory:supplier_list' %}" aria-label="Items Unit List">Suppliers </a></li>
                     <li><a href="{% url 'inventory:category_list' %}" aria-label="Items Category">Item Categories</a></li>
                     <li><a href="{% url 'inventory:equipment_list' %}" aria-label="Items List">Equipment Inventory</a></li>
-                    <li><a href="{% url 'inventory:consumable_item_list' %}" aria-label="Items Destroyed">Consumable Inventory</a></li>
+                    <li><a href="{% url 'inventory:consumable_item_list' %}" aria-label="consumable items">Consumable Inventory</a></li>
+                    <li><a href="{% url 'inventory:amenity_item_list' %}" aria-label="amenities">Amenities Inventory</a></li>
                     <li><a href="" aria-label="Items Destroyed">Amenities Inventory</a></li>
                   </ul>
                 </li>
@@ -249,60 +247,75 @@
                         <a
                           href="{% url 'hrm:staff_schedule' %}"
                           aria-label="Assigned List"
-                        >Roaster</a
+                        >
+
+                          <span class="mx-3">Roaster</span>
+
+                        </a>
+                      </li>
+
+                      <li>
+                        <a
+                          href="{% url 'hrm:daily_attendance' %}"
+                          aria-label="hrm attendance"
+                        >Attendance</a
                           >
                         </li>
-
-                        <li>
-                          <a
-                            href="{% url 'hrm:daily_attendance' %}"
-                            aria-label="Hotel Images"
-                          >Attendance</a
-                            >
-                          </li>
-                        </ul>
-                      </li>
+                      </ul>
+                    </li>
 
 
 
-                      <li class="py-2 mt-2">
-                        <a href="#WorkersMenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24"  viewBox="0 0 24 24"  stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <path d="M12 8m-5 0a5 5 0 1 0 10 0a5 5 0 1 0 -10 0" />
-                            <path d="M8 11a5 5 0 1 0 3.998 1.997" />
-                            <path d="M12.002 19.003a5 5 0 1 0 3.998 -8.003" />
-                          </svg>
-                          <span class="mx-3">Manage Workers</span>
-                        </a>
+                    <li class="py-2 mt-2">
+                      <a href="#WorkersMenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24"  viewBox="0 0 24 24"  stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                          <path d="M12 8m-5 0a5 5 0 1 0 10 0a5 5 0 1 0 -10 0" />
+                          <path d="M8 11a5 5 0 1 0 3.998 1.997" />
+                          <path d="M12.002 19.003a5 5 0 1 0 3.998 -8.003" />
+                        </svg>
+                        <span class="mx-3">Manage Workers</span>
+                      </a>
 
-                        <ul class="collapse list-unstyled" id ="WorkersMenu">
-                          <li><a href="{% url 'dashboard:admin_users_list' %}" aria-label="Booking Reports">Workers List</a></li>
-                          <li> <a href="{% url 'hrm:employees' %}" aria-label="All Employees" >All Employees</a > </li>
-                        </ul>
-                      </li>
+                      <ul class="collapse list-unstyled" id ="WorkersMenu">
+                        <li><a href="{% url 'dashboard:admin_users_list' %}" aria-label="Booking Reports">Workers List</a></li>
+                        <li> <a href="{% url 'hrm:employees' %}" aria-label="All Employees" >All Employees</a > </li>
+                      </ul>
+                    </li>
 
-                      <li class="py-2 mt-2">
-                        <a href="#departmentMenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24"  viewBox="0 0 24 24"  stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <path d="M12 8m-5 0a5 5 0 1 0 10 0a5 5 0 1 0 -10 0" />
-                            <path d="M8 11a5 5 0 1 0 3.998 1.997" />
-                            <path d="M12.002 19.003a5 5 0 1 0 3.998 -8.003" />
-                          </svg>
-                          <span class="mx-3">Manage Department</span>
-                        </a>
+                    <li class="py-2 mt-2">
+                      <a href="#departmentMenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24"  viewBox="0 0 24 24"  stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                          <path d="M12 8m-5 0a5 5 0 1 0 10 0a5 5 0 1 0 -10 0" />
+                          <path d="M8 11a5 5 0 1 0 3.998 1.997" />
+                          <path d="M12.002 19.003a5 5 0 1 0 3.998 -8.003" />
+                        </svg>
+                        <span class="mx-3">Manage Department</span>
+                      </a>
 
-                        <ul class="collapse list-unstyled" id ="departmentMenu">
-                          <li><a href="{% url 'hrm:departments' %}" aria-label="Booking Reports">Department</a></li>
-                          <li> <a href="{% url 'hrm:department_locations' %}" aria-label="All Employees" >Department Locations</a > </li>
-                        </ul>
-                      </li>
-                    </ul>
-                  </div>
+                      <ul class="collapse list-unstyled" id ="departmentMenu">
+                        <li><a href="{% url 'hrm:departments' %}" aria-label="Booking Reports">Department</a></li>
+                        <li> <a href="{% url 'hrm:department_locations' %}" aria-label="All Employees" >Department Locations</a > </li>
+                      </ul>
+                    </li>
 
+                    <li>
+                      <a class="active" href="" aria-label="Hotel Dashboard">
+                        <svg class="svg-stroke" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                          <path d="M5 12l-2 0l9 -9l9 9l-2 0"></path>
+                          <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"></path>
+                          <path d="M10 12h4v4h-4z"></path>
+                        </svg>
+                        <span class="mx-3">Setup</span>
+                      </a>
+                    </li>
+                  </ul>
                 </div>
+
               </div>
             </div>
-          </nav>
-        </aside>
+          </div>
+        </nav>
+      </aside>

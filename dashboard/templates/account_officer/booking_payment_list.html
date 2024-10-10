@@ -1,0 +1,127 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+{% block title %} Admin | Booking List{% endblock %}
+
+{% block content %}
+    <main class="container-fluid px-0">
+    {% comment %} sidebar here {% endcomment %}
+        {% if request.user.is_admin %}
+            {% include '../partials/menubars/admin_sidebar.html' %}
+
+        {% elif request.user.is_supervisor %}
+            {% include '../partials/menubars/supervisor_sidebar.html' %}
+
+        {% elif request.user.is_account_officer %}
+            {% include '../partials/menubars/accounting_sidebar.html' %}
+
+        {% else %}
+            {% include '../partials/menubars/frontdesk_sidebar.html' %}
+
+        {% endif %}
+
+    {% comment %} sidebar ends {% endcomment %}
+
+        <div class="content">
+
+
+   {% comment %} top header starts {% endcomment %}
+            {% include '../partials/top_header.html' %}
+   {% comment %} top header ends {% endcomment %}
+
+
+
+   {% comment %} body content starts {% endcomment %}
+
+            <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
+                {% include '../partials/_messages.html' %}
+                <div class="row g-3">
+                    <div class="col-sm-12">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap">
+                            <h3 class="fw-bold mb-0"> Booking Payment List</h3>
+                            <div class="col-auto d-flex w-sm-100 mt-3">
+                                {% comment %} <a href="{% url 'dashboard:book_room' %}" class="btn btn-warning btn-set-task w-sm-100 me-4">Room Booking</a> {% endcomment %}
+                                {% comment %} <a href="{% url 'dashboard:reserve_room' %}" class="btn btn-warning btn-set-task w-sm-100">Room Reservation</a> {% endcomment %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <table class="table dataTable align-middle table-hover table-body" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>payment Date</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Source</th>
+                                            <th>Description</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if booking_payments %}
+                                        {% for payments in booking_payments %}
+                                            <tr>
+                                                <td>
+                                                    {{payment.payment_date}} 
+                                                </td>
+                                                <td>{{payment.amount}}</td>
+                                                <td>{{payment.status}}</td>
+                                                <td>{{booking.source}}</td>
+                                                <td>{{booking.description}}</td>
+
+                                              
+
+                                            </tr>
+                                        {% endfor %}
+                                        {% endif %}
+
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- Row End -->
+
+            </div>
+   {% comment %} body content ends {% endcomment %}
+
+
+
+        </div>
+
+
+        <script>
+            function AddRoomService(event, bookingId) {
+                // Prevent default behavior (if needed)
+                event.preventDefault();
+
+                // Get the form element in the offcanvas
+                const form = document.querySelector('#add-room-service form');
+
+                // Construct the new action URL by replacing the placeholder 'pk' with the actual booking ID
+                const newActionUrl = "{% url 'dashboard:frontdesk_add_booking_service' 0 %}".replace('0', bookingId);
+
+                // Set the new action URL on the form
+                form.action = newActionUrl;
+            }
+
+
+            function AddAdditionalCharge(event, bookingId) {
+                // Prevent default behavior (if needed)
+                event.preventDefault();
+
+                // Get the form element in the offcanvas
+                const form = document.querySelector('#add-additional-charge form');
+
+                // Construct the new action URL by replacing the placeholder 'pk' with the actual booking ID
+                const newActionUrl = "{% url 'dashboard:frontdesk_add_additional_charge' 0 %}".replace('0', bookingId);
+
+                // Set the new action URL on the form
+                form.action = newActionUrl;
+            }
+        </script>
+
+    </main>
+{% endblock %}

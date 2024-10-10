@@ -36,9 +36,9 @@
                 <div class="row g-3">
                     <div class="col-sm-12">
                         <div class="d-flex align-items-center justify-content-between flex-wrap">
-                            <h3 class="fw-bold mb-0">Equipments</h3>
+                            <h3 class="fw-bold mb-0">Consumable Item</h3>
                             <div class="col-auto d-flex w-sm-100">
-                                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#add-equipment">Add Equipment</button>
+                                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#add-equipment">Add Consumable Item</button>
                             </div>
                         </div>
                     </div>
@@ -52,43 +52,35 @@
                                             <th>Category</th>
                                             <th>Name</th>
                                             <th>Description</th>
+                                            <th>stock quantity </th>
+                                            <th>unit price</th>
+                                            <th>total_cost</th>
                                             <th>Purchase Date</th>
-                                            <th>Purchase Price</th>
-                                            <th>Supplier</th>
-                                            <th>Status</th>
-                                            <th>Warranty period</th>
-
                                             <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% if equipments %}
-                                            {% for equipment in equipments %}
+                                        {% if consumable_items %}
+                                            {% for item in consumable_items %}
                                                 <tr>
-                                                    <td>{{ equipment.category}}</td>
-                                                    <td>{{ equipment.name}}</td>
-                                                    <td>{{ equipment.description}}</td>
-
-                                                    <td>{{  equipment.purchase_date }}</td>
-                                                    <td>{{  equipment.purchase_price}}</td>
-                                                    <td>{{  equipment.supplier}}</td>
-                                                    <td>{{  equipment.status}}</td>
-                                                    <td>{{  equipment.warranty_period}}</td>
-
+                                                    <td>{{ item.category}}</td>
+                                                    <td>{{ item.name}}</td>
+                                                    <td>{{ item.description}}</td>
+                                                    <td>{{ item.stock_quantity }}</td>
+                                                    <td>{{  item.unit_price}}</td>
+                                                    <td>{{  item.total_cost}}</td>
+                                                    <td>{{  item.purchase_date}}</td>
 
                                                     <td>
                                                         <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#edit-amenity"><i class="fa fa-pencil-square fa-2x"></i></button>
-                                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#edit-amenity">Usage Log</button>
-                                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#edit-amenity">Insurance</button>
-                                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#edit-amenity">Inspection </button>
-                                                        <a href="#" data-url="{% url 'inventory:equipment_delete' 0 %}" onclick="deleteEquipment(event, {{ equipment.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
+                                                        <a href="#" data-url="{% url 'inventory:consumable_item_delete' 0 %}" onclick="deleteItem(event, {{ item.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
 
                                                     </td>
                                                 </tr>
                                             {% endfor %}
                                         {% else %}
                                             <div class="text-center">
-                                                <h4> No Equipment Added Yet! </h4>
+                                                <h4> No Item Added Yet! </h4>
 
                                             </div>
                                         {% endif %}
@@ -115,7 +107,7 @@
             >
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form action="{% url 'inventory:equipment_create' %}" method = "post">
+                        <form action="{% url 'inventory:consumable_item_create' %}" method = "post">
                             <div class="modal-header">
                                 <h1 class="modal-title fs-5">Add New Equipment</h1>
                                 <button
@@ -204,7 +196,7 @@
 
 
         <script>
-            function deleteEquipment(event, amenityId) {
+            function deleteItem(event, amenityId) {
                 event.preventDefault(); // Prevent the default link behavior
 
         // Get the URL template from the data attribute and replace the placeholder

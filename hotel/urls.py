@@ -19,6 +19,9 @@ urlpatterns = [
     
     #pos
     path('pos/', include('pos.urls')),
+    
+     #accounting
+    path('accounting/', include('accounting.urls')),
 
 ]
 

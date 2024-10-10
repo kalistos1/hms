@@ -29,7 +29,7 @@
                                 <div class="img" style="background-image: url({{item.product.image.url}})"></div>
                                 <div class="info">
                                     <div class="title">{{ item.product.name }}</div>
-                                    <div class="single-price">${{ item.product.price }}</div>
+                                    <div class="single-price">&#8358 {{ item.product.price }}</div>
                                     <div class="desc">- size: {{ item.product.size }}</div>
                                     <div class="input-group qty">
                                         <div class="input-group-append">
@@ -43,7 +43,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-3 total-price">${{ item.total_price }}</div>
+                        <div class="col-3 total-price">&#8358 {{ item.total_price }}</div>
                     </div>
                 {% empty %}
                     <div class="row pos-table-row">

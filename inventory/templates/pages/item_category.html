@@ -50,8 +50,8 @@
                                         <tr>
                                             <th>Name</th>
                                             <th>Parent</th>
-                                           
-                                             <th>Action</th>
+
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -59,7 +59,7 @@
                                             {% for category in categories %}
                                                 <tr>
                                                     <td>{{ category.name}}</td>
-                                                    
+
                                                     <td>{{ category.parent }}</td>
                                                     <td>
                                                         <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#edit-amenity"><i class="fa fa-pencil-square fa-2x"></i></button>
@@ -112,11 +112,11 @@
 
                                 {% csrf_token %}
                                 <div class="form-group">
-                                   
+
                                     {{form.as_p}}
                                 </div>
 
-                                
+
 
                             </div>
                             <div class="modal-footer">

@@ -14,7 +14,7 @@ import shortuuid
 from taggit.managers import TaggableManager
 from django.core.exceptions import ValidationError
 from django.db import transaction
-
+from inventory.models import Amenity, Equipment, ConsumableItem
 
 
 
@@ -125,14 +125,7 @@ class HotelFAQs(models.Model):
     class Meta:
         verbose_name_plural = "Hotel FAQs"
      
-        
-class RoomAmenity(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-       
+    
        
         
 class RoomType(models.Model):
@@ -185,7 +178,7 @@ class Room(models.Model):
     is_available = models.BooleanField(default=True)
     rid = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
     date = models.DateTimeField(auto_now_add=True)
-    amenities = models.ManyToManyField(RoomAmenity, blank=True)  # Added field
+  
 
     def __str__(self):
         return f"{self.room_type.type} - Room {self.room_number}"
@@ -202,6 +195,22 @@ class Room(models.Model):
             raise ValidationError("Price override cannot be negative.")
         
         super(Room, self).save(*args, **kwargs)
+
+
+class RoomInventory(models.Model):
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, null=True, blank=True)
+    amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE, null=True, blank=True)
+    consumable = models.ForeignKey(ConsumableItem, on_delete=models.CASCADE, null=True, blank=True)
+    quantity = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=50, choices=[('in_repairs', 'in_repairs'), ('in_use', 'In Use'), ('decomitioned', 'decomitioned')])
+
+    class Meta:
+        unique_together = ('room', 'equipment', 'consumable')
+
+    def __str__(self):
+        return f"{self.room.name} - {self.equipment or self.consumable}"
+
 
 
 

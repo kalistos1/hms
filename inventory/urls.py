@@ -29,6 +29,14 @@ urlpatterns = [
     path('consumable-items/<int:pk>/update/', views.consumable_item_update, name='consumable_item_update'),
     path('consumable-items/<int:pk>/delete/', views.consumable_item_delete, name='consumable_item_delete'),
 
+
+    # Amenity Item URLs
+    path('amenity-items/', views.amenity_item_list, name='amenity_item_list'),
+    path('amenity-items/create/', views.amenity_item_create, name='amenity_item_create'),
+    path('amenity-items/<int:pk>/update/', views.amenity_item_update, name='amenity_item_update'),
+    path('amenity-items/<int:pk>/delete/', views.amenity_item_delete, name='amenity_item_delete'),
+
+
     # Equipment Usage Log URLs
     path('usage-logs/', views.equipment_usage_log_list, name='equipment_usage_log_list'),
     path('usage-logs/create/', views.equipment_usage_log_create, name='equipment_usage_log_create'),

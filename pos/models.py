@@ -8,7 +8,7 @@ from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 from uuid import uuid4
 from hrm.models import Employee,DepartmentLocation
-
+from shortuuid.django_fields import ShortUUIDField
 
 # ProductCategory 
 class ProductCategory(models.Model):
@@ -193,6 +193,9 @@ class PosPayment(models.Model):
         default='PAID'
     )
     payment_date = models.DateTimeField(auto_now_add=True)
+    transaction_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
+    created_at = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'Payment for Order {self.order.id} - {self.amount_paid}'

@@ -36,9 +36,9 @@
                 <div class="row g-3">
                     <div class="col-sm-12">
                         <div class="d-flex align-items-center justify-content-between flex-wrap">
-                            <h3 class="fw-bold mb-0">Consumable Item</h3>
+                            <h3 class="fw-bold mb-0">Amenities</h3>
                             <div class="col-auto d-flex w-sm-100">
-                                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#add-equipment">Add Consumable Item</button>
+                                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#add-equipment">Add New Amenity</button>
                             </div>
                         </div>
                     </div>
@@ -48,7 +48,7 @@
                                 <table class="table dataTable align-middle table-hover table-body" style="width: 100%;">
                                     <thead>
                                         <tr>
-                                           
+
                                             <th>Category</th>
                                             <th>Name</th>
                                             <th>Description</th>
@@ -56,31 +56,31 @@
                                             <th>unit price</th>
                                             <th>total_cost</th>
                                             <th>Purchase Date</th>
-                                             <th>Action</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% if consumable_items %}
-                                            {% for item in consumable_items %}
+                                        {% if amenities %}
+                                            {% for amenity in amenities %}
                                                 <tr>
-                                                    <td>{{ item.category}}</td>
-                                                    <td>{{ item.name}}</td>
-                                                    <td>{{ item.description}}</td>
-                                                    <td>{{ item.stock_quantity }}</td>
-                                                    <td>{{  item.unit_price}}</td>
-                                                    <td>{{  item.total_cost}}</td>
-                                                    <td>{{  item.purchase_date}}</td>
-                                                    
+                                                    <td>{{ amenity.category}}</td>
+                                                    <td>{{ amenity.name}}</td>
+                                                    <td>{{ amenity.description}}</td>
+                                                    <td>{{ amenity.id_code }}</td>
+                                                    <td>{{  amenity.cost}}</td>
+                                                    <td>{{  amenity.stock_quantity}}</td>
+                                                    <td>{{  amenity.supplier}}</td>
+
                                                     <td>
                                                         <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#edit-amenity"><i class="fa fa-pencil-square fa-2x"></i></button>
-                                                        <a href="#" data-url="{% url 'inventory:consumable_item_delete' 0 %}" onclick="deleteItem(event, {{ item.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
+                                                        <a href="#" data-url="{% url 'inventory:amenity_item_delete' 0 %}" onclick="deleteItem(event, {{ amenity.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
 
                                                     </td>
                                                 </tr>
                                             {% endfor %}
                                         {% else %}
                                             <div class="text-center">
-                                                <h4> No Item Added Yet! </h4>
+                                                <h4> No Amenity Added Yet! </h4>
 
                                             </div>
                                         {% endif %}
@@ -107,9 +107,9 @@
             >
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form action="{% url 'inventory:consumable_item_create' %}" method = "post">
+                        <form action="{% url 'inventory:amenity_item_create' %}" method = "post">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-5">Add New Equipment</h1>
+                                <h1 class="modal-title fs-5">Add New Amenity</h1>
                                 <button
                                     type="button"
                                     class="btn-close"
@@ -122,11 +122,11 @@
 
                                 {% csrf_token %}
                                 <div class="form-group">
-                                   
+
                                     {{form.as_p}}
                                 </div>
 
-                                
+
 
                             </div>
                             <div class="modal-footer">

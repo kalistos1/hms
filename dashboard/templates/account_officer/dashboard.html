@@ -39,58 +39,214 @@
 	                      <!-- start: page body area -->
                 {% include '../partials/_messages.html' %}
 
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6 col-lg-3">
+
+   {% if request.user.is_admin %} 
+
+  <div class="row g-3 mb-3 mt-3">
+    <div class="col-12">
+        <h2>Overview</h2>
+    </div>
+
+    <div class="col-6 col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0"> Workers</h6>
+            </div>
+            <div class="card-body">
+                <h2>{{staff_count}}</h2>
+                <span class="badge bg-primary"> </span>
+                <span class="text-muted">Total Number of  workers</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Customers</h6>
+            </div>
+            <div class="card-body">
+                <h2> {{ customers }}</h2>
+                <span class="badge bg-info"> </span>
+                <span class="text-muted">Total Number of Customers </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0"> Monthly Income </h6>
+            </div>
+            <div class="card-body">
+                <h2>&#8358 {{ monthly_income}}</h2>
+                <span class="badge bg-warning"> </span>
+                <span class="text-muted">total income for this month </span>
+            </div>
+        </div>
+    </div>
+   
+</div>
+ {% endif %}
+
+
+
+                <div class="row g-3 mb-3 mt-4">
+                    <div class="col-12">
+                        <h2>Bookings</h2>
+                    </div>
+
+                    <div class=" col-6 col-md-6 col-lg-4">
                         <div class="card">
                             <div class="card-header">
-                                <h6 class="card-title mb-0">Today Booking</h6>
+                                <h6 class="card-title mb-0"> Booking</h6>
                             </div>
                             <div class="card-body">
-                                <h2>1,587</h2>
-                                <span class="badge bg-primary">+11% </span>
-                                <span class="text-muted">From previous period</span>
+                                <h2>{{ todays_bookings.count }}</h2>
+                                <span class="badge bg-primary"> </span>
+                                <span class="text-muted">Todays Bookings</span>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col-6 col-md-6 col-lg-4">
                         <div class="card">
                             <div class="card-header">
-                                <h6 class="card-title mb-0">Total Amount</h6>
+                                <h6 class="card-title mb-0">Todays Income</h6>
                             </div>
                             <div class="card-body">
-                                <h2>$2,258</h2>
-                                <span class="badge bg-info">+05% </span>
-                                <span class="text-muted">New income</span>
+                                <h2>&#8358 {{ todays_bookings_payments }}</h2>
+                                <span class="badge bg-info"> </span>
+                                <span class="text-muted">Todays booking Income </span>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-3">
+                    <div class=" col-6 col-md-6 col-lg-4">
                         <div class="card">
                             <div class="card-header">
-                                <h6 class="card-title mb-0">Total Customer</h6>
+                                <h6 class="card-title mb-0"> previous session Bookings</h6>
                             </div>
                             <div class="card-body">
-                                <h2>2.3k</h2>
-                                <span class="badge bg-warning">+11% </span>
-                                <span class="text-muted">From previous period</span>
+                                <h2>{{last_session_bookings}}</h2>
+                                <span class="badge bg-warning"> </span>
+                                <span class="text-muted">bookings in previous user session </span>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col-6 col-md-6 col-lg-4">
                         <div class="card">
                             <div class="card-header">
-                                <h6 class="card-title mb-0">Total Revenue</h6>
+                                <h6 class="card-title mb-0"> previous session Income</h6>
                             </div>
                             <div class="card-body">
-                                <h2>11,5587</h2>
-                                <span class="badge bg-success">+21% </span>
-                                <span class="text-muted">From previous period</span>
+                                <h2>&#8358 {{ last_session_total_payments}}</h2>
+                                <span class="badge bg-success"> </span>
+                                <span class="text-muted">total income from previous session</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-md-6 col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">Active Session Bookings</h6>
+                            </div>
+                            <div class="card-body">
+                                <h2>{{active_session_bookings}}</h2>
+                                <span class="badge bg-primary"> </span>
+                                <span class="text-muted">Number of bookings for the current active session</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class=" col-6 col-md-6 col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+
+                                <h6 class="card-tit le mb-0">Active Booking Session Income</h6>
+                            </div>
+                            <div class="card-body">
+                                <h2>&#8358 {{ active_session_total_payments }}</h2>
+                                <span class="badge bg-info"> </span>
+                                <span class="text-muted">Payments Receive for this active session </span>
                             </div>
                         </div>
                     </div>
                 </div>
+
+
+
+                <div class="row g-3 mb-3 mt-5 ">
+                    <div class="col-12">
+                        <h2>Point Of Sales</h2>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">Total Orders</h6>
+                            </div>
+                            <div class="card-body">
+                                <h2>{{total_orders_today}}</h2>
+                                <span class="badge bg-warning"> </span>
+                                <span class="text-muted">total orders today</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">Total Income </h6>
+                            </div>
+                            <div class="card-body">
+                                <h2> &#8358 {{total_pos_payments_today}}</h2>
+                                <span class="badge bg-success"> </span>
+                                <span class="text-muted">Total Income for today</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% if department_data %}
+                        {% for department in department_data %}
+                            <div class="col-6 col-md-6 col-lg-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0"> {{ department.department_name  }} -> Last Session  </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <h2>Orders:  {{ total_orders_recent_session }}</h2>
+                                        <h2>Income: &#8358   {{ department.total_payments_recent_session }} </h2>
+                                        <span class="badge bg-success"> </span>
+                                        <span class="text-muted">Total Orders from last ended session</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-6 col-lg-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0"> {{ department.department_name  }} -> Active Session  </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <h2>Orders:  {{ department.total_orders_active_session }}</h2>
+                                        <h2>Income:    &#8358 {{  department.total_payments_active_session }} </h2>
+                                        <span class="badge bg-success"> </span>
+                                        <span class="text-muted">Total Orders current session</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                </div>
+
+
+
+
+              
+
+
+
+
+
                 <div class="row g-3">
-                    <div class="col-md-12">
+
+                    {% comment %} <div class="col-md-12">
                         <div class="card">
                             <div class="card-header">
                                 <h6 class="card-title">Total Incomes</h6>
@@ -99,7 +255,10 @@
                                 <div id="reservations" style="height: 280px;"></div>
                             </div>
                         </div>
-                    </div>
+                    </div> {% endcomment %}
+
+
+{% comment %} 
                     <div class="col-sm-12">
                         <div class="card">
                             <div class="card-header">
@@ -178,7 +337,10 @@
                                 </table>
                             </div>
                         </div>
-                    </div>
+                    </div> {% endcomment %}
+
+
+
                 </div>
 
             </div>

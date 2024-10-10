@@ -98,8 +98,22 @@ class EquipmentUsageLogForm(forms.ModelForm):
             'usage_start_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local','placeholder':'Usage Start Time',}),
             'usage_end_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local','placeholder':'Usage End Time',}),
             'remarks': forms.Textarea(attrs={'class': 'form-control', 'rows': 2,'placeholder':'Additional Remark',}),
-           
-           
+        }
+
+
+
+class AmenityForm(forms.ModelForm):
+    class Meta:
+        model = Amenity
+        fields = ['name', 'category', 'description', 'cost', 'id_code', 'stock_quantity','supplier']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control','placeholder':'Name',}),
+            'category': forms.Select(attrs={'class': 'form-control', 'type': 'datetime-local','placeholder':'Category',}),
+            'description': forms.TextInput(attrs={'class': 'form-control', 'type': 'datetime-local','placeholder':'Usage End Time',}),
+            'cost': forms.TextInput(attrs={'class': 'form-control', 'placeholder':'Cost Of Use if Any',}),
+            'id_code': forms.TextInput(attrs={'class': 'form-control','placeholder':'Order of Usage',}),
+            'stock_quantity': forms.TextInput(attrs={'class': 'form-control','placeholder':'Quantity Available if relivant',}),
+            'supplier': forms.Select(attrs={'class': 'form-control','placeholder':'Supplier',}),
         }
 
 
