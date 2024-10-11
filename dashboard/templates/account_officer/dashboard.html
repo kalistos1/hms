@@ -40,52 +40,52 @@
                 {% include '../partials/_messages.html' %}
 
 
-   {% if request.user.is_admin %} 
+                {% if request.user.is_admin %}
 
-  <div class="row g-3 mb-3 mt-3">
-    <div class="col-12">
-        <h2>Overview</h2>
-    </div>
+                    <div class="row g-3 mb-3 mt-3">
+                        <div class="col-12">
+                            <h2>Overview</h2>
+                        </div>
 
-    <div class="col-6 col-md-6 col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="card-title mb-0"> Workers</h6>
-            </div>
-            <div class="card-body">
-                <h2>{{staff_count}}</h2>
-                <span class="badge bg-primary"> </span>
-                <span class="text-muted">Total Number of  workers</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-6 col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="card-title mb-0">Customers</h6>
-            </div>
-            <div class="card-body">
-                <h2> {{ customers }}</h2>
-                <span class="badge bg-info"> </span>
-                <span class="text-muted">Total Number of Customers </span>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-6 col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="card-title mb-0"> Monthly Income </h6>
-            </div>
-            <div class="card-body">
-                <h2>&#8358 {{ monthly_income}}</h2>
-                <span class="badge bg-warning"> </span>
-                <span class="text-muted">total income for this month </span>
-            </div>
-        </div>
-    </div>
-   
-</div>
- {% endif %}
+                        <div class="col-6 col-md-6 col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0"> Workers</h6>
+                                </div>
+                                <div class="card-body">
+                                    <h2>{{staff_count}}</h2>
+                                    <span class="badge bg-primary"> </span>
+                                    <span class="text-muted">Total Number of  workers</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">Customers</h6>
+                                </div>
+                                <div class="card-body">
+                                    <h2> {{ customers }}</h2>
+                                    <span class="badge bg-info"> </span>
+                                    <span class="text-muted">Total Number of Customers </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0"> Monthly Income </h6>
+                                </div>
+                                <div class="card-body">
+                                    <h2>&#8358 {{ monthly_income}}</h2>
+                                    <span class="badge bg-warning"> </span>
+                                    <span class="text-muted">total income for this month </span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                {% endif %}
 
 
 
@@ -238,7 +238,7 @@
 
 
 
-              
+
 
 
 

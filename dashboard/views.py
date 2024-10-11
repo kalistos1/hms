@@ -19,7 +19,7 @@ from django.contrib.auth import login
 from bookings.forms import (
     BasicUserInfoForm, ProfileInfoForm, 
     BookingChoiceForm, RoomBookingForm, RoomReservationForm, 
-    RoomServiceForm, PaymentForm,AdditionalChargeForm, PaymentCheckoutForm,UpdateCheckOutDateForm
+    RoomServiceForm, PaymentForm,AdditionalChargeForm, PaymentCheckoutForm,UpdateCheckOutDateForm,HotelForm
 )
 from django.utils import timezone
 from django.http import JsonResponse,HttpResponse
@@ -39,6 +39,46 @@ today = datetime.date.today()
 def admin_dashboard(request):
     template = "admin_user/dashboard.html"
     return render (request,template)
+
+
+def hotel_setup(request):
+
+    if request.method == 'POST':
+        form = HotelForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'setup was successfully!')
+            return redirect('dashboard:hotel_info')  
+        else:
+            print(form.errors)
+            messages.error(request, 'could not setup hotel, Error settingup hotel.')
+            return redirect('dashboard:hotel_info')  
+            
+    else:
+        messages.error(request, 'Something Went Wrong, Try Again.')
+        return redirect('dashboard:hotel_info') 
+
+
+def admin_hotel_info(request):
+    hotels =  Hotel.objects.all()
+    form = HotelForm()   
+    context = {
+        'hotels': hotels,
+        'form':form,
+        }
+    return render(request, 'admin_user/hotel_info.html',context)
+
+
+def admin_delete_hotel(request, pk):    
+    hotel = get_object_or_404(Hotel, pk=pk)
+    if request.method == 'GET':
+        hotel.delete()
+        messages.success(request, 'hotel deleted successfully!')
+        return redirect('dashboard:hotel_info')
+    
+    return redirect('dashboard:hotel_info')
+
 
 
 # Amenities

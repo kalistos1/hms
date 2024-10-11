@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import  Booking, Reservation, Payment, Room, RoomServices,  AdditionalCharge, RoomType
+from .models import  Booking, Reservation, Payment, Room, RoomServices,  AdditionalCharge, RoomType,Hotel
 from accounts.models import User, Profile
 from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
@@ -11,6 +11,24 @@ from django.core.exceptions import ValidationError
 
 class DateInput(forms.DateInput):
     input_type = 'date'
+
+
+class HotelForm(forms.ModelForm):
+
+    class Meta:
+        model = Hotel
+        fields = ['user','name','description', 'address','mobile','email','image']
+
+    def __init__(self, *args, **kwargs):
+        super(HotelForm, self).__init__(*args, **kwargs)
+        
+        self.fields['user'].widget.attrs.update({'class': 'form-control', 'placeholder' :'User'})
+        self.fields['name'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Name'})
+        self.fields['description'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Description'})
+        self.fields['address'].widget.attrs.update({'class': 'form-control', 'placeholder' :'Address'})
+        self.fields['mobile'].widget.attrs.update({'class': 'form-control', 'placeholder' :'mobile'})
+        self.fields['email'].widget.attrs.update({'class': 'form-control', 'placeholder' :'email'})
+        self.fields['image'].widget.attrs.update({'class': 'form-control', 'placeholder' :'pphoto'})
 
 
 class BasicUserInfoForm(forms.ModelForm):
@@ -123,8 +141,6 @@ class RoomBookingForm(forms.ModelForm):
         self.fields['num_children'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Children'})
 
    
-    
-   
 
 class PaymentForm(forms.ModelForm):
     amount = forms.DecimalField(
@@ -148,7 +164,6 @@ class PaymentForm(forms.ModelForm):
         self.fields['status'].widget.attrs.update({ 'class': 'form-control', 'placeholder': ' Payment Status'})  
                                                   
                                                            
-
 class RoomReservationForm(forms.ModelForm):
     class Meta:
         model = Reservation
@@ -166,9 +181,6 @@ class RoomReservationForm(forms.ModelForm):
         self.fields['room'].widget.attrs.update({'class': 'form-control', })
         
 
-
-
-        
 
 class RoomServiceForm(forms.ModelForm):
     class Meta:

@@ -1,0 +1,43 @@
+
+
+<div class="row justify-content-center my-5">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-body">
+
+                {% if error_message %}
+                    <div class="alert alert-warning" role="alert">
+                        {{ error_message }}
+                    </div>
+                {% elif payment_records %}
+                    <h2 class="mt-4">Report Results</h2>
+                    <table class="table table-bordered mt-2">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Amount</th>
+                                <th>Payment Date</th>
+                                <th>Status</th>
+                                <th>Source</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payment_records %}
+                                <tr>
+                                    <td>{{ payment.id }}</td>
+                                    <td>{{ payment.amount }}</td>
+                                    <td>{{ payment.payment_date }}</td>
+                                    <td>{{ payment.get_status_display }}</td>
+                                    <td>{{ payment.get_source_display }}</td>
+                                    <td>{{ payment.description }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+               
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

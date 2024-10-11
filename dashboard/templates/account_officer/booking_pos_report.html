@@ -1,0 +1,77 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+{% block title %} Admin | Booking List {% endblock %}
+
+{% block content %}
+    <main class="container-fluid px-0">
+        {% if request.user.is_admin %}
+            {% include '../partials/menubars/admin_sidebar.html' %}
+
+        {% elif request.user.is_supervisor %}
+            {% include '../partials/menubars/supervisor_sidebar.html' %}
+
+        {% elif request.user.is_account_officer %}
+            {% include '../partials/menubars/accounting_sidebar.html' %}
+
+        {% else %}
+            {% include '../partials/menubars/frontdesk_sidebar.html' %}
+
+        {% endif %}
+
+        <div class="content">
+            {% include '../partials/top_header.html' %}
+
+            <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
+                <div class="row g-3">
+                    <div class="col-sm-12">
+                        <div class="">
+                            <h3 class="fw-bold mb-0">Generate Financial Reports</h3>
+                            <p> [ Financial report for POS and Bookings ] </p>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row justify-content-center">
+                                    <div class="col-8 col-md-8 col-lg-8">
+                                        <form
+                                            action=""
+                                            method="get"
+                                            class="form-inline"
+                                            hx-get="{% url 'accounting:payment_reports' %}"
+                                            hx-target="#payment-report-results"
+                                            hx-swap="innerHTML">
+
+                                            {% csrf_token %}
+
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    {{ form.start_date }}
+                                                </div>
+                                                <div class="col-md-3">
+                                                    {{ form.end_date }}
+                                                </div>
+                                                <div class="col-md-3">
+                                                    {{ form.source }}
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="submit" value="Generate Report" class="btn btn-warning form-control">
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <!-- Payment report snippet to be dynamically loaded -->
+                            <div id="payment-report-results">
+                                {% include '../partials/htmx/payment_report_snippet.html' %}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

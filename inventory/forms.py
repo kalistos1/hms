@@ -62,7 +62,7 @@ class EquipmentForm(forms.ModelForm):
 class ConsumableItemForm(forms.ModelForm):
     class Meta:
         model = ConsumableItem
-        fields = ['category','name', 'description', 'stock_quantity', 'unit_price', 'purchase_receipt', 'purchase_date']
+        fields = ['category','name', 'description', 'stock_quantity', 'unit_price', 'purchase_receipt', 'supplier','purchase_date']
         widgets = {
             
             'category': forms.Select(attrs={'class': 'form-control','placeholder':'item Category',}),
@@ -70,6 +70,7 @@ class ConsumableItemForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3,'placeholder':'Description',}),
             'stock_quantity': forms.NumberInput(attrs={'class': 'form-control','placeholder':'Stock Quantity',}),
             'unit_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01','placeholder':'Unit Price',}),
+            'supplier': forms.Select(attrs={'class': 'form-control','placeholder':'Supplier',}),
             'purchase_receipt': forms.ClearableFileInput(attrs={'class': 'form-control', 'placeholder': 'Upload Receipt'}),
             'purchase_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder':'Purchase Date',}),
          

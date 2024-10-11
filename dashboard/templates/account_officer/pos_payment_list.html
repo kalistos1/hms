@@ -60,20 +60,20 @@
                                     </thead>
                                     <tbody>
                                         {% if pos_payments  %}
-                                        {% for payments in pos_payments %}
-                                            <tr>
-                                                <td>
-                                                    {{payment.payment_date}} 
-                                                </td>
-                                                <td>{{payment.amount}}</td>
-                                                <td>{{payment.status}}</td>
-                                                <td>{{booking.source}}</td>
-                                                <td>{{booking.description}}</td>
+                                            {% for payments in pos_payments %}
+                                                <tr>
+                                                    <td>
+                                                        {{payment.payment_date}}
+                                                    </td>
+                                                    <td>{{payment.amount}}</td>
+                                                    <td>{{payment.status}}</td>
+                                                    <td>{{booking.source}}</td>
+                                                    <td>{{booking.description}}</td>
 
-                                              
 
-                                            </tr>
-                                        {% endfor %}
+
+                                                </tr>
+                                            {% endfor %}
                                         {% endif %}
 
 
@@ -87,7 +87,7 @@
             </div>
    {% comment %} body content ends {% endcomment %}
 
-            
+
 
 
         </div>

@@ -97,28 +97,6 @@ class Equipment(models.Model):
         self.next_service_date = date
         self.save()
 
-# @receiver(post_save, sender=Equipment)
-# def check_warranty_expiration(sender, instance, created, **kwargs):
-#     """Send an email notification when a new equipment is created with a warranty expiration date."""
-#     if created and instance.warranty_expiry_date:
-#         send_warranty_notification(instance)
-
-# def send_warranty_notification(equipment):
-#     """Sends a notification about the warranty expiration of the equipment."""
-#     subject = f"Warranty Notification for {equipment.name}"
-#     message = (
-#         f"Hello,\n\n"
-#         f"The warranty for the equipment '{equipment.name}' is set to expire on {equipment.warranty_expiry_date}.\n"
-#         "Please take necessary actions to renew the warranty or manage the equipment accordingly.\n\n"
-#         "Best Regards,\n"
-#         "Your Equipment Management Team"
-#     )
-#     recipient_list = [settings.NOTIFICATION_EMAIL]  # Set a default notification email in your settings
-
-#     send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipient_list)
-
-
-
 
 class ConsumableItem(models.Model):
     category = models.ForeignKey(ItemCategory, on_delete=models.CASCADE, null = True, blank= True)
@@ -128,6 +106,7 @@ class ConsumableItem(models.Model):
     unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     total_cost = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     purchase_receipt = models.ImageField(upload_to="cunsumable_receipts", blank=True, null=True)
+    supplier = models.ForeignKey('Supplier', on_delete=models.SET_NULL, null=True, blank=True, related_name='consumable', db_index=True)
     reorder_level = models.PositiveIntegerField(default=0)  # Added reorder level field
     purchase_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True) 
@@ -206,8 +185,6 @@ class Amenity(models.Model):
         """Mark the amenity as available."""
         self.is_available = True
         self.save()
-
-
 
     @classmethod
     def get_active_amenities(cls, hotel):

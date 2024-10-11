@@ -8,11 +8,15 @@ urlpatterns = [
     #dshboards
     
     path('admin_dashboard/',views.admin_dashboard, name="admin_dashboard"),
+    path('admin/hotel-setup/create/',views.hotel_setup, name="hotel_setup"),
+    path('admin/hotel_setup/',views.admin_hotel_info, name="hotel_info"),
     path('supervisor_dashboard/',views.supervisor_dashboard, name ="supervisor_dashboard"),
     path('account_dashboard/',views.account_dashboard, name ="account_dashboard"),
     path('front_desk_dashboard/',views.frontdesk_dashboard, name ="frontdesk_dashboard"),
     path('pos_user_dashboard/',views.pos_user_dashboard, name ="pos_user_dashboard"),
+    path('admin/hotel/delete/<int:pk>/', views.admin_delete_hotel, name='hotel_delete'),
     
+     
     #admin views
     # amenities
     path('admin/room-amenities/', views.admin_list_room_amenities, name='admin_list_room_amenities'),
