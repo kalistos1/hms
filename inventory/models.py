@@ -10,6 +10,44 @@ from django.core.mail import send_mail
 from django.conf import settings
 from dateutil.relativedelta import relativedelta  # Import relativedelta
 from django.utils.text import slugify
+from hrm .models import DepartmentLocation,Employee
+from pos .models import Product, ProductCategory
+from django.db import transaction
+
+class Warehouse(models.Model):
+    name = models.CharField(max_length=255 )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    def get_item_quantity(self, item):
+        """Get the quantity of a specific item in this warehouse."""
+        try:
+            warehouse_stock = WarehouseStock.objects.get(warehouse=self, item=item)
+            return warehouse_stock.quantity
+        except WarehouseStock.DoesNotExist:
+            return 0  # If the item is not found in this warehouse, return 0
+        
+    def get_all_items_and_quantities(self):
+        """Get all items and their quantities in this warehouse."""
+        items_and_quantities = self.stocks.select_related('item').values('item__name', 'quantity')
+        return items_and_quantities
+
+    def add_stock(self, item, quantity):
+        """Add stock for a specific item."""
+        warehouse_stock, created = WarehouseStock.objects.get_or_create(warehouse=self, item=item)
+        warehouse_stock.add_stock(quantity)
+
+    def remove_stock(self, item, quantity):
+        """Remove stock for a specific item."""
+        try:
+            warehouse_stock = WarehouseStock.objects.get(warehouse=self, item=item)
+            warehouse_stock.remove_stock(quantity)
+        except WarehouseStock.DoesNotExist:
+            raise ValidationError(f"No stock available for {item.name} in {self.name}.")
+        
 
 class ItemCategory(models.Model):
     name = models.CharField(max_length = 250)
@@ -37,7 +75,6 @@ class ItemCategory(models.Model):
 
 
 class Supplier(models.Model):
-   
     name = models.CharField(max_length=255)
     contact_person = models.CharField(max_length=255)
     email = models.EmailField(validators=[EmailValidator()], unique=True) 
@@ -51,6 +88,305 @@ class Supplier(models.Model):
         return self.name
     
 
+class Item(models.Model):
+    STOCK_TYPES = (
+        ('utility', 'Utility'),
+        ('consumable_item', 'Consumable Item'),
+        ('equipment', 'Equipment'),
+        ('amenity', 'Amenity'),
+    )
+    
+    stock_type = models.CharField(max_length=20, choices=STOCK_TYPES) 
+    category = models.ForeignKey(ItemCategory, on_delete=models.CASCADE, null=True, blank=True)
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    stock_quantity = models.PositiveIntegerField(default=0)
+    unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    purchase_receipt = models.ImageField(upload_to="consumable_receipts", blank=True, null=True)
+    supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True, related_name='consumable', db_index=True)
+    purchase_date = models.DateField()
+    equipment = models.OneToOneField('Equipment', on_delete=models.CASCADE, null=True, blank=True, related_name='equimentitem')  # Link to Equipment model
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def total_cost(self):
+        return self.unit_price * self.stock_quantity
+ 
+
+    def purchase(self, amount):
+        """Purchase consumable items and update stock."""
+        if amount <= 0:
+            raise ValidationError("Purchase amount must be a positive integer.")
+
+        if self.stock_quantity < amount:
+            raise ValidationError("Not enough stock available for purchase.")
+
+        self.stock_quantity -= amount
+        self.save()
+
+
+class PurchaseOrder(models.Model):
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    order_date = models.DateField(auto_now_add=True)
+    delivery_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=[
+        ('ordered', 'Ordered'),
+        ('delivered', 'Delivered'),
+        ('cancelled', 'Cancelled'),
+    ])
+
+    def __str__(self):
+        return f"Order of {self.quantity} {self.item.name} from {self.supplier.name}"
+    
+
+class InventoryMovement(models.Model):
+    MOVEMENT_TYPE_CHOICES = [
+        ('IN', 'Incoming'),
+        ('OUT', 'Outgoing'),
+        ('TRANSFER', 'Transfer'),
+        ('RETURN', 'Return'),
+        ('ADJUST', 'Adjustment'),
+    ]
+
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='inventory_movements')
+    quantity = models.IntegerField()
+    unit_selling_price = models.DecimalField(help_text="For items being sold at POS", max_digits=12, decimal_places=2, default=0)
+    movement_type = models.CharField(max_length=10, choices=MOVEMENT_TYPE_CHOICES)
+    transfer_location = models.ForeignKey(DepartmentLocation, on_delete=models.SET_NULL, null=True, blank=True)  # Destination for transfers
+    date = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField(blank=True, null=True)
+    performed_by = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True)  # Employee carrying out the movement
+
+    def __str__(self):
+        return f"{self.item.name} - {self.movement_type}"
+
+    def save(self, *args, **kwargs):
+        from inventory.models import StockReceipt
+
+        # Retrieve or create warehouse stock record
+        warehouse_stock, created = WarehouseStock.objects.get_or_create(
+            warehouse=self.warehouse, 
+            item=self.item
+        )
+
+        # Handle different movement types
+        if self.movement_type == 'IN':
+            self.item.stock_quantity += self.quantity
+            warehouse_stock.add_stock(self.quantity)  # Add to warehouse stock
+            destination = "Warehouse"
+
+            # Track price change if the item price differs from the previous price
+            self.track_price_change(warehouse_stock)
+
+        elif self.movement_type == 'OUT':
+            if warehouse_stock.quantity < self.quantity:
+                raise ValidationError("Insufficient stock in warehouse for this operation.")
+            self.item.stock_quantity -= self.quantity
+            warehouse_stock.remove_stock(self.quantity)
+            destination = "Warehouse"
+
+        elif self.movement_type == 'TRANSFER':
+            if warehouse_stock.quantity < self.quantity:
+                raise ValidationError("Insufficient stock in warehouse for this operation.")
+            self.item.stock_quantity -= self.quantity
+            warehouse_stock.remove_stock(self.quantity)
+
+            if self.transfer_location:
+                destination = self.transfer_location.name
+                StockReceipt.objects.create(
+                    department_location=self.transfer_location,
+                    product_received=self.item,
+                    price_per_item=warehouse_stock.unit_purchase_price,  # Ensure price matches warehouse unit price
+                    selling_price_per_item=self.unit_selling_price,
+                    quantity_received=self.quantity,
+                    mark_as_received=False  # Adjust based on business logic
+                )
+            else:
+                destination = "Unknown"
+
+        elif self.movement_type == 'RETURN':
+            self.item.stock_quantity += self.quantity
+            warehouse_stock.add_stock(self.quantity)
+            destination = "Warehouse"
+
+            # Track price change on returns
+            self.track_price_change(warehouse_stock)
+
+        elif self.movement_type == 'ADJUST':
+            destination = "Warehouse"
+
+        # Save the item and warehouse stock changes
+        self.item.save()
+        warehouse_stock.save()
+
+        # Log the stock movement
+        StockLog.create_log(
+            item=self.item,
+            quantity=self.quantity,
+            unit_selling_price=self.unit_selling_price,
+            movement_type=self.movement_type,
+            reason=self.reason,
+            destination=destination,
+            performed_by=self.performed_by.user.get_full_name() if self.performed_by else "Unknown"
+        )
+
+        super().save(*args, **kwargs)
+
+    def track_price_change(self, warehouse_stock):
+        """ Track price changes for incoming or return movements """
+        # Compare the item's current price with the last recorded price
+        if self.item.unit_price != warehouse_stock.unit_purchase_price:
+            PriceHistory.objects.create(
+                item=self.item,
+                old_price=warehouse_stock.unit_purchase_price,
+                new_price=self.item.unit_price
+            )
+            # Update the warehouse stock price
+            warehouse_stock.unit_purchase_price = self.item.unit_price
+
+
+class PriceHistory(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='price_history')
+    old_price = models.DecimalField(max_digits=12, decimal_places=2)
+    new_price = models.DecimalField(max_digits=12, decimal_places=2)
+    change_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Price change for {self.item.name} from {self.old_price} to {self.new_price} on {self.change_date}"
+
+
+class WarehouseStock(models.Model):
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='stocks')
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    unit_purchase_price  =  models.DecimalField( max_digits=12, decimal_places=2, default=0)
+    quantity = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.item.name} - {self.quantity} in {self.warehouse.name}"
+    
+    def add_stock(self, quantity):
+        """Increase stock by the given quantity."""
+        if quantity <= 0:
+            raise ValueError("Quantity to add must be positive.")
+        self.quantity += quantity
+        self.save()
+
+    def remove_stock(self, quantity):
+        """Decrease stock by the given quantity."""
+        if quantity <= 0:
+            raise ValueError("Quantity to remove must be positive.")
+        if quantity > self.quantity:
+            raise ValidationError(f"Not enough stock for {self.item.name} in {self.warehouse.name}.")
+        self.quantity -= quantity
+        self.save()
+
+
+class StockLog(models.Model):
+    MOVEMENT_TYPE_CHOICES = [
+        ('IN', 'Incoming'),
+        ('OUT', 'Outgoing'),
+        ('TRANSFER', 'Transfer'),
+        ('RETURN', 'Return'),
+        ('ADJUST', 'Adjustment'),
+    ]
+    
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='stock_logs')
+    quantity = models.IntegerField()
+    unit_selling_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    movement_type = models.CharField(max_length=10, choices=MOVEMENT_TYPE_CHOICES)
+    destination = models.CharField(max_length=255, null=True, blank=True)
+    reason = models.TextField(blank=True, null=True)
+    performed_by = models.CharField(max_length=255, null=True, blank=True)  # Employee who performed the movement
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.item.name} - {self.movement_type} - {self.quantity} units"
+
+    @staticmethod
+    def create_log(item, quantity, unit_selling_price, movement_type, reason="", destination=None, performed_by=None):
+        """Helper method to create a stock log with destination and employee responsible."""
+        StockLog.objects.create(
+            item=item,
+            quantity=quantity,
+            unit_selling_price = unit_selling_price,
+            movement_type=movement_type,
+            reason=reason,
+            destination=destination,
+            performed_by=performed_by
+        )
+
+
+
+class StockReceipt(models.Model):
+    department_location = models.ForeignKey(DepartmentLocation, on_delete=models.CASCADE, null=True, blank=True)
+    department_user = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True)  # User receiving the stock
+    product_received = models.ForeignKey('inventory.Item', on_delete=models.CASCADE)  # Linking to the inventory item model
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)  # Link to Product model
+    product_sales_category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, null=True, blank=True)
+    price_per_item = models.FloatField(default=0)
+    selling_price_per_item = models.FloatField(default=0)
+    quantity_received = models.PositiveIntegerField()
+    mark_as_received = models.BooleanField(default=False)
+    date_received = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        department_user = self.department_user.user.get_full_name() if self.department_user else "Unknown User"
+        return f'{self.department_location.name} received {self.quantity_received} of {self.product_received.name} by {department_user} on {self.date_received}'
+
+    def update_or_create_product(self):
+        """Update or create the Product model with the received stock and other details, including product_sales_category."""
+        try:
+            # If there's no linked product, create one
+            if not self.product:
+                product, created = Product.objects.get_or_create(
+                    name=self.product_received.name,
+                    department_location=self.department_location,
+                    defaults={
+                        'price': self.selling_price_per_item,
+                        'stock_quantity': self.quantity_received,
+                        'description': self.product_received.description,
+                        'category': self.product_sales_category, 
+                    }
+                )
+                self.product = product  # Link the product to the StockReceipt
+
+            else:
+                # If product exists, update its stock, price, and category
+                self.product.stock_quantity += self.quantity_received
+                self.product.price = self.selling_price_per_item
+                self.product.category = self.product_sales_category  # Update the category if needed
+                self.product.save()
+
+        except Exception as e:
+            raise ValueError(f"Error updating or creating product: {str(e)}")
+
+    def save(self, *args, **kwargs):
+        # Save the stock receipt first
+        with transaction.atomic():  # Ensure we are in a transaction block
+            super().save(*args, **kwargs)
+
+            # Only update the product if mark_as_received is True
+            if self.mark_as_received:
+                try:
+                    self.update_or_create_product()  # Update the Product model with the new stock and details
+                    # Save the updated StockReceipt with the product linked after updating or creating the product
+                    super().save(update_fields=['product'])  # No recursion as it's only updating a specific field
+                except ValueError as e:
+                    print(str(e))
+
+          
 
 class Equipment(models.Model):
     EQUIPMENT_STATUS = (
@@ -58,18 +394,16 @@ class Equipment(models.Model):
         ('in_repair', 'In Repair'),
         ('out_of_service', 'Out of Service'),
     )
-    category = models.ForeignKey(ItemCategory, on_delete=models.CASCADE, null = True, blank= True)
+    category = models.ForeignKey(ItemCategory, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=255)
-    description = models.TextField(null=True, blank=True)
-    purchase_date = models.DateField()
-    purchase_price = models.DecimalField(max_digits=12, decimal_places=2)
-    supplier = models.ForeignKey('Supplier', on_delete=models.SET_NULL, null=True, blank=True, related_name='equipments', db_index=True)
-    purchase_receipt = models.ImageField(upload_to="equipment_receipts", blank=True, null=True)
+    code = models.CharField(max_length=50)
     status = models.CharField(max_length=20, choices=EQUIPMENT_STATUS, db_index=True, default="active")
     warranty_period = models.IntegerField(help_text="Warranty period in months", null=True, blank=True)
     warranty_expiry_date = models.DateField(null=True, blank=True)
-    next_service_date = models.DateField(null=True, blank=True) 
-    created_at = models.DateTimeField(auto_now_add=True) 
+    next_service_date = models.DateField(null=True, blank=True)
+    purchase_date = models.DateField(null=True, blank=True)  # Add purchase date
+    item = models.OneToOneField('Item', on_delete=models.CASCADE, related_name='equipment_item', null=True, blank=True)  # Link back to Item
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def is_warranty_active(self):
@@ -98,74 +432,15 @@ class Equipment(models.Model):
         self.save()
 
 
-class ConsumableItem(models.Model):
-    category = models.ForeignKey(ItemCategory, on_delete=models.CASCADE, null = True, blank= True)
-    name = models.CharField(max_length=255)
-    description = models.TextField(null=True, blank=True)
-    stock_quantity = models.PositiveIntegerField(default=0)   
-    unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    total_cost = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    purchase_receipt = models.ImageField(upload_to="cunsumable_receipts", blank=True, null=True)
-    supplier = models.ForeignKey('Supplier', on_delete=models.SET_NULL, null=True, blank=True, related_name='consumable', db_index=True)
-    reorder_level = models.PositiveIntegerField(default=0)  # Added reorder level field
-    purchase_date = models.DateField()
-    created_at = models.DateTimeField(auto_now_add=True) 
-    updated_at = models.DateTimeField(auto_now=True)
-   
-
-    def is_reorder_needed(self):
-        """Check if reorder is needed based on stock quantity and reorder level."""
-        return self.stock_quantity <= self.reorder_level
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def needs_reorder(self):
-        """Property to check if reorder is needed."""
-        return self.is_reorder_needed()
-
-    def reorder(self, amount):
-        """Implement reorder logic if reorder is needed."""
-        if self.needs_reorder:
-            # Implement reorder logic, e.g., create a purchase order, notify supplier, etc.
-            pass
-
-    def restock(self, amount):
-        """Restock the item with a positive amount."""
-        if amount <= 0:
-            raise ValidationError("Restock amount must be a positive integer.")
-        
-        self.stock_quantity += amount
-        self.update_total_cost()
-        self.save()
-
-    def update_total_cost(self):
-        """Calculate the total cost based on unit price and stock quantity."""
-        self.total_cost = self.unit_price * self.stock_quantity
-
-    def purchase(self, amount):
-        """Purchase consumable items and update stock and total cost."""
-        if amount <= 0:
-            raise ValidationError("Purchase amount must be a positive integer.")
-
-        self.stock_quantity -= amount
-        if self.stock_quantity < 0:
-            raise ValidationError("Not enough stock available for purchase.")
-
-        self.update_total_cost()
-        self.save()
-
 class Amenity(models.Model):
     name = models.CharField(max_length=255)
     category = models.ForeignKey(ItemCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='amenities')
+    items = models.ManyToManyField(Item, related_name='amenities')
     description = models.TextField(null=True, blank=True)
     cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Cost for using the amenity, if applicable.")
     is_available = models.BooleanField(default=True, help_text="Indicates if the amenity is available for use.")
     is_active = models.BooleanField(default=True, help_text="Controls if the amenity is active and visible.")
     id_code = models.PositiveIntegerField(default=0, help_text="Order for displaying amenities in the system.")
-
-    # Inventory-related fields
     stock_quantity = models.PositiveIntegerField(default=0, help_text="Quantity available for tangible items.")
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True, help_text="Supplier of this amenity.")
     
@@ -185,11 +460,24 @@ class Amenity(models.Model):
         """Mark the amenity as available."""
         self.is_available = True
         self.save()
+    
+    def total_value(self):
+        """Calculate the total value of the items associated with this amenity."""
+        return sum(item.total_cost for item in self.items.all())
+
+    def add_item(self, item):
+        """Add an item to this amenity."""
+        self.items.add(item)
+
+    def remove_item(self, item):
+        """Remove an item from this amenity."""
+        self.items.remove(item)
 
     @classmethod
     def get_active_amenities(cls, hotel):
         """Retrieve all active amenities for a given hotel."""
         return cls.objects.filter(hotel=hotel, is_active=True, is_available=True).order_by('display_order')
+
 
 
 class EquipmentUsageLog(models.Model):
@@ -346,3 +634,27 @@ class Alert(models.Model):
         """Mark the alert as read."""
         self.is_read = True
         self.save()
+
+
+
+
+
+
+
+ # def is_reorder_needed(self):
+    #     """Check if reorder is needed based on stock quantity and reorder level."""
+    #     return self.stock_quantity <= self.reorder_level
+
+    # def reorder(self, amount):
+    #     """Implement reorder logic if reorder is needed."""
+    #     if self.is_reorder_needed:
+    #         # Implement reorder logic, e.g., create a purchase order, notify supplier, etc.
+    #         pass
+
+    # def restock(self, amount):
+    #     """Restock the item with a positive amount."""
+    #     if amount <= 0:
+    #         raise ValidationError("Restock amount must be a positive integer.")
+        
+    #     self.stock_quantity += amount
+    #     self.save()

@@ -14,21 +14,29 @@ from django.db.models import Count
 from accounts.forms import *
 from formtools.wizard.views import SessionWizardView
 from datetime import timedelta
-from django.db.models import Sum, Case, When, F, IntegerField,Q
+from django.db.models import Sum, Case, When, F, IntegerField, Q, Count
 from django.contrib.auth import login
 from bookings.forms import (
     BasicUserInfoForm, ProfileInfoForm, 
     BookingChoiceForm, RoomBookingForm, RoomReservationForm, 
     RoomServiceForm, PaymentForm,AdditionalChargeForm, PaymentCheckoutForm,UpdateCheckOutDateForm,HotelForm
 )
-from django.utils import timezone
 from django.http import JsonResponse,HttpResponse
 import datetime
+today = datetime.date.today()
+from datetime import datetime
 from pos.models import *
+from inventory.forms import  WarehouseForm
+from inventory.models import *
 from pos.forms import updateReceivedItemForm
 from django.utils.timezone import make_aware,is_aware
 from accounting . models import *
-today = datetime.date.today()
+from inventory.forms import InventoryMovementForm
+
+from django.utils import timezone
+from django.shortcuts import render, redirect, get_object_or_404
+from hrm.models import Employee, Attendance, StaffSchedules
+
 
 
 
@@ -81,6 +89,71 @@ def admin_delete_hotel(request, pk):
 
 
 
+#warehouse setup
+def warehouse_setup(request):
+
+    if request.method == 'POST':
+        form = WarehouseForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'setup was successfully!')
+            return redirect('dashboard:warehouse_info')  
+        else:
+            messages.error(request, 'could not setup hotel, Error settingup hotel.')
+            return redirect('dashboard:warehouse_info')  
+            
+    else:
+        messages.error(request, 'Something Went Wrong, Try Again.')
+        return redirect('dashboard:warehouse_info') 
+
+
+def warehouse_info(request):
+    # inventory data
+
+    total_quantity = Item.objects.aggregate(total=Sum('stock_quantity'))['total']
+    quantity_by_stock_type = Item.objects.values('stock_type').annotate(total_quantity=Sum('stock_quantity'))
+    stock_by_category = Item.objects.values('stock_type').annotate(
+        total_quantity=Sum('stock_quantity'),
+        total_value=Sum('stock_quantity') * Sum('unit_price')
+    )
+    movements_by_type = InventoryMovement.objects.values('movement_type').annotate(total_quantity=Sum('quantity'))
+
+    warehouse =  Warehouse.objects.first()
+    total_stock = WarehouseStock.objects.filter(warehouse=warehouse).aggregate(Sum('quantity'))['quantity__sum']
+
+    if total_stock is None:
+        total_stock = 0
+
+    form = WarehouseForm() 
+    inventory_form = InventoryMovementForm()  
+    context = {
+        'total_quantity': total_quantity,
+        'quantity_by_stock_type': quantity_by_stock_type,
+        'stock_by_category': stock_by_category,
+        'movements_by_type': movements_by_type,
+        'total_stock':total_stock,
+
+        # others
+        'warehouse': warehouse,
+        'form':form,
+        'inventory_form':inventory_form,
+
+        }
+
+    return render(request, 'admin_user/warehouse_info.html',context)
+
+
+def warehouse_delete(request, pk):    
+    warehouse = get_object_or_404(Warehouse, pk=pk)
+    if request.method == 'GET':
+        warehouse.delete()
+        messages.success(request, 'warehouse deleted successfully!')
+        return redirect('dashboard:warehouse_info')
+    
+    return redirect('dashboard:warehouse_info')
+
+
 # Amenities
 def admin_create_room_amenity(request):
     if request.method == 'POST':
@@ -98,7 +171,6 @@ def admin_create_room_amenity(request):
         return redirect('dashboard:admin_list_room_amenities') 
     
 
-
 def admin_list_room_amenities(request):
     amenities =  RoomInventory.objects.all()
     form = RoomAmenityForm()   
@@ -107,7 +179,6 @@ def admin_list_room_amenities(request):
         'form':form,
         }
     return render(request, 'admin_user/room_amenities_list.html',context)
-
 
 
 def admin_update_room_amenity(request, pk):
@@ -126,9 +197,7 @@ def admin_update_room_amenity(request, pk):
     return render(request, 'room_amenities/update.html', {'form': form})
 
 
-
-def admin_delete_room_amenity(request, pk):
-    
+def admin_delete_room_amenity(request, pk):    
     amenity = get_object_or_404( RoomInventory, pk=pk)
     if request.method == 'GET':
         amenity.delete()
@@ -616,7 +685,7 @@ def account_dashboard(request):
     departments = Department.objects.all()
 
     for department in departments:
-        department_location = department.location
+        department_location = department.locations
 
         # 3. Sum of orders and payments for the most recently ended session based on department location
         last_pos_ended_session = Attendance.objects.filter(
@@ -1003,38 +1072,16 @@ def available_rooms_view(request):
 
     return render(request, 'partials/htmx/available-rooms.html', {'rooms': rooms})
 
-# htmx for room price
-def get_room_price_view(request):
-    room_type_id = request.GET.get('room_type')
-    room_id = request.GET.get('room')
-
-    base_price = 0
-   
-    if room_id:
-        # Fetch price from Room model (priority if selected)
-        room = Room.objects.filter(id=room_id, is_available=True).first()
-        if room and room.price_override:
-            base_price = room.price_override
-        else:
-            base_price = room.room_type.base_price if room else 0
-    elif room_type_id:
-        # Fetch price from RoomType model
-        room_type = RoomType.objects.filter(id=room_type_id).first()
-        base_price = room_type.base_price if room_type else 0
-    # Return the updated input field HTML with the base price
-    html = render_to_string('partials/htmx/payment_amount_input.html', {'base_price': base_price})
-    return HttpResponse(html)
 
 #htmx view for room price
 
 def front_desk_booking(request):
-
     if request.user.is_frontdesk_officer:
         today = timezone.now().date()
         user = request.user
         employee = Employee.objects.get(user=user)
+        hide_completed = True
 
-        # Get the active attendance record for today
         active_attendance = Attendance.objects.filter(employee=employee, active=True).first()    
         room_type_id = request.POST.get('room_type') if request.method == 'POST' else None
 
@@ -1044,21 +1091,18 @@ def front_desk_booking(request):
             booking_choice_form = BookingChoiceForm(request.POST)
             room_booking_form = RoomBookingForm(request.POST, room_type_id=room_type_id)  # Pass room_type_id
             room_reservation_form = RoomReservationForm(request.POST)
-            payment_form = PaymentForm(request.POST)
+            payment_form = PaymentForm(request.POST, exclude_completed=hide_completed)
 
             if basic_info_form.is_valid() and profile_info_form.is_valid() and booking_choice_form.is_valid():
-    
-                # Step 1: Check if the user already exists by email or phone number
                 email = basic_info_form.cleaned_data['email']
                 phone = basic_info_form.cleaned_data['phone']
                 
                 user = User.objects.filter(email=email).first() 
 
                 if not user:
-                    # If user doesn't exist, create a new one
                     user = basic_info_form.save(commit=False)
                     user.set_password(user.phone)  # Set phone number as password
-                    user.username = user.email  # Set email as the username
+                    user.username = user.email
                     user.save()
 
                     profile, created = Profile.objects.get_or_create(user=user)
@@ -1072,33 +1116,36 @@ def front_desk_booking(request):
                 booking = None
                 reservation = None
 
-                # Step 2: Save booking or reservation once
                 if choice == 'booking':
-                
                     if room_booking_form.is_valid():
                         booking = room_booking_form.save(commit=False)
                         booking.user = user
                         booking.save()
-                    
+
+                        # Calculate and save total amount
+                        booking.save()
+
                         room_booking_form.instance = booking 
-                        room_booking_form.save_m2m()  # Save ManyToMany fields
+                        room_booking_form.save_m2m()
                     else:
-                        print('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy', room_booking_form.errors)
+                        print('Booking form errors:', room_booking_form.errors)
                 elif choice == 'reservation':
                     if room_reservation_form.is_valid():
                         reservation = room_reservation_form.save(commit=False)
                         reservation.user = user
                         reservation.save()
 
-                # Step 3: Attach payment to booking or reservation
                 if payment_form.is_valid():
                     payment = payment_form.save(commit=False)
+                    print('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',payment.amount)
                     payment.user = user
                     if booking:
                         payment.booking = booking
                     elif reservation:
                         payment.booking = reservation 
                     payment.save()
+                else:
+                   print('ssssssssssssssssffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',payment_form.amount)
 
                 return redirect('dashboard:receipt', booking_id=booking.booking_id if booking else reservation.id)
 
@@ -1106,9 +1153,9 @@ def front_desk_booking(request):
             basic_info_form = BasicUserInfoForm()
             profile_info_form = ProfileInfoForm()
             booking_choice_form = BookingChoiceForm()
-            room_booking_form = RoomBookingForm(room_type_id=room_type_id)  # Pass room_type_id
+            room_booking_form = RoomBookingForm(room_type_id=room_type_id)  
             room_reservation_form = RoomReservationForm()
-            payment_form = PaymentForm()
+            payment_form = PaymentForm(exclude_completed=hide_completed)
 
         return render(request, 'front_desk/roombook.html', {
             'basic_info_form': basic_info_form,
@@ -1119,6 +1166,7 @@ def front_desk_booking(request):
             'payment_form': payment_form,
             'active_attendance': active_attendance,
         })
+
 
 
 
@@ -1172,12 +1220,14 @@ def front_desk_reservation(request):
             # Step 3: Attach payment to booking or reservation
             if payment_form.is_valid():
                 payment = payment_form.save(commit=False)
+               
                 payment.user = user
                 if booking:
                     payment.booking = booking
                 elif reservation:
                     payment.booking = reservation 
                 payment.save()
+            
 
             return redirect('dashboard:receipt', booking_id=booking.booking_id if booking else reservation.id)
     else:
@@ -1223,7 +1273,10 @@ def receipt_view(request, booking_id):
     payment_status = payment.status if payment else 'Unpaid'
 
     # Remaining balance
-    remaining_balance = total_amount_payable - amount_paid
+    if total_amount_payable > 0:
+        remaining_balance = total_amount_payable - amount_paid
+    else:
+        remaining_balance = 0.00
 
     # Pass context to template
     context = {
@@ -1265,8 +1318,11 @@ def re_issue_receipt_view(request, pk):
     payment_status = payment.status if payment else 'Unpaid'
 
     # Remaining balance
-    remaining_balance = total_amount_payable - amount_paid
-
+    if total_amount_payable > 0:
+        remaining_balance = total_amount_payable - amount_paid
+    else:
+        remaining_balance = 0.00
+        
     context = {
         'booking': booking,
         'total_room_charges': total_room_charges,
@@ -1475,7 +1531,7 @@ def pos_user_dashboard(request):
     if request.user.is_pos_officer:
         user = request.user
         employee = user.employee_profile
-        pos_user = employee.pos_user
+        pos_user = employee
         
         # Get active attendance and schedule
         active_attendance = Attendance.objects.filter(employee=employee, active=True).first()
@@ -1483,84 +1539,83 @@ def pos_user_dashboard(request):
 
         if active_attendance and active_schedule:
             # Get the current date and time
-            current_date =timezone.now().date()
-            current_time = timezone.now().time()
-
-            # Validate schedule start and end times, compare only times without date conversion
+            # current_date = timezone.now().date()
+            # current_time = timezone.now().time()
+                        # Construct the start and end datetime of the active schedule
+            schedule_start = timezone.make_aware(
+                datetime.combine(active_schedule.schedule_start_date, active_schedule.start_time)
+            )
+            schedule_end = timezone.make_aware(
+                datetime.combine(active_schedule.schedule_end_date, active_schedule.end_time)
+            )
+            # Validate schedule start and end times
             start_time = active_schedule.start_time
             end_time = active_schedule.end_time
 
             if start_time is None or end_time is None:
                 return render(request, template, {'error': 'Schedule times are missing.'})
 
-            # Assume the schedule is for the current day
             # Total order quantity from OrderItems during active schedule and attendance
             total_order_quantity = OrderItem.objects.filter(
                 order__staff=pos_user,
-                order__created_at__date=current_date,
-                order__created_at__time__gte=start_time,
-                order__created_at__time__lte=end_time
+                date_created__range=(schedule_start, schedule_end)
             ).aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
 
             # Count of orders during active schedule and attendance
             order_count = Order.objects.filter(
                 staff=pos_user,
-                created_at__date=current_date,
-                created_at__time__gte=start_time,
-                created_at__time__lte=end_time
+                created_at__range=(schedule_start, schedule_end)
             ).count()
 
-            # Total quantity received from PosStockReceipt during active schedule and attendance
-            total_quantity_received = PosStockReceipt.objects.filter(
-                pos_user=pos_user,
-                date_received__date=current_date,
-                date_received__time__gte=start_time,
-                date_received__time__lte=end_time
+            # Total quantity received from StockReceipt during active schedule and attendance
+            total_quantity_received = StockReceipt.objects.filter(
+                department_user=pos_user,
+                updated_at__range=(schedule_start, schedule_end),
+                mark_as_received=True  # Ensure mark_as_received is True
             ).aggregate(total_quantity_received=Sum('quantity_received'))['total_quantity_received'] or 0
 
-            # List of products with their quantity received and remaining stock during the active schedule and attendance
-            products = Product.objects.annotate(
-                quantity_received=Sum(
-                    Case(
-                        When(
-                            posstockreceipt__pos_user=pos_user,
-                            posstockreceipt__date_received__date=current_date,
-                            posstockreceipt__date_received__time__gte=start_time,
-                            posstockreceipt__date_received__time__lte=end_time,
-                            then=F('posstockreceipt__quantity_received')
-                        ),
-                        default=0,
-                        output_field=IntegerField()
-                    )
-                ),
-                remaining_stock=F('stock_quantity') - Sum(
-                    Case(
-                        When(
-                            orderitem__order__staff=pos_user,
-                            orderitem__order__created_at__date=current_date,
-                            orderitem__order__created_at__time__gte=start_time,
-                            orderitem__order__created_at__time__lte=end_time,
-                            then=F('orderitem__quantity')
-                        ),
-                        default=0,
-                        output_field=IntegerField()
-                    )
-                )
+            # List of products with their quantity received during active schedule and attendance
+            products_received = Product.objects.filter(
+                stockreceipt__department_user=pos_user,
+                department_location =pos_user.department_location,
+                date_created__range=(schedule_start, schedule_end),
+                stockreceipt__mark_as_received=True  # Ensure mark_as_received is True
+            ).annotate(
+                quantity_received=Sum('stockreceipt__quantity_received')
             )
 
-            # Total stock remaining across all products during active schedule and attendance
-            total_stock_remaining = products.aggregate(
-                total_stock=Sum('remaining_stock')
+            # List of products with their category and quantity left, considering the department location of the pos_user
+            products = Product.objects.filter(
+                department_location=pos_user.department_location  # Filter by pos_user's department location
+            ).annotate(
+                total_quantity_left=F('stock_quantity')  # Get the remaining stock quantity for each product
+            ).values(
+                'category__name',  # Get the product category name
+                'name',    # Get the product name
+                'price',      # Get the product price    
+                'total_quantity_left'  # Get the remaining quantity of the product
+            )
+
+
+            # Total stock remaining for products where department location matches pos_user's department location
+            total_stock_remaining = Product.objects.filter(
+                department_location=pos_user.department_location
+            ).aggregate(
+                total_stock=Sum('stock_quantity')
             )['total_stock'] or 0
 
             # Total amount paid where payment status is PAID during active schedule and attendance
             total_paid = PosPayment.objects.filter(
                 order__staff=pos_user,
                 payment_status='PAID',
-                order__created_at__date=current_date,
-                order__created_at__time__gte=start_time,
-                order__created_at__time__lte=end_time
+                created_at__range=(schedule_start, schedule_end)
             ).aggregate(total_paid=Sum('amount_paid'))['total_paid'] or 0
+
+                    # Retrieve all stock that has not been marked as received, belonging to the user's department
+            unreceived_stock = StockReceipt.objects.filter(
+                department_location=pos_user.department_location,  # Stock belonging to the same department
+                mark_as_received=False  # Stock not marked as received
+            ).order_by('-date_received')
 
             context = {
                 'active_attendance': active_attendance,
@@ -1570,14 +1625,15 @@ def pos_user_dashboard(request):
                 'total_quantity_received': total_quantity_received,
                 'total_stock_remaining': total_stock_remaining,
                 'total_paid': total_paid,
-                'products': products
+                'products': products,
+                'products_received': products_received,
+                'unreceived_stock': unreceived_stock,
+                'pos_user':pos_user,
             }
 
             return render(request, template, context)
 
     return render(request, template, {'error': 'No active attendance or schedule found.'})
-
-
 
 
 def pos_orders(request):
@@ -1601,7 +1657,7 @@ def pos_orders(request):
         orders = []
         if active_attendance and active_schedule:
             # Retrieve orders for this POSUser during the active attendance period
-            pos_user = POSUser.objects.filter(employee=employee).first()
+            pos_user = Employee.objects.filter(user=user).first()
             
             if pos_user:
                 orders = Order.objects.filter(
@@ -1621,42 +1677,77 @@ def pos_orders(request):
 
 
 
-
-
 def user_update_received_stock(request):
     template = 'pos_officer/daily_stock_received.html'
 
     if request.user.is_pos_officer:
         user = request.user
         employee = get_object_or_404(Employee, user=user)
+        department_location = employee.department_location
 
-        # Get the active attendance record for today
+
+        # Get the active attendance record
         active_attendance = Attendance.objects.filter(employee=employee, active=True).first()
 
-        # Get the POSUser linked to the employee
-        pos_user = user.employee_profile.pos_user
+        # Get the active staff schedule
+        active_schedule = StaffSchedules.objects.filter(
+            employee=employee, 
+            active="True"  # Make sure we only fetch the active schedule
+        ).first()
 
-        # Retrieve daily stock received today
-        daily_stock = PosStockReceipt.objects.filter(pos_user=pos_user, date_received__date=timezone.now().date())
+        if active_schedule:
+            # Construct the start and end datetime of the active schedule
+            schedule_start = timezone.make_aware(
+                datetime.combine(active_schedule.schedule_start_date, active_schedule.start_time)
+            )
+            schedule_end = timezone.make_aware(
+                datetime.combine(active_schedule.schedule_end_date, active_schedule.end_time)
+            )
+
+            # Retrieve stock received within the schedule period
+            daily_stock = StockReceipt.objects.filter(
+                department_user=employee,  # POS officer who received the stock
+                mark_as_received=True,  # Stock marked as received
+                updated_at__range=(schedule_start, schedule_end)  # Filter by schedule timeframe
+            )
+        else:
+            # If no active schedule is found, set daily_stock to an empty queryset
+            daily_stock = StockReceipt.objects.none()
+
+
+        # Retrieve all stock received by the user for their department, regardless of the schedule
+        all_stock = StockReceipt.objects.filter(
+            department_user=employee,  # POS officer who received the stock
+            mark_as_received=True  # Stock marked as received
+        ).order_by('-date_received')  # Order by the latest received items
+
+        
+        # Retrieve all stock that has not been marked as received, belonging to the user's department
+        unreceived_stock = StockReceipt.objects.filter(
+            department_location=department_location,  # Stock belonging to the same department
+            mark_as_received=False  # Stock not marked as received
+        ).order_by('-date_received')
+
 
         if request.method == "POST":
             form = updateReceivedItemForm(request.POST)
             if form.is_valid():
                 receipt_form = form.save(commit=False)
-                receipt_form.pos_user = pos_user  # Assign the POSUser
+                receipt_form.department_user = employee  # Assign the current employee as department_user
                 receipt_form.save()
 
                 messages.success(request, 'Product receipt created successfully.')
-                return redirect('dashboard:received_stock')  # Redirect to a valid URL or named view
+                return redirect('dashboard:received_stock')  # Redirect to the appropriate URL
             else:
                 messages.error(request, 'Unable to create product receipt.')
-                return redirect('dashboard:received_stock')  # Redirect to a valid URL or named view
-
+                return redirect('dashboard:received_stock')  # Redirect to the appropriate URL
         else:
             form = updateReceivedItemForm()
 
         context = {
+            'all_stock':all_stock,
             'daily_stock': daily_stock,
+            'unreceived_stock': unreceived_stock,
             'active_attendance': active_attendance,
             'form': form,
         }
@@ -1665,7 +1756,54 @@ def user_update_received_stock(request):
 
     else:
         return redirect('dashboard:received_stock')  # Redirect unauthorized users
+ 
+
+def mark_product_as_received(request,pk):
+    stock = get_object_or_404(StockReceipt, pk=pk)
+    if request.method =="POST":
+        employee = request.user.employee_profile
+  
+        form = updateReceivedItemForm(request.POST, instance=stock)
+
+        if form.is_valid():
+            stock_instance = form.save(commit=False)
+            stock_instance.department_user = employee
+            stock_instance.save()
+            messages.success(request, 'Product was received successfully!')
+            return redirect('dashboard:received_stock')  
+        else:
+            print(form.errors)
+            messages.error(request, 'Error, could not received product.')
+            return redirect('dashboard:received_stock')  
+            
+    else:
+        messages.error(request, 'Something Went Wrong, Try Again.')
+        return redirect('dashboard:received_stock') 
+
 
 #oos User views ends
 #=====================================================================================================
 #======================================================================================================
+
+
+
+
+
+            # # Total stock remaining across all products during active schedule and attendance
+            # total_stock_remaining = Product.objects.annotate(
+            #     remaining_stock=F('stock_quantity') - Sum(
+            #         Case(
+            #             When(
+            #                 orderitem__order__staff=pos_user,
+            #                 orderitem__order__created_at__date=current_date,
+            #                 orderitem__order__created_at__time__gte=start_time,
+            #                 orderitem__order__created_at__time__lte=end_time,
+            #                 then=F('orderitem__quantity')
+            #             ),
+            #             default=0,
+            #             output_field=IntegerField()
+            #         )
+            #     )
+            # ).aggregate(
+            #     total_stock=Sum('remaining_stock')
+            # )['total_stock'] or 0

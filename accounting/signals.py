@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 # Handle Payment creation (for pending and advance payments)
+
 @receiver(post_save, sender=Payment)
 def create_or_update_payment_record(sender, instance, created, **kwargs):
     """
@@ -26,6 +27,7 @@ def create_or_update_payment_record(sender, instance, created, **kwargs):
             # Update the existing payment record if it's not a new one
             payment_record.amount += instance.amount  # Increment the amount for subsequent advances
             payment_record.save()
+            
 
 # Handle PaymentCompletion (for completed payments)
 @receiver(post_save, sender=PaymentCompletion)

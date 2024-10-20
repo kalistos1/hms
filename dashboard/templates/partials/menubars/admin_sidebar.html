@@ -108,7 +108,7 @@
 
                     <li><a href="{% url 'dashboard:admin_list_room_types' %}" aria-label="Bed List">Room Types</a></li>
                     <li><a href="{% url 'dashboard:admin_list_room' %}" aria-label="Room List">Room List</a></li>
-                    <li><a href="" aria-label="Room List">Room Services</a></li>
+                    {% comment %} <li><a href="" aria-label="Room List">Room Services</a></li> {% endcomment %}
 
                     <li><a href="{% url 'dashboard:admin_list_coupon' %}" aria-label="Promocode List">coupon code List</a></li>
 
@@ -129,12 +129,15 @@
                     <span class="mx-3">Inventory </span>
                   </a>
                   <ul class="collapse list-unstyled" id="ItemsManageMenu">
+                   
+                    <li><a href="{% url 'dashboard:warehouse_setup' %}" aria-label=" warehouse">Warehouse </a></li>
                     <li><a href="{% url 'inventory:supplier_list' %}" aria-label="Items Unit List">Suppliers </a></li>
                     <li><a href="{% url 'inventory:category_list' %}" aria-label="Items Category">Item Categories</a></li>
+                    <li><a href="{% url 'inventory:consumable_item_list' %}" aria-label="consumable items">Purchased Item</a></li>
                     <li><a href="{% url 'inventory:equipment_list' %}" aria-label="Items List">Equipment Inventory</a></li>
-                    <li><a href="{% url 'inventory:consumable_item_list' %}" aria-label="consumable items">Consumable Inventory</a></li>
                     <li><a href="{% url 'inventory:amenity_item_list' %}" aria-label="amenities">Amenities Inventory</a></li>
-                    <li><a href="" aria-label="Items Destroyed">Amenities Inventory</a></li>
+
+                    {% comment %} <li><a href="" aria-label="Items Destroyed">Amenities Inventory</a></li> {% endcomment %}
                   </ul>
                 </li>
 
@@ -160,9 +163,6 @@
 
             </div>
 
-
-
-
             <ul
               class="nav nav-tabs tab-dynamic px-0 mb-4"
               role="tablist"
@@ -178,8 +178,6 @@
                   >
                 </li>
               </ul>
-
-
 
               <div class="tab-pane  fade active show" id="tab_hrms" role="tabpanel">
 

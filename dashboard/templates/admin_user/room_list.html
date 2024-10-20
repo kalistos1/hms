@@ -30,7 +30,7 @@
 
    {% comment %} body content starts {% endcomment %}
 <!-- start: page body area -->
-            <div class="px-xl-5 px-lg-4 px-3 py-3mt-5 page-body">
+            <div class="px-xl-5 px-lg-4 px-3 py-3 mt-5 page-body">
                 {% include '../partials/_messages.html' %}
                 <div class="row g-3">
                     <div class="col-sm-12">
@@ -65,7 +65,7 @@
                                                     <td>{{ room.room_number }}</td>
                                                     <td>{{ room.get_floor_display }}</td>
                                                     <td>{{ room.room_type.type }}</td>
-                                                    <td>{{ room.room_type.price }}</td>
+                                                    <td> &#8358 {{ room.room_type.base_price }}</td>
                                                     <td>{{ room.room_type.room_capacity}}</td>
                                                     <td>{{ room.room_type.number_of_beds }}</td>
                                                     {% if room.banner_img %}

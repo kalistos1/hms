@@ -14,7 +14,7 @@ import shortuuid
 from taggit.managers import TaggableManager
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from inventory.models import Amenity, Equipment, ConsumableItem
+from inventory.models import Amenity, Equipment, Item, Warehouse,InventoryMovement
 
 
 
@@ -110,7 +110,6 @@ class HotelFeatures(models.Model):
     class Meta:
         verbose_name_plural = "Hotel Features"
   
-  
     
 class HotelFAQs(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
@@ -198,20 +197,97 @@ class Room(models.Model):
 
 
 class RoomInventory(models.Model):
+    STATUS_CHOICES = [
+        ('in_repairs', 'In Repairs'),
+        ('in_use', 'In Use'),
+        ('decommissioned', 'Decommissioned'),
+    ]
+
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='room_allocations')
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, null=True, blank=True)
     amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE, null=True, blank=True)
-    consumable = models.ForeignKey(ConsumableItem, on_delete=models.CASCADE, null=True, blank=True)
+    consumable = models.ForeignKey(Item, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.PositiveIntegerField(default=0)
-    status = models.CharField(max_length=50, choices=[('in_repairs', 'in_repairs'), ('in_use', 'In Use'), ('decomitioned', 'decomitioned')])
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES)
 
     class Meta:
-        unique_together = ('room', 'equipment', 'consumable')
+        unique_together = ('room', 'equipment', 'consumable', 'amenity')
 
     def __str__(self):
-        return f"{self.room.name} - {self.equipment or self.consumable}"
+        return f"{self.room.name} - {self.equipment or self.consumable or self.amenity}"
 
+    def clean(self):
+        # Ensure that only one of equipment, amenity, or consumable is set
+        if sum(bool(field) for field in [self.equipment, self.amenity, self.consumable]) != 1:
+            raise ValidationError("Exactly one of equipment, amenity, or consumable must be set.")
 
+    def save(self, *args, **kwargs):
+        self.clean()  # Ensure data integrity
+
+        # Use transaction to ensure atomicity
+        with transaction.atomic():
+            if self.pk:
+                # Existing record; determine if quantity or item has changed
+                previous = RoomInventory.objects.get(pk=self.pk)
+                quantity_diff = self.quantity - previous.quantity
+                item = self.get_assigned_item()
+
+                if quantity_diff > 0:
+                    # Allocating more items to the room
+                    self.warehouse.remove_stock(item, quantity_diff)
+                    InventoryMovement.objects.create(
+                        item=item,
+                        warehouse=self.warehouse,
+                        quantity=quantity_diff,
+                        movement_type='TRANSFER',
+                        transfer_location='room',
+                        reason=f"Assigned to room {self.room.name}"
+                    )
+                elif quantity_diff < 0:
+                    # Deallocating items from the room
+                    self.warehouse.add_stock(item, abs(quantity_diff))
+                    InventoryMovement.objects.create(
+                        item=item,
+                        warehouse=self.warehouse,
+                        quantity=abs(quantity_diff),
+                        movement_type='RETURN',
+                        transfer_location='warehouse',
+                        reason=f"Removed from room {self.room.name}"
+                    )
+            else:
+                # New record; allocate items to the room
+                item = self.get_assigned_item()
+                self.warehouse.remove_stock(item, self.quantity)
+                InventoryMovement.objects.create(
+                    item=item,
+                    warehouse=self.warehouse,
+                    quantity=self.quantity,
+                    movement_type='TRANSFER',
+                    transfer_location='room',
+                    reason=f"Assigned to room {self.room.name}"
+                )
+
+            super(RoomInventory, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # When deleting, return the stock to the warehouse
+        with transaction.atomic():
+            item = self.get_assigned_item()
+            self.warehouse.add_stock(item, self.quantity)
+            InventoryMovement.objects.create(
+                item=item,
+                warehouse=self.warehouse,
+                quantity=self.quantity,
+                movement_type='RETURN',
+                transfer_location='warehouse',
+                reason=f"Deleted from room {self.room.name}"
+            )
+            super(RoomInventory, self).delete(*args, **kwargs)
+
+    def get_assigned_item(self):
+        """Helper method to get the assigned item regardless of type."""
+        return self.equipment or self.amenity or self.consumable
 
 
 class Payment(models.Model):
@@ -268,14 +344,18 @@ class Payment(models.Model):
         return True, None
     
     def save(self, *args, **kwargs):
-        # Check if payment is marked as advance
-        if self.status == 'advance':
-            # Update room availability to false (unavailable)
+        # Update total room charges and amount when processing payment
+        if self.status == 'advance' or self.status == 'completed':
+            self.booking.calculate_total()  # Ensure the total room charges are updated
+
+            # Update room availability (like before)
             self.booking.update_room_availability(False)
-            self.booking.set_checked_in()
+
+            # Mark as checked in (if advance payment)
+            if self.status == 'advance':
+                self.booking.set_checked_in()
 
         super(Payment, self).save(*args, **kwargs)
-
 
 class PaymentCompletion(models.Model):
 
@@ -293,7 +373,6 @@ class PaymentCompletion(models.Model):
 
     def __str__(self):
         return f"Completion for Payment {self.payment.transaction_id} - {self.transaction_id}"
-
 
 
 class Refund(models.Model):
@@ -325,7 +404,6 @@ class Refund(models.Model):
         super(Refund, self).save(*args, **kwargs)
 
 
-
 class Transaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     hotel = models.ForeignKey('Hotel', on_delete=models.SET_NULL, null=True)
@@ -341,13 +419,12 @@ class Transaction(models.Model):
     class Meta:
         abstract = True
 
-    def calculate_total(self):
-        additional = self.additional_charges.aggregate(total=models.Sum('amount'))['total'] or 0
-        return self.total_amount + additional
+    # def calculate_total(self):
+    #     additional = self.additional_charges.aggregate(total=models.Sum('amount'))['total'] or 0
+    #     return self.total_amount + additional
 
     def __str__(self):
         return f" {self.room_type.type} Transaction"
-    
     
 
 class Reservation(Transaction):
@@ -377,7 +454,6 @@ class Reservation(Transaction):
         super(Reservation, self).save(*args, **kwargs)
 
 
-
 class Booking(Transaction):
     booking_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
     is_active = models.BooleanField(default=True)
@@ -390,6 +466,12 @@ class Booking(Transaction):
     def __str__(self):
         return f"Booking {self.booking_id} by {self.user.username if self.user else 'Guest'}"
 
+
+    def calculate_total(self):
+        """Calculate and update the total booking amount (room charges + additional charges)."""
+        total_room_charges = self.get_room_charges()  # Calculate room charges based on the stay duration
+        self.total_amount =  total_room_charges
+        self.save()  # Save the updated total amount
   
     def apply_coupon(self, coupon):
         """Apply a valid coupon and calculate the final amount."""
@@ -413,6 +495,7 @@ class Booking(Transaction):
             discount_value = self.coupon.discount  # Accessing the discount field
             return float(total_payable) * (discount_value / 100)  # Assuming discount is a percentage
         return 0
+    
 
     def get_total_payable_after_discount(self):
         """Get the total payable after applying the coupon discount."""
@@ -420,6 +503,42 @@ class Booking(Transaction):
         discount_amount = self.get_discount_amount()
         print(f"Total Payable: {total_payable}, Discount Amount: {discount_amount}")
         return float(total_payable) - float(discount_amount)
+    
+    
+    def get_duration(self):
+        """Get the duration of the booking in days."""
+        duration = self.check_out_date - self.check_in_date
+        return max(duration.days, 1)  # Ensure at least 1 day
+
+
+
+    def get_room_charges(self):
+        """Calculate the total charges for all rooms based on the duration of the stay."""
+        total_room_charges = 0
+        for room in self.room.all():
+            duration = self.get_duration()  # Number of days for the booking
+            room_price = room.price() * duration
+            total_room_charges += room_price
+        return total_room_charges
+    
+
+    def save(self, *args, **kwargs):
+        # If it's a new booking (i.e., no primary key assigned yet)
+        if not self.pk:
+            super(Booking, self).save(*args, **kwargs)  # Save the booking to generate the primary key (id)
+
+        # Now that the booking has an id, check room availability
+        available, unavailable_room = self.are_rooms_available(self.room.all(), self.check_in_date, self.check_out_date)
+        if not available:
+            raise ValueError(f"Room {unavailable_room.room_number} is not available for the selected dates.")
+        
+        # Calculate the initial room charges for the booking
+        # self.total_amount = self.get_room_charges()
+        # print(f"Calculated room charges: {self.total_amount}")  # Debugging line
+
+        # Save the updated booking with the calculated total amount
+        super(Booking, self).save(*args, **kwargs)
+
 
     def convert_reservation_to_booking(self, reservation):
         """Convert a reservation into a booking and optionally apply a coupon if one exists."""
@@ -440,7 +559,6 @@ class Booking(Transaction):
         
         self.save()
         
-        
     def are_rooms_available(self, rooms, check_in_date, check_out_date):
         """
         Check if all the specified rooms are available for the selected date range.
@@ -457,51 +575,6 @@ class Booking(Transaction):
                 return False, room  # Return the specific room that's not available
         return True, None
 
-        
-    def save(self, *args, **kwargs):
-        # If it's a new booking (i.e., no primary key assigned yet)
-        if not self.pk:
-            # Save the booking to generate the primary key (id)
-            super(Booking, self).save(*args, **kwargs)
-
-        # Now that the booking has an id, check room availability
-        available, unavailable_room = self.are_rooms_available(self.room.all(), self.check_in_date, self.check_out_date)
-        if not available:
-            raise ValueError(f"Room {unavailable_room.room_number} is not available for the selected dates.")
-
-        # Ensure that the booking's total amount is calculated
-        self.total_amount = self.get_total_payable_after_discount()
-
-        # Save again to update the fields after all checks
-        super(Booking, self).save(*args, **kwargs)
-        
-        
-    # def save(self, *args, **kwargs):
-    #     if self.pk:  # Existing booking, so check room availability
-    #         available, unavailable_room = self.are_rooms_available(self.room.all(), self.check_in_date, self.check_out_date)
-    #         if not available:
-    #             raise ValueError(f"Room {unavailable_room.room_number} is not available for the selected dates.")
-        
-    #     # Ensure that the booking's total amount is calculated before saving
-    #     self.total_amount = self.get_total_payable_after_discount()
-
-
-        super(Booking, self).save(*args, **kwargs)
-
-    def get_duration(self):
-        # Subtract check_in_date from check_out_date
-        duration = self.check_out_date - self.check_in_date
-        return duration.days if duration.days > 0 else 0
-
-
-    def get_room_charges(self):
-        """Calculate the total charges for all rooms based on the duration of the stay."""
-        total_room_charges = 0
-        for room in self.room.all():
-            duration = self.get_duration()  # Number of days for the booking
-            room_price = room.price() * duration
-            total_room_charges += room_price
-        return total_room_charges
 
     def get_service_charges(self):
         """Sum the charges for all room services, if any."""
@@ -513,6 +586,7 @@ class Booking(Transaction):
         """Calculate the total of all additional charges."""
         additional_charges = AdditionalCharge.objects.filter(booking=self)
         return sum(charge.amount for charge in additional_charges)
+
 
     def get_total_payable(self):
         """Calculate the total amount payable (rooms + services + additional charges)."""
@@ -541,6 +615,7 @@ class Booking(Transaction):
     def payment_status(self):
         payment = Payment.objects.filter(booking=self).last()
         return payment.status if payment else 'Unpaid'
+
 
 
 class Coupon(models.Model):

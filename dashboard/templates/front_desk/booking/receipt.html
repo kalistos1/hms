@@ -65,7 +65,7 @@
                                                                 <td></td>
                                                             </tr>
                                                             <tr>
-                                                                <th scope="row">Check-out Date</th>
+                                                                <th scope="row">Check-out Date </th>
                                                                 <td>{{ booking.check_out_date }}</td>
                                                                 <td></td>
                                                             </tr>
@@ -75,7 +75,7 @@
                                                                 <td></td>
                                                             </tr>
                                                             <tr>
-                                                                <th scope="row">Room Charges</th>
+                                                                <th scope="row">Room Charges (({{total_room_charges}}))</th>
                                                                 <td>
                                                                     <ul>
                                                                         {% for room in booking.room.all %}
@@ -90,10 +90,10 @@
                                                                 <th scope="row">Additional Charges</th>
                                                                 <td>
                                                                     {% for charge in booking.additional_charges.all %}
-                                                                        <li>{{ charge.description }}: {{ charge.amount }}</li>
+                                                                        <li>{{ charge.description }}:&#8358  {{ charge.amount }}</li>
                                                                     {% endfor %}
                                                                 </td>
-                                                                <td>Total: {{ total_additional_charges }}</td>
+                                                                <td>Total: &#8358  {{ total_additional_charges }}</td>
                                                             </tr>
                                                             <tr>
                                                                 <th scope="row">Service Charges</th>
@@ -104,16 +104,16 @@
                                                                         {% endfor %}
                                                                     </ul>
                                                                 </td>
-                                                                <td>Total: {{ total_service_charges }}</td>
+                                                                <td>Total: &#8358  {{ total_service_charges }}</td>
                                                             </tr>
                                                             <tr>
                                                                 <th scope="row">Total Amount Payable:</th>
-                                                                <td><span class="badge bg-primary">{{ total_amount_payable }}</span></td>
+                                                                <td><span class="badge bg-primary"> &#8358  {{ total_amount_payable }}</span></td>
                                                                 <td></td>
                                                             </tr>
                                                             <tr>
                                                                 <th scope="row">Amount Paid:</th>
-                                                                <td><span class="badge bg-success">{{ amount_paid }}</span></td>
+                                                                <td><span class="badge bg-success">&#8358 {{ amount_paid }}</span></td>
                                                                 <td></td>
                                                             </tr>
                                                             <tr>
@@ -123,7 +123,7 @@
                                                             </tr>
                                                             <tr class="table-danger bg-info">
                                                                 <th scope="row">Remaining Balance:</th>
-                                                                <td><span class="badge bg-danger">{{ remaining_balance }}</span></td>
+                                                                <td><span class="badge bg-danger">&#8358 {{ remaining_balance }}</span></td>
                                                                 <td></td>
                                                             </tr>
                                                         </tbody>

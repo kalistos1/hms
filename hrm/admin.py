@@ -4,8 +4,9 @@ from . models import *
 
 admin.site.register(Department)
 admin.site.register(DepartmentLocation)
+admin.site.register( DepartmentUser)
 admin.site.register(Employee)
-admin.site.register(EmployeeRole)
+# admin.site.register(EmployeeRole)
 admin.site.register(Skill)
 admin.site.register(Certification)
 

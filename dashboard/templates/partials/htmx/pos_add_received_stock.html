@@ -2,11 +2,11 @@
 <div
     class="offcanvas offcanvas-end"
     tabindex="-1"
-    id="add-stock"
-    aria-labelledby="add-stock"
+    id="receive-stock"
+    aria-labelledby="receive-stock"
 >
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title">Add Received Stock</h5>
+        <h5 class="offcanvas-title">Receive Stock</h5>
         <button
             type="button"
             class="btn-close"
@@ -15,7 +15,15 @@
         ></button>
     </div>
     <div class="offcanvas-body">
-        <form action ="{% url 'dashboard:received_stock' %}" method ="post" enctype="multipart/form-data">
+        <style>
+            .large-checkbox {
+                transform: scale(1.5);
+                width: 20px;
+                height: 20px;
+                margin: 20px;
+            }
+        </style>
+        <form action ="{% url 'dashboard:mark_as_received' 0 %}" method ="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group mb-3">
 

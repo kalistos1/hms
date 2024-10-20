@@ -4,3 +4,331 @@
     <input type="text" name="coupon_code" id="coupon_code" required>
     <button type="submit">Apply Coupon</button>
 </form>
+
+
+
+
+
+class Transaction(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    hotel = models.ForeignKey('Hotel', on_delete=models.SET_NULL, null=True)
+    room_type = models.ForeignKey('RoomType', on_delete=models.SET_NULL, null=True)
+    room = models.ManyToManyField('Room')  # This can be used for both bookings and reservations
+    check_in_date = models.DateField()
+    check_out_date = models.DateField()
+    num_adults = models.PositiveIntegerField(default=1)
+    num_children = models.PositiveIntegerField(default=0)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    date_created = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        abstract = True
+
+    def calculate_total(self):
+        additional = self.additional_charges.aggregate(total=models.Sum('amount'))['total'] or 0
+        return self.total_amount + additional
+
+    def __str__(self):
+        return f" {self.room_type.type} Transaction"
+    
+
+class Reservation(Transaction):
+    reservation_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
+    expiration_date = models.DateTimeField(null=True, blank=True)
+    is_cancelled = models.BooleanField(default=False)
+    cancel_date = models.DateTimeField(null=True, blank=True)
+    payment = models.ForeignKey('Payment', on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"Reservation {self.reservation_id} by {self.user.username if self.user else 'Guest'}"
+    
+    def cancel_reservation(self):
+        if not self.expiration_date:
+            raise ValueError("Expiration date is not set.")
+        
+        # Check if the current time is past the expiration date and payment status is pending
+        if not self.is_cancelled and self.payment and self.payment.status == "pending" and timezone.now() > self.expiration_date:
+            self.is_cancelled = True
+            self.cancel_date = timezone.now()
+            self.save()
+
+    def save(self, *args, **kwargs):
+        # Set a default expiration date if it's not provided
+        if not self.expiration_date:
+            self.expiration_date = self.date_created + timezone.timedelta(days=3)
+        super(Reservation, self).save(*args, **kwargs)
+
+
+
+class Booking(Transaction):
+    booking_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
+    is_active = models.BooleanField(default=True)
+    checked_in = models.BooleanField(default=False)
+    checked_out = models.BooleanField(default=False)
+    reservation = models.OneToOneField('Reservation', on_delete=models.SET_NULL, null=True, blank=True)
+    date = models.DateTimeField(auto_now_add=True)
+    coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"Booking {self.booking_id} by {self.user.username if self.user else 'Guest'}"
+
+  
+    def apply_coupon(self, coupon):
+        """Apply a valid coupon and calculate the final amount."""
+        if coupon and coupon.active and coupon.valid_from <= timezone.now().date() <= coupon.valid_to:
+            print(f"Applying coupon: {coupon.code} with discount type: {coupon.type} and discount: {coupon.discount}")
+            if coupon.type == 'Percentage':
+                discount_amount = (self.total_amount * coupon.discount) / 100
+               
+            else:  # Fixed amount discount
+                discount_amount = coupon.discount
+
+            self.total_amount -= min(discount_amount, self.total_amount)  # Ensure discount doesn't exceed total
+            self.coupon = coupon
+            self.save()
+
+
+    def get_discount_amount(self):
+        """Calculate the discount amount based on the coupon."""
+        if self.coupon:
+            total_payable = self.get_total_payable()
+            discount_value = self.coupon.discount  # Accessing the discount field
+            return float(total_payable) * (discount_value / 100)  # Assuming discount is a percentage
+        return 0
+    
+
+    def get_total_payable_after_discount(self):
+        """Get the total payable after applying the coupon discount."""
+        total_payable = self.get_total_payable()
+        discount_amount = self.get_discount_amount()
+        print(f"Total Payable: {total_payable}, Discount Amount: {discount_amount}")
+        return float(total_payable) - float(discount_amount)
+    
+    
+    def get_duration(self):
+        """Get the duration of the booking in days."""
+        duration = self.check_out_date - self.check_in_date
+        return max(duration.days, 1)  # Ensure at least 1 day
+
+
+
+    def get_room_charges(self):
+        """Calculate the total charges for all rooms based on the duration of the stay."""
+        total_room_charges = 0
+        for room in self.room.all():
+            duration = self.get_duration()  # Number of days for the booking
+            room_price = room.price() * duration
+            total_room_charges += room_price
+        return total_room_charges
+    
+
+    def save(self, *args, **kwargs):
+        # If it's a new booking (i.e., no primary key assigned yet)
+        if not self.pk:
+            super(Booking, self).save(*args, **kwargs)  # Save the booking to generate the primary key (id)
+
+        # Now that the booking has an id, check room availability
+        available, unavailable_room = self.are_rooms_available(self.room.all(), self.check_in_date, self.check_out_date)
+        if not available:
+            raise ValueError(f"Room {unavailable_room.room_number} is not available for the selected dates.")
+        
+        # Calculate the initial room charges for the booking
+        self.total_amount = self.get_room_charges()
+        print(f"Calculated room charges: {self.total_amount}")  # Debugging line
+
+        # Save the updated booking with the calculated total amount
+        super(Booking, self).save(*args, **kwargs)
+
+
+    def convert_reservation_to_booking(self, reservation):
+        """Convert a reservation into a booking and optionally apply a coupon if one exists."""
+        self.user = reservation.user
+        self.hotel = reservation.hotel
+        self.room_type = reservation.room_type
+        self.room.set(reservation.room.all())  # Copy the rooms from the reservation
+        self.check_in_date = reservation.check_in_date
+        self.check_out_date = reservation.check_out_date
+        self.num_adults = reservation.num_adults
+        self.num_children = reservation.num_children
+        self.reservation = reservation
+        self.total_amount = reservation.total_amount
+
+        # Apply coupon if any exists in the reservation
+        if reservation.payment and reservation.payment.booking.coupon:
+            self.coupon = reservation.payment.booking.coupon  # Copy the coupon from the reservation if it exists
+        
+        self.save()
+        
+    def are_rooms_available(self, rooms, check_in_date, check_out_date):
+        """
+        Check if all the specified rooms are available for the selected date range.
+        Returns True if all rooms are available, otherwise False.
+        """
+        for room in rooms:
+            overlapping_bookings = Booking.objects.filter(
+                room=room,
+                is_active=True,
+                check_in_date__lt=check_out_date,
+                check_out_date__gt=check_in_date
+            ).exclude(id=self.id)  # Exclude the current booking to avoid checking itself
+            if overlapping_bookings.exists():
+                return False, room  # Return the specific room that's not available
+        return True, None
+
+
+    def get_service_charges(self):
+        """Sum the charges for all room services, if any."""
+        room_services = self.roomservice_set.all()  # Assuming a related name for room services
+        total_service_charges = sum(service.price for service in room_services)
+        return total_service_charges
+
+    def get_additional_charges(self):
+        """Calculate the total of all additional charges."""
+        additional_charges = AdditionalCharge.objects.filter(booking=self)
+        return sum(charge.amount for charge in additional_charges)
+
+
+    def get_total_payable(self):
+        """Calculate the total amount payable (rooms + services + additional charges)."""
+        total_room_charges = self.get_room_charges()
+        total_service_charges = self.get_service_charges()
+        total_additional_charges = self.get_additional_charges()
+        return total_room_charges + total_service_charges + total_additional_charges
+
+    def update_room_availability(self, availability):
+        """Update the availability of rooms in the booking."""
+        for room in self.room.all():
+            room.is_available = availability
+            room.save()
+
+    def set_checked_in(self):
+        """Mark the booking as checked in."""
+        self.checked_in = True
+        self.save(update_fields=['checked_in'])
+
+    @property
+    def amount_paid(self):
+        payment = Payment.objects.filter(booking=self).last()
+        return payment.amount if payment else 0
+
+    @property
+    def payment_status(self):
+        payment = Payment.objects.filter(booking=self).last()
+        return payment.status if payment else 'Unpaid'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        def front_desk_booking(request):
+
+        if request.user.is_frontdesk_officer:
+            today = timezone.now().date()
+            user = request.user
+            employee = Employee.objects.get(user=user)
+            hide_completed = True
+    
+            # Get the active attendance record for today
+            active_attendance = Attendance.objects.filter(employee=employee, active=True).first()    
+            room_type_id = request.POST.get('room_type') if request.method == 'POST' else None
+    
+            if request.method == 'POST':
+                basic_info_form = BasicUserInfoForm(request.POST)
+                profile_info_form = ProfileInfoForm(request.POST)
+                booking_choice_form = BookingChoiceForm(request.POST)
+                room_booking_form = RoomBookingForm(request.POST, room_type_id=room_type_id)  # Pass room_type_id
+                room_reservation_form = RoomReservationForm(request.POST)
+                payment_form = PaymentForm(request.POST,exclude_completed=hide_completed)
+    
+                if basic_info_form.is_valid() and profile_info_form.is_valid() and booking_choice_form.is_valid():
+        
+                    # Step 1: Check if the user already exists by email or phone number
+                    email = basic_info_form.cleaned_data['email']
+                    phone = basic_info_form.cleaned_data['phone']
+                    
+                    user = User.objects.filter(email=email).first() 
+    
+                    if not user:
+                        # If user doesn't exist, create a new one
+                        user = basic_info_form.save(commit=False)
+                        user.set_password(user.phone)  # Set phone number as password
+                        user.username = user.email  # Set email as the username
+                        user.save()
+    
+                        profile, created = Profile.objects.get_or_create(user=user)
+                        profile_form_data = profile_info_form.cleaned_data
+                        for field, value in profile_form_data.items():
+                            setattr(profile, field, value)
+                        profile.save()
+    
+                    choice = booking_choice_form.cleaned_data['choice']
+    
+                    booking = None
+                    reservation = None
+    
+                    # Step 2: Save booking or reservation once
+                    if choice == 'booking':
+                    
+                        if room_booking_form.is_valid():
+                            booking = room_booking_form.save(commit=False)
+                            booking.user = user
+                            booking.save()
+                        
+                            room_booking_form.instance = booking 
+                            room_booking_form.save_m2m()  # Save ManyToMany fields
+                        else:
+                            print('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy', room_booking_form.errors)
+                    elif choice == 'reservation':
+                        if room_reservation_form.is_valid():
+                            reservation = room_reservation_form.save(commit=False)
+                            reservation.user = user
+                            reservation.save()
+    
+                    # Step 3: Attach payment to booking or reservation
+                    if payment_form.is_valid():
+                        payment = payment_form.save(commit=False)
+                        payment.user = user
+                        if booking:
+                            payment.booking = booking
+                        elif reservation:
+                            payment.booking = reservation 
+                        payment.save()
+    
+                    return redirect('dashboard:receipt', booking_id=booking.booking_id if booking else reservation.id)
+    
+            else:
+                basic_info_form = BasicUserInfoForm()
+                profile_info_form = ProfileInfoForm()
+                booking_choice_form = BookingChoiceForm()
+                room_booking_form = RoomBookingForm(room_type_id=room_type_id)  # Pass room_type_id
+                room_reservation_form = RoomReservationForm()
+                payment_form = PaymentForm(exclude_completed=hide_completed)
+    
+            return render(request, 'front_desk/roombook.html', {
+                'basic_info_form': basic_info_form,
+                'profile_info_form': profile_info_form,
+                'booking_choice_form': booking_choice_form,
+                'room_booking_form': room_booking_form,
+                'room_reservation_form': room_reservation_form,
+                'payment_form': payment_form,
+                'active_attendance': active_attendance,
+            })
+    

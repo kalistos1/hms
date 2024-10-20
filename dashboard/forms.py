@@ -49,15 +49,15 @@ class RoomForm(forms.ModelForm):
  
     class Meta:
         model = Room
-        fields = ['room_type','banner_img','room_number','floor',]
+        fields = ['room_type','room_number','floor','banner_img']
 
     def __init__(self, *args, **kwargs):
         super(RoomForm, self).__init__(*args, **kwargs)
      
         self.fields['room_type'].widget.attrs.update({'class': 'form-control'})
-        self.fields['banner_img'].widget.attrs.update({'class': 'form-control-file'})
         self.fields['room_number'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Number'})
         self.fields['floor'].widget.attrs.update({'class': 'form-control'})
+        self.fields['banner_img'].widget.attrs.update({'class': 'form-control-file'})
       
        
                 

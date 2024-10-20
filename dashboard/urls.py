@@ -8,13 +8,20 @@ urlpatterns = [
     #dshboards
     
     path('admin_dashboard/',views.admin_dashboard, name="admin_dashboard"),
-    path('admin/hotel-setup/create/',views.hotel_setup, name="hotel_setup"),
-    path('admin/hotel_setup/',views.admin_hotel_info, name="hotel_info"),
     path('supervisor_dashboard/',views.supervisor_dashboard, name ="supervisor_dashboard"),
     path('account_dashboard/',views.account_dashboard, name ="account_dashboard"),
     path('front_desk_dashboard/',views.frontdesk_dashboard, name ="frontdesk_dashboard"),
     path('pos_user_dashboard/',views.pos_user_dashboard, name ="pos_user_dashboard"),
+
+    #hotel
+    path('admin/hotel-setup/create/',views.hotel_setup, name="hotel_setup"),
+    path('admin/hotel_setup/',views.admin_hotel_info, name="hotel_info"),
     path('admin/hotel/delete/<int:pk>/', views.admin_delete_hotel, name='hotel_delete'),
+
+    #hwarehouse
+    path('admin/warehouse-setup/create/',views.warehouse_setup, name="warehouse_setup"),
+    path('admin/warehouse_setup/',views.warehouse_info, name="warehouse_info"),
+    path('admin/warehouse/delete/<int:pk>/', views.warehouse_delete, name='warehouse_delete'),
     
      
     #admin views
@@ -69,13 +76,15 @@ urlpatterns = [
     #pos officer
     path('pos/order_list/', views.pos_orders, name='pos_orders'),
     path('pos/received_stock/', views.user_update_received_stock, name='received_stock'),
+    path('pos/mark_product_as_received//<int:pk>/', views.mark_product_as_received, name="mark_as_received")
+    
 
    
 ]
 
 htmx_views=[
 path('get-available-rooms/', views.available_rooms_view, name='get-available-rooms'),
-path('get-room-price/', views.get_room_price_view, name='get_room_price'),
+
 ]
 
 urlpatterns += htmx_views

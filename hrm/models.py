@@ -13,7 +13,6 @@ class Department(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
 
 
-
     def __str__(self):
         return self.name
 
@@ -53,8 +52,21 @@ class Certification(models.Model):
     
 
 class Employee(models.Model):
+    WorkerRoles = (
+        ('front_desk', 'front_desk'), 
+        ('pos_staff', 'pos_staff'), 
+        ('hr_staff', 'hr_ataff'), 
+        ('manager', 'manager'),
+        ('waiter', 'waiter'),
+        ('supervisor', 'supervisor'),
+        ('potter', 'potter'),
+        ('accountant', 'accountant'),
+        ('store_keeper', 'store_keeper'),
+        ('security', 'security'), 
+    )
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='employee_profile', null=True, blank=True)
     department_location = models.ForeignKey(DepartmentLocation, on_delete=models.CASCADE, related_name='employee_department',blank=True, null=True)
+    role = models.CharField(max_length=50, choices=WorkerRoles, null=True, blank=True)
     emergency_contact_name = models.CharField(max_length=255, null=True, blank=True)
     emergency_contact_relationship = models.CharField(max_length=255, null=True, blank=True)
     emergency_contact_phone = models.CharField(max_length=20, null=True, blank=True, )
@@ -71,35 +83,37 @@ class Employee(models.Model):
         return f"{self.user.get_full_name() if self.user else 'No User'}"
     
 
-class EmployeeRole(models.Model):
+# class EmployeeRole(models.Model):
 
-    WorkerRoles = (
-        ('front_desk', 'front_desk'), 
-        ('pos_staff', 'pos_staff'), 
-        ('hr_staff', 'hr_ataff'), 
-        ('manager', 'manager'),
-        ('waiter', 'waiter'),
-        ('supervisor', 'supervisor'),
-        ('potter', 'potter'),
-        ('accountant', 'accountant'),
-        ('store_keeper', 'store_keeper'),
-        ('security', 'security'), 
-    )
-    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, related_name='employee_profile', null=True, blank=True)
-    department_location = models.ForeignKey(DepartmentLocation, on_delete=models.CASCADE, related_name='employees', null=True, blank=True)
-    role = models.CharField(max_length=50, choices=WorkerRoles)
-    date_created = models.DateTimeField(auto_now_add=True)
+#     WorkerRoles = (
+#         ('front_desk', 'front_desk'), 
+#         ('pos_staff', 'pos_staff'), 
+#         ('hr_staff', 'hr_ataff'), 
+#         ('manager', 'manager'),
+#         ('waiter', 'waiter'),
+#         ('supervisor', 'supervisor'),
+#         ('potter', 'potter'),
+#         ('accountant', 'accountant'),
+#         ('store_keeper', 'store_keeper'),
+#         ('security', 'security'), 
+#     )
+#     employee = models.OneToOneField(Employee, on_delete=models.CASCADE, related_name='employee_profile', null=True, blank=True)
+#     department_location = models.ForeignKey(DepartmentLocation, on_delete=models.CASCADE, related_name='employees', null=True, blank=True)
+#     role = models.CharField(max_length=50, choices=WorkerRoles)
+#     date_created = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-         return f"{self.employee.user.get_full_name()} -> {self.role}"
+#     def __str__(self):
+#          return f"{self.employee.user.get_full_name()} -> {self.role}"
 
 
 class Attendance(models.Model):
     SHIFTTYPE = (
-        ('24_hours', '24_hours'), 
+      
         ('Morning', 'Morning'),
         ('afternoon', 'Afternoon'),
-        ('night', 'Night')
+        ('night', 'Night'),
+        ('24_hours', '24_hours'), 
+        ('12_hours', '12_hours'), 
     )
 
    
@@ -162,6 +176,21 @@ class StaffSchedules(models.Model):
 
     def __str__(self):
         return f"Schedule for {self.employee.user.get_full_name()} - {self.schedule_start_date}"
+
+
+
+class DepartmentUser(models.Model):
+    department_officer = models.OneToOneField(Employee, on_delete=models.CASCADE, related_name='department_user', null=True, blank=True)
+    department_location = models.ForeignKey(DepartmentLocation, on_delete=models.CASCADE, related_name='department_users')
+    assistant = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="dept_assistant", null=True , blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        employee_name = self.department_officer.user.get_full_name() if self.department_officer else ""
+        assistant_name = self.assistant.user.get_full_name() if self.assistant else ""
+        return f"{employee_name} {assistant_name}".strip()
+
 
 
 class LeaveRequest(models.Model):

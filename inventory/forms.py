@@ -4,6 +4,18 @@ from .models import *
 class DateInput(forms.DateInput):
     input_type = 'date'
 
+
+class WarehouseForm(forms.ModelForm):
+
+    class Meta:
+        model = Warehouse
+        fields = ['name',]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder':'Warehouse Name',}),
+    
+        }
+
+
 class InventoryCategoryForm(forms.ModelForm):
 
     class Meta:
@@ -13,6 +25,21 @@ class InventoryCategoryForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder':'Category Name',}),
             'parent': forms.Select(attrs={'class': 'form-control', 'placeholder':'Category Parent If Any',}),
             
+        }
+
+
+class InventoryMovementForm(forms.ModelForm):
+    class Meta:
+        model = InventoryMovement
+        fields = ['item', 'warehouse', 'quantity', 'unit_selling_price', 'movement_type', 'transfer_location', 'reason']
+        widgets = {
+            'item': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Choose Item'}),
+            'warehouse': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Choose Warehouse'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter quantity'}),
+            'unit_selling_price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter selling price'}),
+            'movement_type': forms.Select(attrs={'class': 'form-control'}),
+            'transfer_location': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Transfer location (if any)'}),
+            'reason': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Provide a reason for the movement', 'rows': 3}),
         }
         
 
@@ -31,24 +58,22 @@ class SupplierForm(forms.ModelForm):
         }
         
 
-   
-        
+
 class EquipmentForm(forms.ModelForm):
+        
     class Meta:
         model = Equipment
-        fields = ['category','name', 'description', 'purchase_date', 'purchase_price', 'supplier','purchase_receipt', 'status', 'warranty_period', 'warranty_expiry_date']
+        fields = ['category','item','name', 'code', 'purchase_date',  'status', 'warranty_period', 'warranty_expiry_date','next_service_date',]
         widgets = {
             'category': forms.Select(attrs={'class': 'form-control','placeholder':'Equipment Category',}),
+            'item': forms.Select(attrs={'class': 'form-control','placeholder':'Item',}),
             'name': forms.TextInput(attrs={'class': 'form-control','placeholder':'Name',}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3,'placeholder':'Description',}),
-            'supplier': forms.Select(attrs={'class': 'form-control','placeholder':'Supplier',}),
+            'code': forms.TextInput(attrs={'class': 'form-control', 'rows': 3,'placeholder':'Description',}),
             'status': forms.Select(attrs={'class': 'form-control','placeholder':'Status',}),
             'purchase_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder':'Purchase Date',}),
-            'purchase_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01','placeholder':'Purchase price',}),
-            'purchase_receipt': forms.ClearableFileInput(attrs={'class': 'form-control', 'placeholder': 'Upload Receipt'}),
             'warranty_period': forms.NumberInput(attrs={'class': 'form-control','placeholder':'warranty period in years',}),
             'warranty_expiry_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder':'Warranty Expirey date',}),
-           
+            'next_service_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder':'next service date',}),
         }
 
     def clean_purchase_price(self):
@@ -59,21 +84,22 @@ class EquipmentForm(forms.ModelForm):
     
     
     
-class ConsumableItemForm(forms.ModelForm):
+class ItemForm(forms.ModelForm):
     class Meta:
-        model = ConsumableItem
-        fields = ['category','name', 'description', 'stock_quantity', 'unit_price', 'purchase_receipt', 'supplier','purchase_date']
+        model = Item
+        fields = ['stock_type','category','name', 'description', 'stock_quantity', 'unit_price', 'purchase_receipt', 'supplier','purchase_date','equipment']
         widgets = {
-            
+            'stock_type': forms.Select(attrs={'class': 'form-control','placeholder':'Srock type',}),
             'category': forms.Select(attrs={'class': 'form-control','placeholder':'item Category',}),
             'name': forms.TextInput(attrs={'class': 'form-control','placeholder':'Name',}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3,'placeholder':'Description',}),
             'stock_quantity': forms.NumberInput(attrs={'class': 'form-control','placeholder':'Stock Quantity',}),
             'unit_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01','placeholder':'Unit Price',}),
             'supplier': forms.Select(attrs={'class': 'form-control','placeholder':'Supplier',}),
+            'equipment': forms.Select(attrs={'class': 'form-control', 'type': 'date','placeholder':'Equipment',}),
             'purchase_receipt': forms.ClearableFileInput(attrs={'class': 'form-control', 'placeholder': 'Upload Receipt'}),
             'purchase_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder':'Purchase Date',}),
-         
+            
         }
 
     def clean_unit_price(self):

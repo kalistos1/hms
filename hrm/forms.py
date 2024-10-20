@@ -43,12 +43,13 @@ class DepartmentLocationForm(forms.ModelForm):
 class EmployeeForm(forms.ModelForm):
     class Meta:
         model = Employee
-        fields = ['user', 'department_location', 'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_phone','skills','certifications','contract_type','contract_start_date','contract_end_date','contract_renewal_date']
+        fields = ['user', 'department_location', 'role','emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_phone','skills','certifications','contract_type','contract_start_date','contract_end_date','contract_renewal_date']
 
     def __init__(self, *args, **kwargs):
         super(EmployeeForm, self).__init__(*args, **kwargs)
         self.fields['user'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select User'})
         self.fields['department_location'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select Department Location'})
+        self.fields['role'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Select Role'})
         self.fields['emergency_contact_name'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Emergency Contact Name'})
         self.fields['emergency_contact_relationship'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Relationship with Emergency Contact'})
         self.fields['emergency_contact_phone'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Emergency Contact Phone Number'})

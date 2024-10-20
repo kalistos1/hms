@@ -28,12 +28,24 @@
 
       {% if active_attendance and active_attendance.active %}
         <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
+        
           <div>
+            
+            {% if unreceived_stock %}
+            <p class="text-center text-light bg-danger p-3">
+              You have Unreceived Stocks Assigned to you from Store.
+              <a href="{% url 'dashboard:received_stock' %}" class="btn btn-dark">Receive stock</a>
+            </p>
+            {% endif %}
+
             {{ request.user.employee_profile.pos_user }}
             <p class="text-end text-warning">
               Make sure to sign-out before going home
               <a href="{% url 'hrm:check_out' %}" class="btn btn-danger btn-sm">Sign Out</a>
             </p>
+
+           
+
           </div>
 
 
@@ -46,8 +58,10 @@
                   <h6 class="card-title mb-0">Today's Order</h6>
                 </div>
                 <div class="card-body">
-                  <h2> {{ order_count }}</h2>
-
+                  <h6> Order : {{ order_count }} <br>
+                     Order-Items : {{total_order_quantity}}
+                    </h6>
+                  <p> <small>Orders processed by you today </small></p>
                 </div>
               </div>
             </div>
@@ -58,7 +72,7 @@
                 </div>
                 <div class="card-body">
                   <h2>&#8358 {{total_paid}}</h2>
-
+                  <p> <small>Sales made by you today </small></p>
                 </div>
               </div>
             </div>
@@ -69,46 +83,46 @@
                 </div>
                 <div class="card-body">
                   <h2>{{total_quantity_received}}</h2>
-
+                  <p> <small>Stock you received from store  </small></p>
                 </div>
+               
               </div>
             </div>
             <div class="col-md-6 col-lg-3">
               <div class="card">
                 <div class="card-header">
-                  <h6 class="card-title mb-0">Stock Balance</h6>
+                  <h6 class="card-title mb-0">Product Balance</h6>
                 </div>
                 <div class="card-body">
                   <h2>{{total_stock_remaining}}</h2>
 
+                  <p> <small>Products Remaining </small></p>
+                 
                 </div>
               </div>
             </div>
           </div>
+
+
           <div class="row g-3">
             <!-- Apex Lines Chart -->
 
               <!-- id="hs-single-line-chart" -->
 
-            <div class="box-holder">
+            <div class=" col-lg-6 box-holder">
               <div class="box card">
-                <h3 class=" text-3xl card-title font-bold px-4 pt-4 ">
+                <h6 class=" text-3xl card-title font-bold px-4 pt-4 ">
 
-                  STOCK
-                </h3>
-                <div
-                  class="w-[100%] flex flex-col items-center justify-center card-header"
-                >
+                  {{pos_user.department_location.name }} products
+                </h6>
+                <div class="w-[100%] flex flex-col items-center justify-center card-header">
 
-
-                  <table class="table-auto mt-4 border-collapse card-body w-[100%]">
+                  <table class=" table  table-auto mt-4  card-body w-[100%]">
                     <thead>
                       <tr>
-                        <th  class="px-4 py-2 border-b-2 text-xl">Product Name</th>
-                        <th>Description</th>
+                        <th  class="px-4 py-2 border-b-2 text-xl">Category</th>
+                        <th>Name</th>
                         <th>Price</th>
-                        <th>Stock Quantity</th>
-                        <th>Quantity Received</th>
                         <th>Remaining Stock</th>
 
                       </tr>
@@ -116,13 +130,13 @@
                     <tbody>
                       {% if products %}
                         {% for product in products %}
-                          <tr>
+                          <tr class="table-bordered ">
+                            <td>{{ product.category__name }}</td>
+                           
                             <td>{{ product.name }}</td>
-                            <td>{{ product.description }}</td>
                             <td>{{ product.price }}</td>
-                            <td>{{ product.stock_quantity }}</td>
-                            <td>{{ product.quantity_received }}</td>
-                            <td>{{ product.remaining_stock }}</td>
+                            
+                            <td>{{ product.total_quantity_left }}</td>
                           </tr>
                         {% endfor %}
                       {% else %}
@@ -132,118 +146,44 @@
                       {% endif %}
                     </tbody>
                   </table>
-
-                       <!-- Include ApexCharts library -->
-                  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
-                  <script>
-                    window.addEventListener("load", () => {
-                          // Directly initialize the chart with ApexCharts
-                      const options = {
-                        chart: {
-                          height: 230,
-                          type: "line",
-                          toolbar: {
-                            show: false,
-                          },
-                          zoom: {
-                            enabled: false,
-                          },
-                        },
-                        series: [
-                          {
-                            name: "Sales",
-                            data: [0, 27000, 25000, 27000, 40000],
-                          },
-                        ],
-                        dataLabels: {
-                          enabled: false,
-                        },
-                        stroke: {
-                          curve: "smooth", // Use 'smooth' for smooth lines
-                          width: 4,
-                        },
-                        grid: {
-                          strokeDashArray: 0,
-                          borderColor: "#000",
-                          padding: {
-                            top: -20,
-                            right: 0,
-                          },
-                        },
-                        xaxis: {
-                          type: "category",
-                          categories: [
-                            "25 January 2023",
-                            "28 January 2023",
-                            "31 January 2023",
-                            "1 February 2023",
-                            "3 February 2023",
-                          ],
-                          axisBorder: {
-                            show: false,
-                          },
-                          axisTicks: {
-                            show: false,
-                          },
-                          labels: {
-                            offsetY: 5,
-                            style: {
-                              colors: "#000",
-                              fontSize: "13px",
-                              fontFamily: "Inter, ui-sans-serif",
-                              fontWeight: 400,
-                            },
-                            formatter: (title) => {
-                              let t = title;
-
-                              if (t) {
-                                const newT = t.split(" ");
-                                t = `${newT[0]} ${newT[1].slice(0, 3)}`;
-                              }
-
-                              return t;
-                            },
-                          },
-                        },
-                        yaxis: {
-                          min: 0,
-                          max: 40000,
-                          tickAmount: 4,
-                          labels: {
-                            align: "left",
-                            style: {
-                              colors: "#000",
-                              fontSize: "12px",
-                              fontFamily: "Inter, ui-sans-serif",
-                              fontWeight: 400,
-                            },
-                            formatter: (value) =>
-                            value >= 1000 ? `${value / 1000}k` : value,
-                          },
-                        },
-                        tooltip: {
-                          x: {
-                            format: "dd MMM yyyy",
-                          },
-                        },
-                        colors: ["#FFC107"],
-                        borderColor: ["#000"],
-                      };
-
-                      const chart = new ApexCharts(
-                        document.querySelector("#hs-single-line-chart"),
-                        options
-                      );
-                      chart.render();
-                    });
-                  </script>
                 </div>
-
               </div>
+            </div>
 
+            <div class=" col-lg-6 box-holder">
+              <div class="box card">
+                <h6 class=" text-3xl card-title font-bold px-4 pt-4 ">
 
+                 Products Received from store to  {{pos_user.department_location.name }}
+                </h6>
+                <div class="w-[100%] flex flex-col items-center justify-center card-header">
 
+                  <table class=" table table--info table-auto mt-4  card-body w-[100%]">
+                    <thead>
+                      <tr>
+                        <th  class="px-4 py-2 border-b-2 text-xl"> Name</th>
+                        <th>Price</th>
+                        <th>Quantity Received</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% if  products_received  %}
+                        {% for product in  products_received  %}
+                          <tr class="table-bordered ">
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.price }}</td>
+                            <td>{{ product.stock_quantity }}</td>
+                          </tr>
+                        {% endfor %}
+                      {% else %}
+                        <tr>
+                          <td colspan="3">No products available during the active schedule.</td>
+                        </tr>
+                      {% endif %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
 
 

@@ -10,7 +10,7 @@ from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from hrm .models import *
-from .forms import WaiterCheckoutForm, updateReceivedItemForm
+from .forms import  updateReceivedItemForm, WaiterCheckoutForm
 from django.contrib import messages
 from django.urls import reverse
 from django.utils.html import escape
@@ -124,19 +124,19 @@ def checkout_view(request):
         is_customer = True
     else:
         is_customer = False
-        # Check if they are POS users with valid schedules and attendance
+        # Check if they are employee/users with valid schedules and attendance
         if hasattr(current_user, 'employee_profile'):
             try:
-                pos_user = current_user.employee_profile.pos_user
+                pos_user = current_user.employee_profile
             except AttributeError:
                 return HttpResponse('<div style="padding:20px;"><p style="color:red; font-weight:bold; font-size:14px;" class="alert alert-danger alert-dismissible fade show" role="alert"> You have not been given permission to work as a POS Officer </p></div>')
 
             department_location = current_user.employee_profile.department_location
             now = timezone.now()
 
-            # Check if the POS user has a valid schedule for either 'Pos_shift' or 'Waiter_shift'
+            # Check if the employee has a valid schedule for either 'Pos_shift' or 'Waiter_shift'
             pos_schedule = StaffSchedules.objects.filter(
-                employee=pos_user.employee,
+                employee=pos_user,
                 schedule_type__in=['Pos_shift', 'Waiter_shift'],  # Include both 'Pos_shift' and 'Waiter_shift'
                 schedule_start_date__lte=now.date(),
                 schedule_end_date__gte=now.date(),
@@ -148,7 +148,7 @@ def checkout_view(request):
 
                 # Check if the POS user has checked in for attendance
                 attendance = Attendance.objects.filter(
-                    employee=pos_user.employee,
+                    employee=pos_user,
                     active=True,
                     check_in__date=now.date()
                 ).first()
@@ -187,12 +187,12 @@ def process_checkout(request):
         # waiter = None
         
         # Validate POSUser's schedule and check-in status
-        pos_user = request.user.employee_profile.pos_user
+        pos_user = request.user.employee_profile
         now = timezone.now()
 
         # Check if the POS user is within their scheduled shift
         pos_schedule = StaffSchedules.objects.filter(
-            employee=pos_user.employee,
+            employee=pos_user,
             schedule_type='Pos_shift',
             schedule_start_date__lte=now.date(),
             schedule_end_date__gte=now.date(),
@@ -208,7 +208,7 @@ def process_checkout(request):
 
         # Check if the POS user has checked in
         attendance = Attendance.objects.filter(
-            employee=pos_user.employee,
+            employee=pos_user,
             active=True,
             check_in__date=now.date()
         ).first()
@@ -218,7 +218,7 @@ def process_checkout(request):
 
         waiter = None
         if waiter_id:
-            waiter = POSUser.objects.filter(id=waiter_id).first()  # Get the POSUser instance
+            waiter = Employee.objects.filter(id=waiter_id).first()  # Get the POSUser instance
 
         # Handle the Waiter form
         if 'waiter' in request.POST:

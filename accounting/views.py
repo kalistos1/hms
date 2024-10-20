@@ -3,7 +3,7 @@ from .models import PaymentRecord
 from .forms import PaymentReportForm
 from django.utils.timezone import make_aware
 from datetime import datetime
-from inventory.models import ConsumableItem, Equipment
+from inventory.models import Item, Equipment
 from .forms import PurchaseReportForm
 from django.db.models import Sum,Count
 from django.http import HttpResponse, JsonResponse

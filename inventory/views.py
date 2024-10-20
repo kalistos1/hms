@@ -2,9 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib import messages
-from .models import Amenity, Supplier, Equipment, ConsumableItem, EquipmentUsageLog, InsurancePolicy, EquipmentAuditLog, InspectionChecklist,ItemCategory
-from .forms import AmenityForm, InventoryCategoryForm, SupplierForm, EquipmentForm, ConsumableItemForm, EquipmentUsageLogForm, InsurancePolicyForm, EquipmentAuditLogForm, InspectionChecklistForm
-
+from .models import *
+from .forms import *
 # Supplier Views
 def supplier_list(request):
     suppliers = Supplier.objects.all()
@@ -167,8 +166,8 @@ def equipment_delete(request, pk):
 
 # Consumable Item Views
 def consumable_item_list(request):
-    consumable_items = ConsumableItem.objects.all()
-    form = ConsumableItemForm()
+    consumable_items = Item.objects.all()
+    form = ItemForm()
     context = {
         'consumable_items': consumable_items,
         'form':form,
@@ -179,7 +178,7 @@ def consumable_item_list(request):
 
 def consumable_item_create(request):
     if request.method == 'POST':
-        form = ConsumableItemForm(request.POST)
+        form = ItemForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, 'Consumable item created successfully.')
@@ -192,9 +191,9 @@ def consumable_item_create(request):
 
 
 def consumable_item_update(request, pk):
-    consumable_item = get_object_or_404(ConsumableItem, pk=pk)
+    consumable_item = get_object_or_404(Item, pk=pk)
     if request.method == 'POST':
-        form = ConsumableItemForm(request.POST, instance=consumable_item)
+        form = ItemForm(request.POST, instance=consumable_item)
         if form.is_valid():
             form.save()
             messages.success(request, 'Consumable item updated successfully.')
@@ -202,21 +201,18 @@ def consumable_item_update(request, pk):
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
-        form = ConsumableItemForm(instance=consumable_item)
+        form = ItemForm(instance=consumable_item)
     return render(request, 'pages/consumable_item_form.html', {'form': form})
 
 
 def consumable_item_delete(request, pk):
-    consumable_item = get_object_or_404(ConsumableItem, pk=pk)
+    consumable_item = get_object_or_404(Item, pk=pk)
     if request.method == 'GET':
         consumable_item.delete()
         messages.success(request, 'Consumable item deleted successfully.')
         return redirect('inventory:consumable_item_list')
     messages.error(request, 'Unable to delete item something went wrong.')
     return redirect('inventory:consumable_item_list')
-
-
-
 
 
 # Amenity Item Views
@@ -270,21 +266,26 @@ def amenity_item_delete(request, pk):
     return redirect('inventory:amenity_item_list')
 
 
+def move_product(request):
+    if request.method  == "POST":
+        form =  InventoryMovementForm(request.POST)
+        warehouse = Warehouse.object.first()
+        user = request.user.employee
 
+        if form.is_valid:
+           move_data = form.save(commit=False)
+           move_data.warehouse = warehouse
+           move_data.performed_by = user
+           move_data.save()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+           messages.success(request, 'item Moved Succesful')
+           return redirect('dashboard:warehouse_info')
+        else:
+            messages.error(request,'Something happened, item was not moved')
+            return redirect('dashboard:warehouse_info')
+    else:
+        messages.error(request,'Something happened, item was not moved')
+        return redirect('dashboard:warehouse_info')
 
 
 

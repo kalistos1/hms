@@ -60,4 +60,6 @@ urlpatterns = [
     path('checklists/create/', views.inspection_checklist_create, name='inspection_checklist_create'),
     path('checklists/<int:pk>/update/', views.inspection_checklist_update, name='inspection_checklist_update'),
     path('checklists/<int:pk>/delete/', views.inspection_checklist_delete, name='inspection_checklist_delete'),
+    #inventory
+    path('move_product/', views.move_product, name='move_product'),
 ]

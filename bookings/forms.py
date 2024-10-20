@@ -142,6 +142,28 @@ class RoomBookingForm(forms.ModelForm):
 
    
 
+# class PaymentForm(forms.ModelForm):
+#     amount = forms.DecimalField(
+#         max_digits=10,
+#         decimal_places=2,
+#         widget=forms.TextInput(attrs={
+#             'class': 'form-control', 
+#             'placeholder': 'Amount paid',
+#             'id': 'payment-amount'
+#         })
+#     )
+#     class Meta:
+#         model = Payment
+#         fields = ['amount', 'mode','status']
+        
+       
+#     def __init__(self, *args, **kwargs):
+#         super(PaymentForm, self).__init__(*args, **kwargs)
+#         # self.fields['amount'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Amount paid'})
+#         self.fields['mode'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Mode Of Payment'})
+#         self.fields['status'].widget.attrs.update({ 'class': 'form-control', 'placeholder': ' Payment Status'})  
+                                                  
+
 class PaymentForm(forms.ModelForm):
     amount = forms.DecimalField(
         max_digits=10,
@@ -152,17 +174,29 @@ class PaymentForm(forms.ModelForm):
             'id': 'payment-amount'
         })
     )
+
     class Meta:
         model = Payment
-        fields = ['amount', 'mode','status']
-        
-       
+        fields = ['amount', 'mode', 'status']
+
     def __init__(self, *args, **kwargs):
+        # Get a condition to check for the specific page
+        # You can pass a custom parameter, such as `exclude_completed` through kwargs
+        exclude_completed = kwargs.pop('exclude_completed', False)
+        
         super(PaymentForm, self).__init__(*args, **kwargs)
-        # self.fields['amount'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Amount paid'})
-        self.fields['mode'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Mode Of Payment'})
-        self.fields['status'].widget.attrs.update({ 'class': 'form-control', 'placeholder': ' Payment Status'})  
-                                                  
+        
+        # Update widget attributes
+        self.fields['mode'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Mode Of Payment'})
+        self.fields['status'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Payment Status'})
+
+        # Conditionally remove 'completed' from choices if the flag is set
+        if exclude_completed:
+            self.fields['status'].choices = [
+                (key, value) for key, value in self.fields['status'].choices if key != 'completed'
+            ]
+
+
                                                            
 class RoomReservationForm(forms.ModelForm):
     class Meta:

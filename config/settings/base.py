@@ -33,13 +33,13 @@ INSTALLED_APPS = [
     
     #apps
     'accounts',
-    'accounting',
-    'bookings',
+    'accounting.apps.AccountingConfig',
+    'bookings.apps.BookingsConfig',
     'core',
     'crm',
     'dashboard',
     'hotel',
-    'inventory',
+    'inventory.apps.InventoryConfig',
     'pages',
     'pos',
     'reports',
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'testimony',
     'hrm',
     'events',
+  
 ]
 
 

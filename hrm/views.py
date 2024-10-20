@@ -9,6 +9,7 @@ from django.contrib.auth import logout
 from django.db import transaction
 from datetime import timedelta
 from django.db.models import Q
+from datetime import datetime
 
 def hrm_dashboard(request):
     return render(request, )
@@ -401,45 +402,131 @@ def check_in(request):
 
 
 
-# @login_required
+# # @login_required
+# def check_out(request):
+#     now = timezone.now()
+#     today = now.date()
+#     user = request.user
+#     employee = get_object_or_404(Employee, user=user)
+
+#     # Fetch today's schedule
+#     schedule = StaffSchedules.objects.filter(employee=employee, schedule_end_date__gte=today).first()
+
+#     # Fetch active attendance record where check-out is not yet recorded
+#     attendance = Attendance.objects.filter(employee=employee, check_out__isnull=True).first()
+
+#     if not attendance:
+#         messages.error(request, "No active check-in found.")
+#         return redirect('signin')  
+
+#     # Update attendance with check-out time and deactivate it
+#     attendance.check_out = now
+#     attendance.active = False
+#     attendance.save()
+
+#     # Check if the schedule's end date/time has passed or is the current day
+#     if schedule:
+#         if not attendance.active:
+#             # Mark the schedule as 'Ended' regardless of the schedule end time
+#             schedule.active = 'Ended'
+#             schedule.save()
+#         else:
+#             schedule_end_datetime = datetime.combine(schedule.schedule_end_date, schedule.end_time)
+#             if (now.date() > schedule.schedule_end_date) or (now.date() == schedule.schedule_end_date and now.time() >= schedule.end_time):
+#                 # Mark the schedule as 'Ended'
+#                 schedule.active = 'Ended'
+#                 schedule.save()
+
+
+#     # Log out the user after successful check-out
+#     logout(request)
+#     messages.success(request, "You have successfully checked out.")
+#     return redirect('core:index')
+
+
 def check_out(request):
-    now = timezone.now()
+    now = timezone.now()  # Current date and time
     today = now.date()
     user = request.user
     employee = get_object_or_404(Employee, user=user)
 
-    # Fetch today's schedule
-    schedule = StaffSchedules.objects.filter(employee=employee, schedule_end_date__gte=today).first()
+    # Fetch the schedule that spans today
+    schedule = StaffSchedules.objects.filter(
+        employee=employee,
+        schedule_start_date__lte=today,  # Schedule that started before or on today
+        schedule_end_date__gte=today      # Schedule that ends on or after today
+    ).first()
 
     # Fetch active attendance record where check-out is not yet recorded
     attendance = Attendance.objects.filter(employee=employee, check_out__isnull=True).first()
 
     if not attendance:
         messages.error(request, "No active check-in found.")
-        return redirect('signin')  
+        return redirect('signin')
 
     # Update attendance with check-out time and deactivate it
     attendance.check_out = now
     attendance.active = False
     attendance.save()
 
-    # Check if the schedule's end date/time has passed or is the current day
     if schedule:
-        if not attendance.active:
-            # Mark the schedule as 'Ended' regardless of the schedule end time
+        schedule_end_datetime = datetime.combine(schedule.schedule_end_date, schedule.end_time)
+
+        # If attendance is inactive (False) but the schedule is still marked as active (True)
+        if not attendance.active and schedule.active == 'True':
+            # Mark the schedule as 'Ended' to ensure consistency
             schedule.active = 'Ended'
             schedule.save()
-        else:
-            schedule_end_datetime = datetime.combine(schedule.schedule_end_date, schedule.end_time)
-            if (now.date() > schedule.schedule_end_date) or (now.date() == schedule.schedule_end_date and now.time() >= schedule.end_time):
-                # Mark the schedule as 'Ended'
-                schedule.active = 'Ended'
-                schedule.save()
-
+        # If the schedule's end datetime has passed or is happening right now
+        elif now >= schedule_end_datetime:
+            # Mark the schedule as 'Ended'
+            schedule.active = 'Ended'
+            schedule.save()
 
     # Log out the user after successful check-out
     logout(request)
     messages.success(request, "You have successfully checked out.")
     return redirect('core:index')
 
-   
+
+
+
+
+# def check_out(request):
+#     now = timezone.now()  # Current date and time
+#     today = now.date()
+#     user = request.user
+#     employee = get_object_or_404(Employee, user=user)
+
+#     # Fetch the schedule that spans today
+#     schedule = StaffSchedules.objects.filter(
+#         employee=employee,
+#         schedule_start_date__lte=today,  # Schedule that started before or on today
+#         schedule_end_date__gte=today      # Schedule that ends on or after today
+#     ).first()
+
+#     # Fetch active attendance record where check-out is not yet recorded
+#     attendance = Attendance.objects.filter(employee=employee, check_out__isnull=True).first()
+
+#     if not attendance:
+#         messages.error(request, "No active check-in found.")
+#         return redirect('signin')  
+
+#     # Update attendance with check-out time and deactivate it
+#     attendance.check_out = now
+#     attendance.active = False
+#     attendance.save()
+
+#     if schedule:
+#         schedule_end_datetime = datetime.combine(schedule.schedule_end_date, schedule.end_time)
+
+#         # Check if the schedule's end datetime has passed or is happening right now
+#         if now >= schedule_end_datetime:
+#             # Mark the schedule as 'Ended'
+#             schedule.active = 'Ended'
+#             schedule.save()
+
+#     # Log out the user after successful check-out
+#     logout(request)
+#     messages.success(request, "You have successfully checked out.")
+#     return redirect('core:index')   

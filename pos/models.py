@@ -10,6 +10,8 @@ from uuid import uuid4
 from hrm.models import Employee,DepartmentLocation
 from shortuuid.django_fields import ShortUUIDField
 
+
+
 # ProductCategory 
 class ProductCategory(models.Model):
     ICONS = (
@@ -36,20 +38,16 @@ def pre_save_category_slug(sender, instance, *args, **kwargs):
 
 pre_save.connect(pre_save_category_slug, sender=ProductCategory)
 
-
-
 # Product 
 class Product(models.Model):
     
-    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
+    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, null=True, blank = True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to="pos", default = "pos.jpg", null=True, blank =True)
-   
     stock_quantity = models.PositiveIntegerField()
     department_location = models.ForeignKey(DepartmentLocation, on_delete=models.CASCADE, null=True, blank = True)
-
     slug = models.SlugField(max_length=150, unique=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
@@ -69,8 +67,6 @@ def pre_save_product_slug(sender, instance, *args, **kwargs):
 pre_save.connect(pre_save_product_slug, sender=Product)
 
 
-
-
 # Customer 
 class PosCustomer(models.Model):
     customer_name = models.CharField(max_length=50, null=True, blank=True)
@@ -78,33 +74,6 @@ class PosCustomer(models.Model):
     pos_customer = models.BooleanField(default=True, blank = True, null = True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
-
-# POSUser
-
-class POSUser(models.Model):
-    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, related_name='pos_user', null=True, blank=True)
-    waiter = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="pos_waiter", null=True , blank=True)  # Employee acting as the waiter
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_modified = models.DateTimeField(auto_now=True)
-
-    
-
-    def __str__(self):
-        employee_name = self.employee.user.get_full_name() if self.employee else ""
-        waiter_name = self.waiter.user.get_full_name() if self.waiter else ""
-        return f"{employee_name} {waiter_name}".strip()
-
-
-# New Model: PosStockReceipt
-class PosStockReceipt(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    pos_user = models.ForeignKey(POSUser, on_delete=models.CASCADE)
-    quantity_received = models.PositiveIntegerField()
-    date_received = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f'{self.pos_user.employee.user.get_full_name()} received {self.quantity_received} of {self.product.name} on {self.date_received}'
-
 
 
 # Discount
@@ -128,8 +97,8 @@ class Discount(models.Model):
 # Order 
 class Order(models.Model):
     customer = models.ForeignKey(PosCustomer, on_delete=models.CASCADE, null=True, blank=True)
-    staff = models.ForeignKey(POSUser, on_delete=models.CASCADE, null=True, blank=True)  # POS staff handling the transaction
-    waiter = models.ForeignKey(POSUser, related_name="orders", on_delete=models.CASCADE, null=True, blank=True)  # Waiter attending the order
+    staff = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True, blank=True)  # POS staff handling the transaction
+    waiter = models.ForeignKey(Employee, related_name="orders", on_delete=models.CASCADE, null=True, blank=True)  # Waiter attending the order
 
     created_at = models.DateTimeField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
