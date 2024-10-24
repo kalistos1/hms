@@ -32,21 +32,19 @@ from pos.forms import updateReceivedItemForm
 from django.utils.timezone import make_aware,is_aware
 from accounting . models import *
 from inventory.forms import InventoryMovementForm
-
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from hrm.models import Employee, Attendance, StaffSchedules
-
-
-
+from decimal import Decimal
 
 # admin view s start
 # =========================================================================================
 # ==========================================================================================
 
 def admin_dashboard(request):
-    template = "admin_user/dashboard.html"
-    return render (request,template)
+    # template = "admin_user/dashboard.html"
+    return redirect( 'dashboard:account_dashboard' )
 
 
 def hotel_setup(request):
@@ -142,6 +140,28 @@ def warehouse_info(request):
         }
 
     return render(request, 'admin_user/warehouse_info.html',context)
+
+
+
+def warehouse_stock(request):
+    # Get the first warehouse as a default example (you may want to adjust this logic)
+    warehouse = Warehouse.objects.first()
+
+    try:   
+        stocks = WarehouseStock.objects.filter(warehouse=warehouse).select_related('item__category')
+        context = {
+            'stocks': stocks,
+        }
+    except WarehouseStock.DoesNotExist:
+        context = {
+            'error': 'No stock found in the warehouse.'
+        }
+    form = InventoryMovementForm()
+    context.update({
+        'form': form,
+    })
+
+    return render(request, 'supervisor/move_item.html', context)
 
 
 def warehouse_delete(request, pk):    
@@ -625,57 +645,46 @@ def supervisor_dashboard(request):
 
 #     return render (request,template, context)
 
-
-
 def account_dashboard(request):
     template = "account_officer/dashboard.html"    
-    
     today = timezone.now().date()
 
-    customers = User.objects.filter(
-                is_admin=False,
-                is_supervisor=False,
-                is_account_officer=False,
-                is_frontdesk_officer=False,
-                is_pos_officer=False,
-                is_worker=False,
+    # Count customers who are not staff members
+    customers = Employee.objects.filter(
+                role__in=['customer']  # Assuming 'customer' is the role in your Employee model
             ).count()
-    
-    staff_roles_filter = Q(is_admin=True) | Q(is_supervisor=True) | Q(is_account_officer=True) | \
-                        Q(is_frontdesk_officer=True) | Q(is_pos_officer=True) | Q(is_worker=True)
-    # Get the count of staff
-    staff_count = User.objects.filter(staff_roles_filter).count()
+
+    # Count staff members with any of the specified roles
+    staff_count = Employee.objects.filter(
+        Q(role__in=['admin', 'supervisor', 'account_officer', 'front_desk_officer', 'pos_officer', 'worker'])
+    ).count()
 
     # 1. Get all bookings done today
     todays_bookings = Booking.objects.filter(date_created__date=today)
 
-    first_day_of_month = today.replace(day=1)
     # Filter PaymentRecords for the current month and statuses 'advance' or 'completed'
-    monthly_income = PaymentRecord.objects.filter(
-        payment_date__date__gte=first_day_of_month,  # Payments in the current month
+    first_day_of_month = today.replace(day=1)
+    monthly_income = Payment.objects.filter(
+        date__date__gte=first_day_of_month,  # Payments in the current month
         status__in=['advance', 'completed']  # Payments with status 'advance' or 'completed'
     ).aggregate(monthly_income=Sum('amount'))['monthly_income'] or 0
 
-
-    # 2. Get all payments made today, considering 'advance' and 'completed' payments
+    # 2. Get all payments made today
     todays_booking_payments = Payment.objects.filter(
         date__date=today, 
         status__in=['advance', 'completed']
     )
-
     todays_booking_payment_completions = PaymentCompletion.objects.filter(
         completion_date__date=today
     )
-
     todays_payment_sum = todays_booking_payments.aggregate(total=Sum('amount'))['total'] or 0.00
     todays_payment_completion_sum = todays_booking_payment_completions.aggregate(total=Sum('amount'))['total'] or 0.00
-    todays_total_booking_payments = todays_payment_sum + todays_payment_completion_sum
+    todays_total_booking_payments = Decimal(todays_payment_sum) + Decimal(todays_payment_completion_sum)
 
-
-    # 1. Sum of all orders done today
+    # 3. Sum of all POS orders done today
     total_pos_orders_today = Order.objects.filter(created_at__date=today).aggregate(total=Sum(F('total_amount')))['total'] or 0
 
-    # 2. Sum of all payments made today
+    # 4. Sum of all POS payments made today
     total_pos_orders_payments_today = PosPayment.objects.filter(payment_date__date=today).aggregate(total=Sum(F('amount_paid')))['total'] or 0
 
     # Initialize data structure to hold totals for each department
@@ -685,13 +694,13 @@ def account_dashboard(request):
     departments = Department.objects.all()
 
     for department in departments:
-        department_location = department.locations
+        department_locations = department.locations.all()
 
-        # 3. Sum of orders and payments for the most recently ended session based on department location
+        # Get the last ended session for POS staff in this department's locations
         last_pos_ended_session = Attendance.objects.filter(
-            employee__employee_profile__role='pos_staff',
+            employee__role='pos_staff',
             check_out__isnull=False,
-            shift_location=department_location  # Filter by department location
+            shift_location__in=department_locations
         ).order_by('-check_out').first()
 
         total_pos_orders_recent_session = 0
@@ -701,26 +710,25 @@ def account_dashboard(request):
             session_start = last_pos_ended_session.check_in
             session_end = last_pos_ended_session.check_out
 
-            # Sum orders for the recent session and department
+            # Sum orders for the recent session in this department
             total_pos_orders_recent_session = Order.objects.filter(
                 staff=last_pos_ended_session.employee.user,
-                staff__employee_profile__department_location=department_location,
+                staff__employee_profile__department_location__in=department_locations,
                 created_at__range=[session_start, session_end]
             ).aggregate(total=Sum(F('total_amount')))['total'] or 0
 
-            # Sum payments for the recent session and department
+            # Sum payments for the recent session in this department
             total_pos_payments_recent_session = PosPayment.objects.filter(
                 order__staff=last_pos_ended_session.employee.user,
-                order__staff__employee_profile__department_location=department_location,
+                order__staff__employee_profile__department_location__in=department_locations,
                 payment_date__range=[session_start, session_end]
             ).aggregate(total=Sum(F('amount_paid')))['total'] or 0
 
-
-        # 4. Sum of orders and payments for the currently active session based on department location
+        # Get the active POS session for this department
         pos_active_session = Attendance.objects.filter(
-            employee__employee_profile__role='pos_staff',
+            employee__role='pos_staff',
             check_out__isnull=True,
-            shift_location=department_location  # Filter by department location
+            shift_location__in=department_locations
         ).order_by('-check_in').first()
 
         total_pos_orders_active_session = 0
@@ -729,17 +737,17 @@ def account_dashboard(request):
         if pos_active_session:
             session_start = pos_active_session.check_in
 
-            # Sum orders for the active session and department
+            # Sum orders for the active session in this department
             total_pos_orders_active_session = Order.objects.filter(
                 staff=pos_active_session.employee.user,
-                staff__employee_profile__department_location=department_location,
+                staff__employee_profile__department_location__in=department_locations,
                 created_at__gte=session_start
             ).aggregate(total=Sum(F('total_amount')))['total'] or 0
 
-            # Sum payments for the active session and department
+            # Sum payments for the active session in this department
             total_pos_payments_active_session = PosPayment.objects.filter(
                 order__staff=pos_active_session.employee.user,
-                order__staff__employee_profile__department_location=department_location,
+                order__staff__employee_profile__department_location__in=department_locations,
                 payment_date__gte=session_start
             ).aggregate(total=Sum(F('amount_paid')))['total'] or 0
 
@@ -752,13 +760,11 @@ def account_dashboard(request):
             'total_payments_active_session': total_pos_payments_active_session,
         })
 
-
-    # 3. Get the last ended session of the front desk user
+    # Get the last ended session for front desk user
     last_ended_session = Attendance.objects.filter(
-        employee__employee_profile__role='front_desk',
+        employee__role='front_desk',
         check_out__isnull=False
     ).order_by('-check_out').first()
-
 
     last_session_bookings = last_session_payments = last_session_payment_completions = None
     if last_ended_session:
@@ -773,9 +779,9 @@ def account_dashboard(request):
             completion_date__range=(last_ended_session.check_in, last_ended_session.check_out)
         )
 
-    # 5. Get the active session of the front desk user
+    # Get the active session of the front desk user
     current_active_session = Attendance.objects.filter(
-        employee__employee_profile__role='front_desk',
+        employee__role='front_desk',
         active=True
     ).first()
 
@@ -792,40 +798,31 @@ def account_dashboard(request):
             completion_date__range=(current_active_session.check_in, timezone.now())
         )
 
-    # Summarize last session total payments (Payment + PaymentCompletion)
+    # Summarize last session and active session total payments
     last_session_payment_sum = last_session_payments.aggregate(total=Sum('amount'))['total'] if last_session_payments else 0.00
     last_session_payment_completion_sum = last_session_payment_completions.aggregate(total=Sum('amount'))['total'] if last_session_payment_completions else 0.00
     last_session_total_payments = last_session_payment_sum + last_session_payment_completion_sum
 
-    # Summarize active session total payments (Payment + PaymentCompletion)
     active_session_payment_sum = active_session_payments.aggregate(total=Sum('amount'))['total'] if active_session_payments else 0.00
     active_session_payment_completion_sum = active_session_payment_completions.aggregate(total=Sum('amount'))['total'] if active_session_payment_completions else 0.00
     active_session_total_payments = active_session_payment_sum + active_session_payment_completion_sum
 
     context = {
-        #bookings
         'todays_bookings': todays_bookings,
-        'todays_bookings_payments':  todays_total_booking_payments,
+        'todays_bookings_payments': todays_total_booking_payments,
         'last_session_bookings': last_session_bookings,
         'last_session_payments': last_session_payments,
-
         'active_session_bookings': active_session_bookings,
         'active_session_payments': active_session_payments,
-        
         'last_session_total_payments': last_session_total_payments,
         'active_session_total_payments': active_session_total_payments,
-
-        #  pos
         'total_orders_today': total_pos_orders_today,
-        'total_pos_payments_today':  total_pos_orders_payments_today,
-        'department_data': department_data,  # Pass data for all departments
-
-       # others
-       'customers':customers,
-       'staff_count':staff_count,
-       'monthly_income': monthly_income,
+        'total_pos_payments_today': total_pos_orders_payments_today,
+        'department_data': department_data,
+        'customers': customers,
+        'staff_count': staff_count,
+        'monthly_income': monthly_income
     }
-
     return render(request, template, context)
 
 
@@ -841,65 +838,6 @@ def account_dashboard(request):
 # ==========================================================================================================
 # ==========================================================================================================
 
-
-
-# def frontdesk_dashboard(request):
-#     template = "front_desk/dashboard.html"
-    
-#     if request.user.is_frontdesk_officer:
-       
-#         today = timezone.now().date()
-
-#         all_bookings = Booking.objects.filter( check_in_date =today)
-#         user = request.user
-
-#         employee = Employee.objects.get(user=user)
-    
-#         # Get the active attendance records
-#         active_attendance = Attendance.objects.filter(employee=employee, check_in__date=today, active=True).first()
-
-
-#         # Bookings created today
-#         todays_bookings = Booking.objects.filter(date_created__date=today)
-
-#         # Payments with status 'advance' or 'completed'
-#         todays_payments = Payment.objects.filter(
-#             Q(booking__in=todays_bookings) & (Q(status='advance') | Q(status='completed'))
-#         )
-
-#         # Sum of advance payments
-#         advance_payments_total = todays_payments.filter(status='advance').aggregate(total=Sum('amount'))['total'] or 0
-
-#         # Sum of completed payments
-#         completed_payments_total = todays_payments.filter(status='completed').aggregate(total=Sum('amount'))['total'] or 0
-
-#         # Sum of payment completions
-#         payment_completion_total = PaymentCompletion.objects.filter(payment__booking__in=todays_bookings).aggregate(
-#             total=Sum('amount')
-#         )['total'] or 0
-
-#         # Calculate the total money realized for today
-#         todays_total_money = advance_payments_total + completed_payments_total + payment_completion_total
-
-#         # Get all customers excluding specific user roles
-#         customers = User.objects.filter(
-#             is_admin=False,
-#             is_supervisor=False,
-#             is_account_officer=False,
-#             is_frontdesk_officer=False,
-#             is_pos_officer=False
-#         )
-
-#         context = {
-#             'all_bookings': all_bookings.count(),
-#             'todays_bookings': todays_bookings,
-#             'total_todays_booking':todays_bookings.count(),
-#             'todays_total_money': todays_total_money,
-#             'customers': customers.count(),
-#             'active_attendance':active_attendance,
-#         }
-
-#         return render(request, template, context)
 
 
 def frontdesk_dashboard(request):
@@ -989,29 +927,87 @@ def frontdesk_room_status(request):
 
 
 # bookings
+
 def frontdesk_booking_list(request):
     template = "front_desk/bookinglist.html"
-  
+
     if request.user.is_frontdesk_officer:
         today = timezone.now().date()
         user = request.user
         employee = Employee.objects.get(user=user)
 
-        # Get the active attendance record for today
+        # Get active attendance and schedule
         active_attendance = Attendance.objects.filter(employee=employee, active=True).first()
+        active_schedule = StaffSchedules.objects.filter(employee=employee, active=True).first()
+       
+        if active_attendance and active_schedule:
 
-        bookin_list = Booking.objects.all()
-        room_service_form =  RoomServiceForm()
-        additional_charge_form =  AdditionalChargeForm()
-        context = {
-            'bookings':bookin_list,
-            'room_service_form': room_service_form,
-            "additional_charge_form":additional_charge_form,
-            'active_attendance':active_attendance,
-        }
-        
-        return render (request,template, context)
-    
+                        # Construct the start and end datetime of the active schedule
+            schedule_start = timezone.make_aware(
+                datetime.combine(active_schedule.schedule_start_date, active_schedule.start_time)
+            )
+            schedule_end = timezone.make_aware(
+                datetime.combine(active_schedule.schedule_end_date, active_schedule.end_time)
+            )
+            # Validate schedule start and end times
+            start_time = active_schedule.start_time
+            end_time = active_schedule.end_time
+
+            if start_time is None or end_time is None:
+                return render(request, template, {'error': 'Schedule times are missing.'})
+
+                
+            # Fetch all bookings
+            booking_list = Booking.objects.filter(date__range=(schedule_start, schedule_end)).order_by('-date') 
+
+            # Add payment info for each booking
+            bookings_with_payment_info = []
+            for booking in booking_list:
+                # Fetch payments related to the booking
+                payments = Payment.objects.filter(booking=booking)
+
+                # Sum the amounts based on payment status
+                total_payment_amount = 0.0
+                payment_status = 'No Payments'
+
+                # Check for completed or advance payments
+                if payments.exists():
+                    completed_payments = payments.filter(status='completed')
+                    advance_payments = payments.filter(status='advance')
+
+                    if completed_payments.exists():
+                        payment_status = 'completed'
+                        total_payment_amount = completed_payments.aggregate(Sum('amount'))['amount__sum'] or 0.0
+
+                        # Sum up the payment completion amounts if applicable
+                        for payment in completed_payments:
+                            payment_completion = PaymentCompletion.objects.filter(payment=payment).first()
+                            if payment_completion:
+                                total_payment_amount += payment_completion.amount
+
+                    elif advance_payments.exists():
+                        payment_status = 'advance'
+                        total_payment_amount = advance_payments.aggregate(Sum('amount'))['amount__sum'] or 0.0
+
+                bookings_with_payment_info.append({
+                    'booking': booking,
+                    'total_payment_amount': total_payment_amount,
+                    'payment_status': payment_status
+                })
+
+            room_service_form = RoomServiceForm()
+            additional_charge_form = AdditionalChargeForm()
+            context = {
+                'bookings': bookings_with_payment_info,
+                'room_service_form': room_service_form,
+                "additional_charge_form": additional_charge_form,
+                'active_attendance': active_attendance,
+            }
+
+            return render(request, template, context)
+        messages.error(request," You are not on an Active schedule")
+    return render (request, template, context)
+
 
 
 def frontdesk_update_checkout_date(request, pk):
@@ -1031,7 +1027,6 @@ def frontdesk_update_checkout_date(request, pk):
 # checkout list
 def frontdesk_checkout_list(request):
     template = "front_desk/check_out_list.html"
-    
 
     if request.user.is_frontdesk_officer:
         today = timezone.now().date()
@@ -1072,8 +1067,95 @@ def available_rooms_view(request):
 
     return render(request, 'partials/htmx/available-rooms.html', {'rooms': rooms})
 
+# def front_desk_booking(request):
+#     if request.user.is_frontdesk_officer:
+#         today = timezone.now().date()
+#         user = request.user
+#         employee = Employee.objects.get(user=user)
+#         hide_completed = True
 
-#htmx view for room price
+#         active_attendance = Attendance.objects.filter(employee=employee, active=True).first()    
+#         room_type_id = request.POST.get('room_type') if request.method == 'POST' else None
+
+#         if request.method == 'POST':
+#             basic_info_form = BasicUserInfoForm(request.POST)
+#             profile_info_form = ProfileInfoForm(request.POST)
+#             booking_choice_form = BookingChoiceForm(request.POST)
+#             room_booking_form = RoomBookingForm(request.POST, room_type_id=room_type_id)  # Pass room_type_id
+#             room_reservation_form = RoomReservationForm(request.POST)
+#             payment_form = PaymentForm(request.POST, exclude_completed=hide_completed)
+
+#             if basic_info_form.is_valid() and profile_info_form.is_valid() and booking_choice_form.is_valid():
+#                 email = basic_info_form.cleaned_data['email']
+#                 phone = basic_info_form.cleaned_data['phone']
+                
+#                 # Check if the user exists, if not, create one
+#                 user = User.objects.filter(email=email).first() 
+
+#                 if not user:
+#                     user = basic_info_form.save(commit=False)
+#                     user.set_password(user.phone)  # Set phone number as password
+#                     user.username = user.email
+#                     user.save()
+
+#                     profile, created = Profile.objects.get_or_create(user=user)
+#                     profile_form_data = profile_info_form.cleaned_data
+#                     for field, value in profile_form_data.items():
+#                         setattr(profile, field, value)
+#                     profile.save()
+
+#                 # Check the user's choice (either booking or reservation)
+#                 choice = booking_choice_form.cleaned_data['choice']
+
+#                 booking = None
+#                 reservation = None
+
+#                 if choice == 'booking':
+#                     if room_booking_form.is_valid():
+#                         booking = room_booking_form.save(commit=False)
+#                         booking.user = user
+#                         booking.save()  # Save the booking instance
+
+#                         # Save any other details or related objects if necessary
+#                     else:
+#                         print('Booking form errors:', room_booking_form.errors)
+#                 elif choice == 'reservation':
+#                     if room_reservation_form.is_valid():
+#                         reservation = room_reservation_form.save(commit=False)
+#                         reservation.user = user
+#                         reservation.save()
+
+#                 # Process payment if the form is valid
+#                 if payment_form.is_valid():
+#                     payment = payment_form.save(commit=False)
+#                     payment.user = user
+#                     if booking:
+#                         payment.booking = booking
+#                     elif reservation:
+#                         payment.booking = reservation  # If it's a reservation, associate the payment with the reservation
+#                     payment.save()
+
+#                 # Redirect to the receipt page
+#                 return redirect('dashboard:receipt', booking_id=booking.booking_id if booking else reservation.id)
+
+#         else:
+#             # Initialize forms for GET request
+#             basic_info_form = BasicUserInfoForm()
+#             profile_info_form = ProfileInfoForm()
+#             booking_choice_form = BookingChoiceForm()
+#             room_booking_form = RoomBookingForm(room_type_id=room_type_id)  
+#             room_reservation_form = RoomReservationForm()
+#             payment_form = PaymentForm(exclude_completed=hide_completed)
+
+#         return render(request, 'front_desk/roombook.html', {
+#             'basic_info_form': basic_info_form,
+#             'profile_info_form': profile_info_form,
+#             'booking_choice_form': booking_choice_form,
+#             'room_booking_form': room_booking_form,
+#             'room_reservation_form': room_reservation_form,
+#             'payment_form': payment_form,
+#             'active_attendance': active_attendance,
+#         })
 
 def front_desk_booking(request):
     if request.user.is_frontdesk_officer:
@@ -1082,26 +1164,27 @@ def front_desk_booking(request):
         employee = Employee.objects.get(user=user)
         hide_completed = True
 
-        active_attendance = Attendance.objects.filter(employee=employee, active=True).first()    
+        active_attendance = Attendance.objects.filter(employee=employee, active=True).first()
         room_type_id = request.POST.get('room_type') if request.method == 'POST' else None
+        coupon_code = request.POST.get('coupon_code', '').strip().lower()
 
         if request.method == 'POST':
             basic_info_form = BasicUserInfoForm(request.POST)
             profile_info_form = ProfileInfoForm(request.POST)
             booking_choice_form = BookingChoiceForm(request.POST)
-            room_booking_form = RoomBookingForm(request.POST, room_type_id=room_type_id)  # Pass room_type_id
+            room_booking_form = RoomBookingForm(request.POST, room_type_id=room_type_id)
             room_reservation_form = RoomReservationForm(request.POST)
             payment_form = PaymentForm(request.POST, exclude_completed=hide_completed)
 
             if basic_info_form.is_valid() and profile_info_form.is_valid() and booking_choice_form.is_valid():
                 email = basic_info_form.cleaned_data['email']
                 phone = basic_info_form.cleaned_data['phone']
-                
-                user = User.objects.filter(email=email).first() 
+
+                user = User.objects.filter(email=email).first()
 
                 if not user:
                     user = basic_info_form.save(commit=False)
-                    user.set_password(user.phone)  # Set phone number as password
+                    user.set_password(user.phone)
                     user.username = user.email
                     user.save()
 
@@ -1111,22 +1194,34 @@ def front_desk_booking(request):
                         setattr(profile, field, value)
                     profile.save()
 
-                choice = booking_choice_form.cleaned_data['choice']
-
+                # Initialize booking and reservation variables
                 booking = None
                 reservation = None
+
+                # Check for booking or reservation choice
+                choice = booking_choice_form.cleaned_data['choice']
 
                 if choice == 'booking':
                     if room_booking_form.is_valid():
                         booking = room_booking_form.save(commit=False)
                         booking.user = user
+
+                        # Handle coupon application
+                        if coupon_code:
+                            try:
+                                coupon = Coupon.objects.get(code=coupon_code)
+                                if coupon.is_valid_for_user(user):
+                                    booking.coupon = coupon
+                                    coupon.redeem_coupon(user)  # Redeem the coupon for the user
+                                else:
+                                    messages.error(request, 'Coupon is not valid for this user.')
+                            except Coupon.DoesNotExist:
+                                messages.error(request, 'Coupon code not found.')
+                        
                         booking.save()
 
-                        # Calculate and save total amount
-                        booking.save()
-
-                        room_booking_form.instance = booking 
-                        room_booking_form.save_m2m()
+                        # Recalculate the total after the coupon is applied
+                        booking_total_due = booking.get_total_due()
                     else:
                         print('Booking form errors:', room_booking_form.errors)
                 elif choice == 'reservation':
@@ -1135,25 +1230,27 @@ def front_desk_booking(request):
                         reservation.user = user
                         reservation.save()
 
+                # Process payment if the form is valid
                 if payment_form.is_valid():
                     payment = payment_form.save(commit=False)
-                    print('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',payment.amount)
                     payment.user = user
                     if booking:
                         payment.booking = booking
+                       # payment.amount = booking.get_total_due()  # Ensure coupon is applied in total
                     elif reservation:
-                        payment.booking = reservation 
-                    payment.save()
-                else:
-                   print('ssssssssssssssssffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',payment_form.amount)
+                        payment.booking = reservation
 
+                    payment.save()
+
+                # Redirect to the receipt page
                 return redirect('dashboard:receipt', booking_id=booking.booking_id if booking else reservation.id)
 
         else:
+            # Initialize forms for GET request
             basic_info_form = BasicUserInfoForm()
             profile_info_form = ProfileInfoForm()
             booking_choice_form = BookingChoiceForm()
-            room_booking_form = RoomBookingForm(room_type_id=room_type_id)  
+            room_booking_form = RoomBookingForm(room_type_id=room_type_id)
             room_reservation_form = RoomReservationForm()
             payment_form = PaymentForm(exclude_completed=hide_completed)
 
@@ -1166,8 +1263,6 @@ def front_desk_booking(request):
             'payment_form': payment_form,
             'active_attendance': active_attendance,
         })
-
-
 
 
 def front_desk_reservation(request):
@@ -1184,7 +1279,8 @@ def front_desk_reservation(request):
             email = basic_info_form.cleaned_data['email']
             phone = basic_info_form.cleaned_data['phone']
             
-            user = User.objects.filter(email=email).first() 
+            # Fetch or create user
+            user = User.objects.filter(email=email).first()
 
             if not user:
                 # If user doesn't exist, create a new one
@@ -1193,26 +1289,28 @@ def front_desk_reservation(request):
                 user.username = user.email  # Set email as the username
                 user.save()
 
+                # Create the profile for the user
                 profile, created = Profile.objects.get_or_create(user=user)
                 profile_form_data = profile_info_form.cleaned_data
                 for field, value in profile_form_data.items():
                     setattr(profile, field, value)
                 profile.save()
 
+            # Step 2: Handle booking or reservation based on the user's choice
             choice = booking_choice_form.cleaned_data['choice']
 
             booking = None
             reservation = None
 
-            # Step 2: Save booking or reservation once
             if choice == 'booking':
                 if room_booking_form.is_valid():
+                    # Create the booking instance
                     booking = room_booking_form.save(commit=False)
                     booking.user = user
-                    booking.save()
-                    room_booking_form.save_m2m()  # Save ManyToMany fields
+                    booking.save()  # Save the booking instance with ForeignKey to the room (no save_m2m needed)
             elif choice == 'reservation':
                 if room_reservation_form.is_valid():
+                    # Create the reservation instance
                     reservation = room_reservation_form.save(commit=False)
                     reservation.user = user
                     reservation.save()
@@ -1220,18 +1318,18 @@ def front_desk_reservation(request):
             # Step 3: Attach payment to booking or reservation
             if payment_form.is_valid():
                 payment = payment_form.save(commit=False)
-               
                 payment.user = user
                 if booking:
                     payment.booking = booking
                 elif reservation:
-                    payment.booking = reservation 
+                    payment.booking = reservation  # Link payment to reservation if applicable
                 payment.save()
-            
 
+            # Step 4: Redirect to receipt page with booking or reservation ID
             return redirect('dashboard:receipt', booking_id=booking.booking_id if booking else reservation.id)
+
     else:
-       
+        # Initialize forms if the request method is GET
         basic_info_form = BasicUserInfoForm()
         profile_info_form = ProfileInfoForm()
         booking_choice_form = BookingChoiceForm()
@@ -1239,6 +1337,7 @@ def front_desk_reservation(request):
         room_reservation_form = RoomReservationForm()
         payment_form = PaymentForm()
 
+    # Render the room reservation page with all the forms
     return render(request, 'front_desk/roomreserve.html', {
         'basic_info_form': basic_info_form,
         'profile_info_form': profile_info_form,
@@ -1249,91 +1348,27 @@ def front_desk_reservation(request):
     })
 
 
+
 def receipt_view(request, booking_id):
-    try:
-        booking = Booking.objects.get(booking_id=booking_id)
-    except Booking.DoesNotExist:
-        return redirect('dashboard:frontdesk_booking_list') 
+    # Get the booking object
+    booking = get_object_or_404(Booking, booking_id=booking_id)
+    
+    # Calculate total room charge based on the booking duration and room price
 
-    # Calculate room charges
-    total_room_charges = booking.get_room_charges()
-
-    # Calculate room service charges
-    total_service_charges = booking.get_service_charges()
-
-    # Calculate additional charges
-    total_additional_charges = booking.get_additional_charges()
-
-    # Total amount payable
-    total_amount_payable = booking.get_total_payable()
-
-    # Get latest payment details
-    payment = Payment.objects.filter(booking=booking).last()
-    amount_paid = payment.amount if payment else 0
-    payment_status = payment.status if payment else 'Unpaid'
-
-    # Remaining balance
-    if total_amount_payable > 0:
-        remaining_balance = total_amount_payable - amount_paid
-    else:
-        remaining_balance = 0.00
-
-    # Pass context to template
     context = {
-        'booking': booking,
-        'total_room_charges': total_room_charges,
-        'total_service_charges': total_service_charges,
-        'total_additional_charges': total_additional_charges,
-        'total_amount_payable': total_amount_payable,
-        'amount_paid': amount_paid,
-        'payment_status': payment_status,
-        'remaining_balance': remaining_balance,
+        'customer': booking.user,  # Customer who made the booking
+        'booking_date': booking.date_created,  # Date the booking was made
+        'checkin_date': booking.check_in_date,  # Check-in date of the booking
+        'checkout_date': booking.check_out_date,  # Check-out date of the booking
+        'total_room_charge': booking.get_room_charges(),  # Total room charge
+        'coupon': booking.coupon,  # Coupon if any applied
+        'coupon_type': booking.coupon.type if booking.coupon else None,  # Coupon type (if any)
+        'coupon_discount_value': booking.get_coupon_discount(),  # Coupon discount
+        'total_after_discount': booking.get_total_after_discount(),  # Total after discount
+        'initial_amount_paid': booking.get_initial_payment(),  # Amount paid by the customer
+        'balance_remaining': booking.get_balance_remaining(),  # Remaining balance
     }
-
-    return render(request, 'front_desk/booking/receipt.html', context)
-
-
-
-def re_issue_receipt_view(request, pk):
-    try:
-        booking = Booking.objects.get(pk=pk)
-    except Booking.DoesNotExist:
-        return redirect('error_page')  # Handle case where booking does not exist
-
-    # Calculate room charges
-    total_room_charges = booking.get_room_charges()
-
-    # Calculate room service charges
-    total_service_charges = booking.get_service_charges()
-
-    # Calculate additional charges
-    total_additional_charges = booking.get_additional_charges()
-
-    # Total amount payable
-    total_amount_payable = booking.get_total_payable()
-
-    # Get latest payment details
-    payment = Payment.objects.filter(booking=booking).last()
-    amount_paid = payment.amount if payment else 0
-    payment_status = payment.status if payment else 'Unpaid'
-
-    # Remaining balance
-    if total_amount_payable > 0:
-        remaining_balance = total_amount_payable - amount_paid
-    else:
-        remaining_balance = 0.00
-        
-    context = {
-        'booking': booking,
-        'total_room_charges': total_room_charges,
-        'total_service_charges': total_service_charges,
-        'total_additional_charges': total_additional_charges,
-        'total_amount_payable': total_amount_payable,
-        'amount_paid': amount_paid,
-        'payment_status': payment_status,
-        'remaining_balance': remaining_balance,
-    }
-
+    
     return render(request, 'front_desk/booking/receipt.html', context)
 
 
@@ -1346,6 +1381,7 @@ def frontdesk_add_room_service(request, pk):
         if add_room_service_form.is_valid():
             room_service_form = add_room_service_form.save(commit=False)
             room_service_form.booking = booking_instance
+            room_service_form.room = booking_instance.room
             room_service_form.save()
             
             messages.success(request,"Room service sucessfull added to booking")
@@ -1360,6 +1396,7 @@ def frontdesk_add_room_service(request, pk):
         
 
 def frontdesk_add_additional_charge(request, pk):
+
     booking_instance = Booking.objects.get(pk = pk)
     
     if request.method == "POST":
@@ -1381,6 +1418,7 @@ def frontdesk_add_additional_charge(request, pk):
 
 
 def frontdesk_apply_coupon_to_booking(request, pk):
+    
     booking = get_object_or_404(Booking, pk=pk)
 
     if request.method == 'POST':
@@ -1413,49 +1451,41 @@ def frontdesk_apply_coupon_to_booking(request, pk):
     return redirect('dashboard:checkout', pk=pk)
 
 
-def checkout_view(request, pk):
-    try:
-        booking = Booking.objects.get(pk=pk)
-    except Booking.DoesNotExist:
-        return redirect('error_page')  # Handle case where booking does not exist
 
-    # Calculate room charges, service charges, etc.
-    total_room_charges = booking.get_room_charges()
-    total_service_charges = booking.get_service_charges()
-    total_additional_charges = booking.get_additional_charges()
-    total_amount_payable = booking.get_total_payable()
 
-    # Apply coupon discount if available
-    discount_amount = booking.get_discount_amount()
-    total_after_discount = booking.get_total_payable_after_discount()
+def checkout_view(request, id):
+   
+        # Get the user and booking
+    booking = get_object_or_404(Booking, id=id)
 
-    # Get latest payment details
-    payment = Payment.objects.filter(booking=booking).last()
-    amount_paid = payment.amount if payment else 0
-    payment_status = payment.status if payment else 'Unpaid'
+    # Get the receipt summary
+    receipt_summary = booking.get_receipt_summary()
 
-    # Remaining balance
-    remaining_balance = total_after_discount -float( amount_paid)
-
+    # Prepare context for the template
     context = {
-        'booking': booking,
-        'total_room_charges': total_room_charges,
-        'total_service_charges': total_service_charges,
-        'total_additional_charges': total_additional_charges,
-        'total_amount_payable': total_amount_payable,
-        'discount_amount': discount_amount,
-        'total_after_discount': total_after_discount,
-        'amount_paid': amount_paid,
-        'payment_status': payment_status,
-        'remaining_balance': remaining_balance,
+        'booking':booking,
+        'booking_id': receipt_summary['booking_id'],
+        'user': receipt_summary['user'],
+        'booking_date': receipt_summary['booking_date'],
+        'checkin_date': receipt_summary['checkin_date'],
+        'checkout_date': receipt_summary['checkout_date'],
+        'num_days': receipt_summary['num_days'],
+        'room_charges': receipt_summary['room_charges'],
+        'additional_charges': receipt_summary['additional_charges'],
+        'additional_services':receipt_summary['additional_services'],
+        'coupon_applied': receipt_summary['coupon_applied'],
+        'sum_of_all_charges':receipt_summary['sum_of_all_charges'],
+        'coupon_discount': receipt_summary['coupon_discount'],
+        'initial_payment': receipt_summary['initial_payment'],
+        'final_charge': receipt_summary['final_charge'],
+        'amount_payable': receipt_summary['amount_payable'],
     }
 
     return render(request, 'front_desk/booking/checkout_details.html', context)
 
-
 def frontdesk_checkout_payment_view(request, pk):
     booking = get_object_or_404(Booking, pk=pk)
-    total_after_discount = booking.get_total_payable_after_discount()
+    total_after_discount = booking.amount_payable
 
     if request.method == 'POST':
         form = PaymentCheckoutForm(request.POST)
@@ -1463,26 +1493,24 @@ def frontdesk_checkout_payment_view(request, pk):
             # Get the existing payment record for the booking
             payment = Payment.objects.filter(booking=booking).first()
             if payment:
-                payment.amount = form.cleaned_data['amount']
-                payment.mode = form.cleaned_data['mode']
-              
+                # Only update the payment status
                 payment.status = form.cleaned_data['status']
                 
                 if payment.status == 'completed':
-                    payment.save()
-
-                    # Create or update PaymentCompletion record
+                    payment.save()  # Save only the updated status
+                    
+                    # Create or update PaymentCompletion record using form data
                     completion, created = PaymentCompletion.objects.get_or_create(
                         payment=payment,
                         defaults={
-                            'amount': payment.amount,
-                            'mode': payment.mode,
-                            'transaction_id': payment.transaction_id
+                            'amount': form.cleaned_data['amount'],  # Use form amount
+                            'mode': form.cleaned_data['mode'],      # Use form mode
+                            'transaction_id': payment.transaction_id  # Use payment's transaction_id
                         }
                     )
                     if not created:
-                        completion.amount = payment.amount
-                        completion.mode = payment.mode
+                        completion.amount = form.cleaned_data['amount']  # Update completion with form data
+                        completion.mode = form.cleaned_data['mode']
                         completion.transaction_id = payment.transaction_id
                         completion.save()
 
@@ -1492,17 +1520,17 @@ def frontdesk_checkout_payment_view(request, pk):
                     booking.checked_out = True
                     booking.save()
 
-                    for room in booking.room.all():
-                        room.is_available = True
-                        room.save()
+                    if booking.room:
+                        booking.room.is_available = True
+                        booking.room.save()
 
                     return redirect('dashboard:frontdesk_booking_list')
                 else:
-                    messages.error(request, 'Payment must be completed to proceed.')
-                    return redirect('dashboard:checkout', pk=pk)
+                    messages.error(request, 'Payment must be marked as completed to  effectively checkout.')
+                    return redirect('dashboard:checkout', id=pk)
             else:
                 messages.error(request, 'No payment record found for this booking.')
-                return redirect('dashboard:checkout', pk=pk)
+                return redirect('dashboard:checkout', id=pk)
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
@@ -1538,10 +1566,8 @@ def pos_user_dashboard(request):
         active_schedule = StaffSchedules.objects.filter(employee=employee, active=True).first()
 
         if active_attendance and active_schedule:
-            # Get the current date and time
-            # current_date = timezone.now().date()
-            # current_time = timezone.now().time()
-                        # Construct the start and end datetime of the active schedule
+
+            # Construct the start and end datetime of the active schedule
             schedule_start = timezone.make_aware(
                 datetime.combine(active_schedule.schedule_start_date, active_schedule.start_time)
             )

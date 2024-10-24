@@ -47,7 +47,7 @@
                   </a>
                 </li>
 
-                <li>
+                {% comment %} <li>
                   <a href="" aria-label="Transaction list">
                     <svg class="svg-stroke" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                       <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
@@ -56,7 +56,7 @@
                     </svg>
                     <span class="mx-3">Transaction</span>
                   </a>
-                </li>
+                </li> {% endcomment %}
                 <li>
                   <a href="#RoomMenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Users">
                     <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -129,7 +129,7 @@
                     <span class="mx-3">Inventory </span>
                   </a>
                   <ul class="collapse list-unstyled" id="ItemsManageMenu">
-                   
+
                     <li><a href="{% url 'dashboard:warehouse_setup' %}" aria-label=" warehouse">Warehouse </a></li>
                     <li><a href="{% url 'inventory:supplier_list' %}" aria-label="Items Unit List">Suppliers </a></li>
                     <li><a href="{% url 'inventory:category_list' %}" aria-label="Items Category">Item Categories</a></li>

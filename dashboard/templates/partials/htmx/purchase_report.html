@@ -6,65 +6,65 @@
             <div class="card-body">
 
                 {% if error_message %}
-                <div class="alert alert-danger">
-                    {{ error_message }}
-                </div>
-            {% else %}
-                {% if report_data %}
-                    <h4>Purchase Report ({{ start_date }} to {{ end_date }})</h4>
-                    <p>Total Purchase Value: {{ total_purchase_value }}</p>
-                    <p>Total Number of Purchases: {{ total_number_of_purchases }}</p>
-            
-                    <!-- Display the purchase report data -->
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Quantity</th>
-                                <th>Unit Price</th>
-                                <th>Total Cost</th>
-                                <th>Purchase Date</th>
-                                <th>Supplier</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in report_data %}
-                                <tr>
-                                    <td>{{ item.name }}</td>
-                                    <td>{{ item.description }}</td>
-                                    <td>{{ item.stock_quantity }}</td>
-                                    <td>{{ item.unit_price }}</td>
-                                    <td>{{ item.total_cost }}</td>
-                                    <td>{{ item.purchase_date }}</td>
-                                    <td>{{ item.supplier__name }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-            
-                    <h5>Supplier Payments Summary</h5>
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Supplier</th>
-                                <th>Total Paid</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for supplier in supplier_payments_summary %}
-                                <tr>
-                                    <td>{{ supplier.supplier__name }}</td>
-                                    <td>{{ supplier.total_paid }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="alert alert-danger">
+                        {{ error_message }}
+                    </div>
                 {% else %}
-                    <p>No data available for the selected criteria.</p>
+                    {% if report_data %}
+                        <h4>Purchase Report ({{ start_date }} to {{ end_date }})</h4>
+                        <p>Total Purchase Value: {{ total_purchase_value }}</p>
+                        <p>Total Number of Purchases: {{ total_number_of_purchases }}</p>
+
+                    <!-- Display the purchase report data -->
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price</th>
+                                    <th>Total Cost</th>
+                                    <th>Purchase Date</th>
+                                    <th>Supplier</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in report_data %}
+                                    <tr>
+                                        <td>{{ item.name }}</td>
+                                        <td>{{ item.description }}</td>
+                                        <td>{{ item.stock_quantity }}</td>
+                                        <td>{{ item.unit_price }}</td>
+                                        <td>{{ item.total_cost }}</td>
+                                        <td>{{ item.purchase_date }}</td>
+                                        <td>{{ item.supplier__name }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <h5>Supplier Payments Summary</h5>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Supplier</th>
+                                    <th>Total Paid</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for supplier in supplier_payments_summary %}
+                                    <tr>
+                                        <td>{{ supplier.supplier__name }}</td>
+                                        <td>{{ supplier.total_paid }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>No data available for the selected criteria.</p>
+                    {% endif %}
                 {% endif %}
-            {% endif %}
-            
+
             </div>
         </div>
     </div>

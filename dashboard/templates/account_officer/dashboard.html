@@ -201,37 +201,7 @@
                             </div>
                         </div>
                     </div>
-                    {% if department_data %}
-                        {% for department in department_data %}
-                            <div class="col-6 col-md-6 col-lg-4">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h6 class="card-title mb-0"> {{ department.department_name  }} -> Last Session  </h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <h2>Orders:  {{ total_orders_recent_session }}</h2>
-                                        <h2>Income: &#8358   {{ department.total_payments_recent_session }} </h2>
-                                        <span class="badge bg-success"> </span>
-                                        <span class="text-muted">Total Orders from last ended session</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-6 col-md-6 col-lg-4">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h6 class="card-title mb-0"> {{ department.department_name  }} -> Active Session  </h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <h2>Orders:  {{ department.total_orders_active_session }}</h2>
-                                        <h2>Income:    &#8358 {{  department.total_payments_active_session }} </h2>
-                                        <span class="badge bg-success"> </span>
-                                        <span class="text-muted">Total Orders current session</span>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
+                
 
                 </div>
 
@@ -258,91 +228,93 @@
                     </div> {% endcomment %}
 
 
-{% comment %} 
-                    <div class="col-sm-12">
+
+                    
+                    <div class="col-sm-12 col-md-6 col-lg-6">
                         <div class="card">
                             <div class="card-header">
-                                <h6 class="card-title">Today Booking List</h6>
+                                <h6 class="card-title">Departmental Last Active Session</h6>
                             </div>
                             <div class="card-body">
-                                <table class="table dataTable align-middle table-hover table-body" style="width: 100%;">
+                                <table class="table dataTable align-middle table-hover table-body table-responsive" style="width: 100%;">
                                     <thead>
                                         <tr>
-                                            <th>Name</th>
-                                            <th>Room Type</th>
-                                            <th>Check In</th>
-                                            <th>Check Out</th>
-                                            <th>Paid Amount</th>
-                                            <th>Due Amount</th>
-                                            <th>Payment Status</th>
+                                            <th>Department </th>
+                                            <th>Last Session</th>
+                                            <th>order</th>
+                                            <th>Income</th>
+                                            
+                                            
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        {% if department_data %}
+                        {% for department in department_data %}
+
+                        {% if department.department_name == "POS"  %}
                                         <tr>
                                             <td>
-                                                Frank Baker
+                                                {{ department.department_name }}
                                             </td>
-                                            <td>Single</td>
-                                            <td>12/03/2024</td>
-                                            <td>13/03/2024</td>
-                                            <td>0.00</td>
-                                            <td>$230</td>
-                                            <td><span class="badge text-bg-warning">Pending</span></td>
+                                            <td>Ended</td>
+                                            <td> {{ total_orders_recent_session }} </td>
+                                            <td> &#8358 {{ department.total_payments_recent_session }}</td>
+                                           
+                                     
                                         </tr>
-                                        <tr>
-                                            <td>
-                                                Rya Randall
-                                            </td>
-                                            <td>Deluxe</td>
-                                            <td>12/03/2024</td>
-                                            <td>24/03/2024</td>
-                                            <td>0.00</td>
-                                            <td>$430</td>
-                                            <td><span class="badge text-bg-warning">Pending</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                Phil Glover
-                                            </td>
-                                            <td>Studio</td>
-                                            <td>12/03/2024</td>
-                                            <td>21/03/2024</td>
-                                            <td>0.00</td>
-                                            <td>$4450</td>
-                                            <td><span class="badge text-bg-warning">Pending</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                Victor Rampling
-                                            </td>
-                                            <td>Junior Suite</td>
-                                            <td>12/03/2024</td>
-                                            <td>15/03/2024</td>
-                                            <td>0.00</td>
-                                            <td>$530</td>
-                                            <td><span class="badge text-bg-warning">Pending</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                Sally Graham
-                                            </td>
-                                            <td>Queen</td>
-                                            <td>12/03/2024</td>
-                                            <td>17/03/2024</td>
-                                            <td>$1550</td>
-                                            <td>0.00</td>
-                                            <td><span class="badge text-bg-success">Success</span></td>
-                                        </tr>
+                                        {% endif %}
+                                       {% endfor %}
+                                       {% endif %}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                    </div> {% endcomment %}
+                    </div>
+
+                     
+                    <div class="col-sm-12 col-md-6 col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="card-title">Departmental current & Active Session</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table dataTable align-middle table-hover table-body table-responsive" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>Department </th>
+                                            <th>Last Session</th>
+                                            <th>order</th>
+                                            <th>Income</th>
+                                            
+                                            
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if department_data %}
+                        {% for department in department_data %}
+                        {% if department.department_name == "POS"  %}
+                                        <tr>
+                                            <td>
+                                                {{ department.department_name  }}
+                                            </td>
+                                            <td >Active</td>
+                                            <td>  {{ department.total_orders_active_session }} </td>
+                                            <td> &#8358 {{  department.total_payments_active_session }} </td>
+                                           
+                                     
+                                        </tr>
+                                        {% endif %}
+                                       {% endfor %}
+                                       {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
 
 
 
                 </div>
-
             </div>
                    {% comment %} body content ends {% endcomment %}
 

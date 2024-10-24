@@ -28,14 +28,14 @@
 
       {% if active_attendance and active_attendance.active %}
         <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
-        
+
           <div>
-            
+
             {% if unreceived_stock %}
-            <p class="text-center text-light bg-danger p-3">
-              You have Unreceived Stocks Assigned to you from Store.
-              <a href="{% url 'dashboard:received_stock' %}" class="btn btn-dark">Receive stock</a>
-            </p>
+              <p class="text-center text-light bg-danger p-3">
+                You have Unreceived Stocks Assigned to you from Store.
+                <a href="{% url 'dashboard:received_stock' %}" class="btn btn-dark">Receive stock</a>
+              </p>
             {% endif %}
 
             {{ request.user.employee_profile.pos_user }}
@@ -44,7 +44,7 @@
               <a href="{% url 'hrm:check_out' %}" class="btn btn-danger btn-sm">Sign Out</a>
             </p>
 
-           
+
 
           </div>
 
@@ -59,8 +59,8 @@
                 </div>
                 <div class="card-body">
                   <h6> Order : {{ order_count }} <br>
-                     Order-Items : {{total_order_quantity}}
-                    </h6>
+                    Order-Items : {{total_order_quantity}}
+                  </h6>
                   <p> <small>Orders processed by you today </small></p>
                 </div>
               </div>
@@ -85,7 +85,7 @@
                   <h2>{{total_quantity_received}}</h2>
                   <p> <small>Stock you received from store  </small></p>
                 </div>
-               
+
               </div>
             </div>
             <div class="col-md-6 col-lg-3">
@@ -97,7 +97,7 @@
                   <h2>{{total_stock_remaining}}</h2>
 
                   <p> <small>Products Remaining </small></p>
-                 
+
                 </div>
               </div>
             </div>
@@ -132,10 +132,10 @@
                         {% for product in products %}
                           <tr class="table-bordered ">
                             <td>{{ product.category__name }}</td>
-                           
+
                             <td>{{ product.name }}</td>
                             <td>{{ product.price }}</td>
-                            
+
                             <td>{{ product.total_quantity_left }}</td>
                           </tr>
                         {% endfor %}
@@ -154,7 +154,7 @@
               <div class="box card">
                 <h6 class=" text-3xl card-title font-bold px-4 pt-4 ">
 
-                 Products Received from store to  {{pos_user.department_location.name }}
+                  Products Received from store to  {{pos_user.department_location.name }}
                 </h6>
                 <div class="w-[100%] flex flex-col items-center justify-center card-header">
 

@@ -184,7 +184,7 @@ class InventoryMovement(models.Model):
             warehouse_stock.add_stock(self.quantity)  # Add to warehouse stock
             destination = "Warehouse"
 
-            # Track price change if the item price differs from the previous price
+            # Track price change if the item price differs from the previous pricev
             self.track_price_change(warehouse_stock)
 
         elif self.movement_type == 'OUT':
@@ -325,7 +325,6 @@ class StockLog(models.Model):
             destination=destination,
             performed_by=performed_by
         )
-
 
 
 class StockReceipt(models.Model):

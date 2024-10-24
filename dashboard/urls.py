@@ -64,11 +64,11 @@ urlpatterns = [
     path('frontdesk/booking/', views.front_desk_booking, name='book_room'),
     path('frontdesk/reservation/', views.front_desk_reservation, name='reserve_room'),
     path('font_desk/receipt/<str:booking_id>/', views.receipt_view, name='receipt'),
-    path('font_desk/re_receipt/<int:pk>/', views.re_issue_receipt_view, name='re_receipt'),
+    # path('font_desk/re_receipt/<int:pk>/', views.re_issue_receipt_view, name='re_receipt'),
     path('frontdesk/add_booking_service/<int:pk>/', views.frontdesk_add_room_service, name="frontdesk_add_booking_service"),
     path('frontdesk/frontdesk_add_additional_charge/<int:pk>/', views.frontdesk_add_additional_charge, name="frontdesk_add_additional_charge"),
     path('frontdesk/checkout_list/', views.frontdesk_checkout_list, name='checkout_list'),
-    path('frontdesk/checkout/<int:pk>/', views.checkout_view, name='checkout'),
+    path('frontdesk/checkout/<int:id>/', views.checkout_view, name='checkout'),
     path('frontdesk/apply-coupon/<int:pk>/', views.frontdesk_apply_coupon_to_booking, name='apply_coupon'),
     path('frontdesk/checkout/payment/<int:pk>/', views.frontdesk_checkout_payment_view, name='checkout_payment'),
     path('frontdesk/checkout/extend_booking/<int:pk>/', views.frontdesk_update_checkout_date, name='frontdesk_update_checkout_date'),
@@ -76,8 +76,7 @@ urlpatterns = [
     #pos officer
     path('pos/order_list/', views.pos_orders, name='pos_orders'),
     path('pos/received_stock/', views.user_update_received_stock, name='received_stock'),
-    path('pos/mark_product_as_received//<int:pk>/', views.mark_product_as_received, name="mark_as_received")
-    
+    path('pos/mark_product_as_received/<int:pk>/', views.mark_product_as_received, name="mark_as_received")
 
    
 ]

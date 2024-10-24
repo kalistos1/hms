@@ -1,0 +1,106 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+{% block title %} Frontdesk | Booking List{% endblock %}
+
+{% block content %}
+    <main class="container-fluid px-0">
+    {% comment %} sidebar here {% endcomment %}
+        {% if request.user.is_admin %}
+            {% include '../partials/menubars/admin_sidebar.html' %}
+
+        {% elif request.user.is_supervisor %}
+            {% include '../partials/menubars/supervisor_sidebar.html' %}
+
+        {% elif request.user.is_account_officer %}
+            {% include '../partials/menubars/accounting_sidebar.html' %}
+
+        {% else %}
+            {% include '../partials/menubars/frontdesk_sidebar.html' %}
+
+        {% endif %}
+
+    {% comment %} sidebar ends {% endcomment %}
+
+        <div class="content">
+
+
+   {% comment %} top header starts {% endcomment %}
+            {% include '../partials/top_header.html' %}
+   {% comment %} top header ends {% endcomment %}
+
+
+
+   {% comment %} body content starts {% endcomment %}
+
+           
+
+                <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
+                    {% include '../partials/_messages.html' %}
+                    <div class="row g-3">
+                        <div class="col-sm-12">
+                           
+                            <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                <h3 class="fw-bold mb-0">Warehouse stock list</h3>
+
+                                <div class="col-auto d-flex w-sm-100 mt-3">
+                                    <button  data-bs-toggle="offcanvas" data-bs-target="#add-additional-charge" aria-controls="add-additional-charge" class="btn btn-warning btn-set-task w-sm-100 me-4">Move Stock</button>
+                                 {% comment %} <a href="{% url 'dashboard:reserve_room' %}" class="btn btn-warning btn-set-task w-sm-100">Room Reservation</a> {% endcomment %}
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="card">
+                                <div class="card-body">
+
+
+                                    <table class="table dataTable align-middle table-hover table-body" style="width: 100%;">
+                                        <thead>
+                                            <tr>
+                                                <th>Item Name</th>
+                                                <th>Category</th>
+                                                <th>Quantity</th>
+                                                <th>Stock Type</th>
+                                                <th> Unit Price </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if stocks %}
+                                            {% for stock in stocks %}
+                                            <tr>
+                                                <td>{{ stock.item.name }}</td>
+                                                <td>
+                                                    {% if stock.item.category %}
+                                                        {{ stock.item.category.name }}
+                                                    {% else %}
+                                                        No Category
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ stock.quantity }}</td>
+                                                <td>{{ stock.item.get_stock_type_display }}</td>
+                                                <td> &#8358 {{ stock.unit_purchase_price }} </td>
+                                            </tr>
+                                            {% endfor %}
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- Row End -->
+
+                </div>
+   {% comment %} body content ends {% endcomment %}
+
+                {% include '../partials/htmx/move_stock.html' %}
+
+          
+
+        </div>
+
+
+
+
+    </main>
+{% endblock %}

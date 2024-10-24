@@ -269,17 +269,17 @@ def amenity_item_delete(request, pk):
 def move_product(request):
     if request.method  == "POST":
         form =  InventoryMovementForm(request.POST)
-        warehouse = Warehouse.object.first()
-        user = request.user.employee
+        warehouse = Warehouse.objects.first()
+        employee = get_object_or_404(Employee, user=request.user)
 
         if form.is_valid:
            move_data = form.save(commit=False)
            move_data.warehouse = warehouse
-           move_data.performed_by = user
+           move_data.performed_by = employee
            move_data.save()
 
            messages.success(request, 'item Moved Succesful')
-           return redirect('dashboard:warehouse_info')
+           return redirect('inventory:warehouse_stock')
         else:
             messages.error(request,'Something happened, item was not moved')
             return redirect('dashboard:warehouse_info')
@@ -288,13 +288,7 @@ def move_product(request):
         return redirect('dashboard:warehouse_info')
 
 
-
-
-
-
-
-
-
+    
 
 
 # Equipment Usage Log Views

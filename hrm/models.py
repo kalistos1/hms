@@ -83,27 +83,6 @@ class Employee(models.Model):
         return f"{self.user.get_full_name() if self.user else 'No User'}"
     
 
-# class EmployeeRole(models.Model):
-
-#     WorkerRoles = (
-#         ('front_desk', 'front_desk'), 
-#         ('pos_staff', 'pos_staff'), 
-#         ('hr_staff', 'hr_ataff'), 
-#         ('manager', 'manager'),
-#         ('waiter', 'waiter'),
-#         ('supervisor', 'supervisor'),
-#         ('potter', 'potter'),
-#         ('accountant', 'accountant'),
-#         ('store_keeper', 'store_keeper'),
-#         ('security', 'security'), 
-#     )
-#     employee = models.OneToOneField(Employee, on_delete=models.CASCADE, related_name='employee_profile', null=True, blank=True)
-#     department_location = models.ForeignKey(DepartmentLocation, on_delete=models.CASCADE, related_name='employees', null=True, blank=True)
-#     role = models.CharField(max_length=50, choices=WorkerRoles)
-#     date_created = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#          return f"{self.employee.user.get_full_name()} -> {self.role}"
 
 
 class Attendance(models.Model):

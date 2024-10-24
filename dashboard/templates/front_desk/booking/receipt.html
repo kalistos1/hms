@@ -8,123 +8,91 @@
     <main class="container-fluid px-0">
         {% if request.user.is_admin %}
             {% include '../../partials/menubars/admin_sidebar.html' %}
-
         {% elif request.user.is_supervisor %}
             {% include '../../partials/menubars/supervisor_sidebar.html' %}
-
         {% elif request.user.is_account_officer %}
             {% include '../../partials/menubars/accounting_sidebar.html' %}
-
         {% else %}
             {% include '../../partials/menubars/frontdesk_sidebar.html' %}
-
         {% endif %}
 
         <div class="content">
             {% include '../../partials/top_header.html' %}
 
-            <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
-                <div class="row justify-content-center g-3">
+            <div class="px-xl-2 px-lg-1 px-1 py-2 page-body mt-3">
+                <div class="row justify-content-center g-1">
                     <div class="col-sm-12">
                         <div class="d-flex align-items-center justify-content-between flex-wrap">
-                            <h3 class="fw-bold mb-0 p-4">Room Booking/Reservation Receipt</h3>
+                            <h3 class="fw-bold mb-0 p-2" style="font-size: 14px;">Room Booking/Reservation Receipt</h3>
                         </div>
                     </div>
                     <div class="col-sm-12">
                         <div class="card" id="printable">
-                            <div class="card-body">
+                            <div class="card-body" style="font-size: 12px;">
                                 <div class="container">
-                                    <h1>Receipt</h1>
-                                    <div class="col-md-12 col-lg-8">
+                                    <h1 style="font-size: 16px;">Receipt</h1>
+                                    <div class="col-md-12">
                                         <div class="card">
                                             <div class="card-header">
-                                                <h6 class="card-title">Billing Details {{ prices }}</h6>
+                                                <h6 class="card-title">Billing Details</h6>
                                             </div>
                                             <div class="card-body">
                                                 <div class="table-responsive">
-                                                    <table class="table table-sm table-bordered mb-0">
+                                                    <table class="table table-sm table-bordered mb-0" style="font-size: 12px;">
                                                         <tbody>
                                                             <tr>
-                                                                <th scope="row">Booking ID: </th>
+                                                                <th scope="row">Booking:</th>
                                                                 <td>{{ booking.booking_id }}</td>
-                                                                <td></td>
                                                             </tr>
                                                             <tr>
-                                                                <th scope="row">Customer</th>
-                                                                <td>{{ booking.user.username }}</td>
-                                                                <td></td>
+                                                                <th scope="row">Customer:</th>
+                                                                <td>{{ customer.first_name }} {{customer.last_name}}</td>
                                                             </tr>
                                                             <tr>
-                                                                <th scope="row">Booking Date</th>
-                                                                <td>{{ booking.date }}</td>
-                                                                <td></td>
+                                                                <th scope="row">Booking Date:</th>
+                                                                <td>{{ booking_date }}</td>
                                                             </tr>
                                                             <tr>
-                                                                <th scope="row">Check-in Date</th>
-                                                                <td>{{ booking.check_in_date }}</td>
-                                                                <td></td>
+                                                                <th scope="row">Check-in Date:</th>
+                                                                <td>{{ checkin_date }}</td>
                                                             </tr>
                                                             <tr>
-                                                                <th scope="row">Check-out Date </th>
-                                                                <td>{{ booking.check_out_date }}</td>
-                                                                <td></td>
+                                                                <th scope="row">Check-out Date:</th>
+                                                                <td>{{ checkout_date }}</td>
                                                             </tr>
+
                                                             <tr>
-                                                                <th scope="row">Occupants</th>
-                                                                <td>Adults ({{ booking.num_adults }}) // Children ({{ booking.num_children }})</td>
-                                                                <td></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <th scope="row">Room Charges (({{total_room_charges}}))</th>
+                                                                <th scope="row">Room Charges:</th>
                                                                 <td>
-                                                                    <ul>
-                                                                        {% for room in booking.room.all %}
-                                                                            <li>{{ room.room_type.type }} - Room {{ room.room_number }}:
-                                                                                {{ room.price }} x {{ booking.get_duration }} days = {{ room.price|multiply:booking.get_duration }}</li>
-                                                                        {% endfor %}
-                                                                    </ul>
+                                                                    &#8358 {{total_room_charge}}
                                                                 </td>
-                                                                <td></td>
                                                             </tr>
+
+
                                                             <tr>
-                                                                <th scope="row">Additional Charges</th>
-                                                                <td>
-                                                                    {% for charge in booking.additional_charges.all %}
-                                                                        <li>{{ charge.description }}:&#8358  {{ charge.amount }}</li>
-                                                                    {% endfor %}
-                                                                </td>
-                                                                <td>Total: &#8358  {{ total_additional_charges }}</td>
+                                                                <th scope="row">Coupon Applied:</th>
+                                                                {% if coupon %}
+                                                                    <td>
+
+                                                                        <p class="m-0 p-0">Coupon Code: {{ coupon.code }}</p>
+                                                                        <p class="m-0 p-0">Discount Value:  &#8358 {{ coupon_discount_value }}</p>
+                                                                        <p class="m-0 p-0">Total After Discount:   &#8358 {{ total_after_discount }}</p>
+
+                                                                    </td>
+                                                                {% else %}
+                                                                    <td>No coupon applied.</td>
+                                                                {% endif %}
+
                                                             </tr>
-                                                            <tr>
-                                                                <th scope="row">Service Charges</th>
-                                                                <td>
-                                                                    <ul>
-                                                                        {% for service in booking.roomservice_set.all %}
-                                                                            <li>{{ service.type }}: {{ service.price }}</li>
-                                                                        {% endfor %}
-                                                                    </ul>
-                                                                </td>
-                                                                <td>Total: &#8358  {{ total_service_charges }}</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <th scope="row">Total Amount Payable:</th>
-                                                                <td><span class="badge bg-primary"> &#8358  {{ total_amount_payable }}</span></td>
-                                                                <td></td>
-                                                            </tr>
+
                                                             <tr>
                                                                 <th scope="row">Amount Paid:</th>
-                                                                <td><span class="badge bg-success">&#8358 {{ amount_paid }}</span></td>
-                                                                <td></td>
+                                                                <td>&#8358 {{ initial_amount_paid }}</td>
                                                             </tr>
+
                                                             <tr>
-                                                                <th scope="row">Payment Status:</th>
-                                                                <td><span class="badge bg-success">{{ payment_status }}</span></td>
-                                                                <td></td>
-                                                            </tr>
-                                                            <tr class="table-danger bg-info">
-                                                                <th scope="row">Remaining Balance:</th>
-                                                                <td><span class="badge bg-danger">&#8358 {{ remaining_balance }}</span></td>
-                                                                <td></td>
+                                                                <th scope="row">Balance:</th>
+                                                                <td>&#8358 {{ balance_remaining }}</td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -139,8 +107,8 @@
                 </div><!-- Row End -->
 
                 <!-- Print Button -->
-                <div class="text-center mt-4">
-                    <button onclick="printDiv('printable')" class="btn btn-primary">Print Receipt</button>
+                <div class="text-center mt-2">
+                    <button onclick="printDiv('printable')" class="btn btn-primary btn-sm">Print Receipt</button>
                 </div>
             </div>
         </div>
@@ -149,18 +117,18 @@
     <script>
         function printDiv(divId) {
             var divContents = document.getElementById(divId).innerHTML;
-            var printWindow = window.open('', '', 'height=800,width=800');
+            var printWindow = window.open('', '', 'height=500,width=300');
 
-            // Basic styles
+            // Add print-specific styles
             printWindow.document.write('<html><head><title>Print</title>');
             printWindow.document.write('<style>');
             printWindow.document.write('@media print {');
-            printWindow.document.write('body { background-color: #333; color: #fff; margin: 0; padding: 0; }');
-            printWindow.document.write('#printable { background-color: #333; color: #fff; padding: 20px; }');
-            printWindow.document.write('table { width: 100%; border-collapse: collapse; margin-top: 20px; }');
-            printWindow.document.write('th, td { border: 1px solid #fff; padding: 10px; text-align: left; }');
-            printWindow.document.write('tr:nth-child(even) { background-color: #444; }');
-            printWindow.document.write('th { background-color: #555; color: #fff; }');
+            printWindow.document.write('@page { size: 58mm auto; margin: 0; }'); /* Set page size for POS printer */
+            printWindow.document.write('body { font-size: 10px; margin: 0; padding: 0; }');
+            printWindow.document.write('#printable { width: 100%; max-width: 58mm; }');
+            printWindow.document.write('table { width: 100%; border-collapse: collapse; margin-top: 10px; }');
+            printWindow.document.write('th, td { border: 1px solid #000; padding: 5px; text-align: left; font-size: 10px; }');
+            printWindow.document.write('tr:nth-child(even) { background-color: #f2f2f2; }'); /* Optional for alternating row colors */
             printWindow.document.write('}'); // Close @media print
             printWindow.document.write('</style>');
             printWindow.document.write('</head><body>');

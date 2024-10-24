@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from dashboard.views import  warehouse_stock
 
 
 app_name ="inventory"
@@ -62,4 +63,5 @@ urlpatterns = [
     path('checklists/<int:pk>/delete/', views.inspection_checklist_delete, name='inspection_checklist_delete'),
     #inventory
     path('move_product/', views.move_product, name='move_product'),
+    path('warehouse/stocks/', warehouse_stock, name='warehouse_stock'),
 ]

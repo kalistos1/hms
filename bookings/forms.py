@@ -75,29 +75,6 @@ class BookingChoiceForm(forms.Form):
         
             self.fields['choice'].widget.attrs.update({})
 
-
-# class RoomBookingForm(forms.ModelForm):
-    
-#     class Meta:
-#         model = Booking
-#         fields = ['room_type','room', 'check_in_date', 'check_out_date', 'num_adults', 'num_children']
-        # widgets = {
-        #     'check_in_date': DateInput(attrs={'class': 'form-control', 'placeholder': 'Check-in Date'}),
-        #     'check_out_date': DateInput(attrs={'class': 'form-control', 'placeholder': 'Check-out Date'}),
-        # }
-
-    # def __init__(self, *args, **kwargs):
-    #     user = kwargs.pop('user', None)
-    #     super(RoomBookingForm, self).__init__(*args, **kwargs)
-        
-    #     # Update widget attributes for form fields
-    #     self.fields['room'].widget.attrs.update({'class': 'form-control'})
-    #     self.fields['room'].queryset = Room.objects.filter(is_available=True)
-    #     self.fields['room_type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Type'})
-    #     self.fields['num_adults'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Adults'})
-    #     self.fields['num_children'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Children'})
-       
-   
 class RoomBookingForm(forms.ModelForm):
     class Meta:
         model = Booking
@@ -111,19 +88,19 @@ class RoomBookingForm(forms.ModelForm):
         queryset=RoomType.objects.all(),
         widget=forms.Select(attrs={
             'hx-get': '/dashboard/get-available-rooms/',  # HTMX will make a GET request to this URL
-            'hx-target': '#room-select',  # This is where the response will be placed
-            'hx-trigger': 'change',  # Trigger the request on selection change
+            'hx-target': '#room-select',  # Response will update the room select dropdown
+            'hx-trigger': 'change',
             'class': 'form-control',
         })
     )
 
-    room = forms.ModelMultipleChoiceField(
+    room = forms.ModelChoiceField(
         queryset=Room.objects.none(),  # Initially empty
-        widget=forms.SelectMultiple(attrs={
+        widget=forms.Select(attrs={
             'id': 'room-select',
             'class': 'form-control',
-            'hx-get': '/dashboard/get-room-price/',  # Fetch the price of selected room
-            'hx-target': '#payment-amount',  # Response will update the amount field
+            'hx-get': '/dashboard/get-room-price/',  # Fetch the price of the selected room
+            'hx-target': '#payment-amount',  # Response will update the payment field
             'hx-trigger': 'change',
             'hx-swap': 'outerHTML',
         })
@@ -134,13 +111,13 @@ class RoomBookingForm(forms.ModelForm):
         super(RoomBookingForm, self).__init__(*args, **kwargs)
         
         if room_type_id:
-            # Update the queryset for the room field based on the selected room_type
+            # Populate the rooms for the selected room type
             self.fields['room'].queryset = Room.objects.filter(room_type_id=room_type_id, is_available=True)
         
+        # Add CSS classes to fields
         self.fields['num_adults'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Adults'})
         self.fields['num_children'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Children'})
 
-   
 
 # class PaymentForm(forms.ModelForm):
 #     amount = forms.DecimalField(
@@ -219,11 +196,11 @@ class RoomReservationForm(forms.ModelForm):
 class RoomServiceForm(forms.ModelForm):
     class Meta:
         model = RoomServices
-        fields = ['room', 'service_type','price']
+        fields = [ 'service_type','price']
         
     def __init__(self, *args, **kwargs):
         super(RoomServiceForm, self).__init__(*args, **kwargs)
-        self.fields['room'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Room'})
+       
         self.fields['service_type'].widget.attrs.update({ 'class': 'form-control', 'placeholder': 'Service Type'})
         self.fields['price'].widget.attrs.update({ 'class': 'form-control', 'placeholder': ' Price'})
         

@@ -19,7 +19,7 @@ def create_or_update_payment_record(sender, instance, created, **kwargs):
                 'payment_date': instance.date,
                 'status': 'uncompleted',
                 'source': 'booking',
-                'description': f"Uncompleted Booking Payment ID: {instance.transaction_id}",
+                'description': f" Booking Payment ID: {instance.transaction_id}",
             }
         )
 
@@ -42,6 +42,7 @@ def mark_payment_as_completed(sender, instance, **kwargs):
         # Update the status to 'completed' and add the completed amount
         payment_record.amount += instance.amount  # Add the completed amount to the total
         payment_record.status = 'completed'
+      
         payment_record.save()
     else:
         # If no record exists, create a new one for completed payment
@@ -51,7 +52,7 @@ def mark_payment_as_completed(sender, instance, **kwargs):
             status='completed',
             source='booking',
             booking_payment=instance.payment,
-            description=f"Completed Booking Payment ID: {instance.payment.transaction_id}"
+            description=f"Booking Payment ID: {instance.payment.transaction_id}"
         )
 
 # Handle POS Payment creation

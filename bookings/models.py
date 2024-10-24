@@ -15,6 +15,8 @@ from taggit.managers import TaggableManager
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from inventory.models import Amenity, Equipment, Item, Warehouse,InventoryMovement
+from django.db.models import Sum
+from decimal import Decimal
 
 
 
@@ -177,7 +179,10 @@ class Room(models.Model):
     is_available = models.BooleanField(default=True)
     rid = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
     date = models.DateTimeField(auto_now_add=True)
-  
+
+    def __str__(self):
+        return f"{self.room_type.type} - Room {self.room_number}"
+
 
     def __str__(self):
         return f"{self.room_type.type} - Room {self.room_number}"
@@ -300,6 +305,7 @@ class Payment(models.Model):
     ]
     PAYMENT_MODE_CHOICES = [
         ('cash', 'Cash'),
+        ('transfer', 'Transfer'),
         ('credit_card', 'Credit Card'),
         ('paypal', 'PayPal'),
     ]
@@ -313,12 +319,34 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment {self.transaction_id} - {self.status}"
+    
 
-    def get_total_due(self):
-        total_booking = self.booking.calculate_total()
-        total_paid = self.booking.payments.filter(status='advance').aggregate(total=models.Sum('amount'))['total'] or 0
-        return total_booking - total_paid
-        
+
+class Payment(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'pending'),
+        ('advance', 'advance'),
+        ('completed', 'completed'),
+        ('failed', 'Failed'),
+        ('refunded', 'refunded'),
+    ]
+    PAYMENT_MODE_CHOICES = [
+        ('cash', 'Cash'),
+        ('credit_card', 'Credit Card'),
+        ('paypal', 'PayPal'),
+    ]
+    
+    booking = models.ForeignKey('Booking', related_name='payments', on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    mode = models.CharField(max_length=20, choices=PAYMENT_MODE_CHOICES, default='cash')
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    date = models.DateTimeField(auto_now_add=True)
+    transaction_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
+
+    def __str__(self):
+        return f"Payment {self.transaction_id} - {self.status}"
+    
+
     def are_rooms_available(self, rooms, check_in_date, check_out_date):
         """
         Check if all the specified rooms are available for the selected date range
@@ -343,9 +371,10 @@ class Payment(models.Model):
                 
         return True, None
     
+        
     def save(self, *args, **kwargs):
         # Update total room charges and amount when processing payment
-        if self.status == 'advance' or self.status == 'completed':
+        if self.status in ['advance', 'completed']:
             self.booking.calculate_total()  # Ensure the total room charges are updated
 
             # Update room availability (like before)
@@ -357,8 +386,8 @@ class Payment(models.Model):
 
         super(Payment, self).save(*args, **kwargs)
 
+        
 class PaymentCompletion(models.Model):
-
     PAYMENT_MODE_CHOICES = [
         ('cash', 'Cash'),
         ('credit_card', 'Credit Card'),
@@ -375,40 +404,11 @@ class PaymentCompletion(models.Model):
         return f"Completion for Payment {self.payment.transaction_id} - {self.transaction_id}"
 
 
-class Refund(models.Model):
-    REFUND_STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('processed', 'Processed'),
-        ('failed', 'Failed'),
-    ]
-    
-    payment = models.ForeignKey(Payment, related_name='refunds', on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    reason = models.CharField(max_length=255, null=True, blank=True)
-    status = models.CharField(max_length=20, choices=REFUND_STATUS_CHOICES, default='pending')
-    transaction_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
-    date = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Refund {self.transaction_id} - {self.status} - ${self.amount}"
-
-    def clean(self):
-        # Ensure that the refund amount does not exceed the payment amount
-        total_refunded = self.payment.refunds.aggregate(total=models.Sum('amount'))['total'] or 0
-        if self.amount > (self.payment.amount - total_refunded):
-            raise ValidationError("Refund amount exceeds the remaining payment balance.")
-
-    def save(self, *args, **kwargs):
-        # Call the clean method to validate before saving
-        self.clean()
-        super(Refund, self).save(*args, **kwargs)
-
-
 class Transaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     hotel = models.ForeignKey('Hotel', on_delete=models.SET_NULL, null=True)
     room_type = models.ForeignKey('RoomType', on_delete=models.SET_NULL, null=True)
-    room = models.ManyToManyField('Room')  # This can be used for both bookings and reservations
+    room = models.ForeignKey('Room', on_delete=models.CASCADE,null= True)  # This can be used for both bookings and reservations
     check_in_date = models.DateField()
     check_out_date = models.DateField()
     num_adults = models.PositiveIntegerField(default=1)
@@ -460,104 +460,88 @@ class Booking(Transaction):
     checked_in = models.BooleanField(default=False)
     checked_out = models.BooleanField(default=False)
     reservation = models.OneToOneField('Reservation', on_delete=models.SET_NULL, null=True, blank=True)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True, blank=True)  # ForeignKey instead of M2M
     date = models.DateTimeField(auto_now_add=True)
     coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"Booking {self.booking_id} by {self.user.username if self.user else 'Guest'}"
+    
 
-
-    def calculate_total(self):
-        """Calculate and update the total booking amount (room charges + additional charges)."""
-        total_room_charges = self.get_room_charges()  # Calculate room charges based on the stay duration
-        self.total_amount =  total_room_charges
-        self.save()  # Save the updated total amount
-  
-    def apply_coupon(self, coupon):
-        """Apply a valid coupon and calculate the final amount."""
-        if coupon and coupon.active and coupon.valid_from <= timezone.now().date() <= coupon.valid_to:
-            print(f"Applying coupon: {coupon.code} with discount type: {coupon.type} and discount: {coupon.discount}")
-            if coupon.type == 'Percentage':
-                discount_amount = (self.total_amount * coupon.discount) / 100
-               
-            else:  # Fixed amount discount
-                discount_amount = coupon.discount
-
-            self.total_amount -= min(discount_amount, self.total_amount)  # Ensure discount doesn't exceed total
-            self.coupon = coupon
-            self.save()
-
-
-    def get_discount_amount(self):
-        """Calculate the discount amount based on the coupon."""
+    
+    def get_total_due(self):
+        total = self.calculate_total()  # Ensure this is your method to calculate the regular total
         if self.coupon:
-            total_payable = self.get_total_payable()
-            discount_value = self.coupon.discount  # Accessing the discount field
-            return float(total_payable) * (discount_value / 100)  # Assuming discount is a percentage
-        return 0
-    
+            total -= self.coupon.get_discount_amount(total)  # Adjust total with coupon discount
+        return total
 
-    def get_total_payable_after_discount(self):
-        """Get the total payable after applying the coupon discount."""
-        total_payable = self.get_total_payable()
-        discount_amount = self.get_discount_amount()
-        print(f"Total Payable: {total_payable}, Discount Amount: {discount_amount}")
-        return float(total_payable) - float(discount_amount)
-    
-    
+
     def get_duration(self):
         """Get the duration of the booking in days."""
         duration = self.check_out_date - self.check_in_date
         return max(duration.days, 1)  # Ensure at least 1 day
 
 
-
     def get_room_charges(self):
-        """Calculate the total charges for all rooms based on the duration of the stay."""
-        total_room_charges = 0
-        for room in self.room.all():
-            duration = self.get_duration()  # Number of days for the booking
-            room_price = room.price() * duration
-            total_room_charges += room_price
+        """Calculate the total charges for the room based on the duration of the stay."""
+        if not self.room:
+            return 0  # If no room is assigned, return 0
+
+        duration = self.get_duration()  # Number of days for the booking
+        room_price = self.room.price_override if self.room.price_override else self.room.room_type.base_price  # Use price override if available
+        total_room_charges = room_price * duration
+        
         return total_room_charges
     
+    
+    def set_checked_in(self):
+        """Mark the booking as checked in."""
+        self.checked_in = True
+        self.save(update_fields=['checked_in'])
 
-    def save(self, *args, **kwargs):
-        # If it's a new booking (i.e., no primary key assigned yet)
-        if not self.pk:
-            super(Booking, self).save(*args, **kwargs)  # Save the booking to generate the primary key (id)
+    def calculate_total(self):
+        """Calculate and update the total booking amount (room charges + additional charges - discounts)."""
+        total_room_charges = self.get_room_charges()  # Calculate room charges based on the stay duration
+        discount_amount = self.get_discount_amount()  # Calculate discount amount if coupon is applied
 
-        # Now that the booking has an id, check room availability
-        available, unavailable_room = self.are_rooms_available(self.room.all(), self.check_in_date, self.check_out_date)
-        if not available:
-            raise ValueError(f"Room {unavailable_room.room_number} is not available for the selected dates.")
-        
-        # Calculate the initial room charges for the booking
-        # self.total_amount = self.get_room_charges()
-        # print(f"Calculated room charges: {self.total_amount}")  # Debugging line
+        self.total_amount = float(total_room_charges) - discount_amount  # Subtract the discount from the total
+        self.save()  # Save the updated total amount
 
-        # Save the updated booking with the calculated total amount
-        super(Booking, self).save(*args, **kwargs)
+        # Redeem the coupon and create CouponUsers entry if valid
+        if self.coupon:
+            self.redeem_coupon()
+
+        return self.total_amount  # Explicitly return the total amount
 
 
-    def convert_reservation_to_booking(self, reservation):
-        """Convert a reservation into a booking and optionally apply a coupon if one exists."""
-        self.user = reservation.user
-        self.hotel = reservation.hotel
-        self.room_type = reservation.room_type
-        self.room.set(reservation.room.all())  # Copy the rooms from the reservation
-        self.check_in_date = reservation.check_in_date
-        self.check_out_date = reservation.check_out_date
-        self.num_adults = reservation.num_adults
-        self.num_children = reservation.num_children
-        self.reservation = reservation
-        self.total_amount = reservation.total_amount
+    def get_discount_amount(self):
+        """Calculate the discount amount based on the coupon."""
+        if self.coupon and self.coupon.is_valid():
+            total_payable = self.get_room_charges()  # Get room charges for discount calculation
+            discount_value = self.coupon.discount  # Accessing the discount field
+            return float(total_payable )* (discount_value / 100)  # Assuming discount is a percentage
+        return 0
 
-        # Apply coupon if any exists in the reservation
-        if reservation.payment and reservation.payment.booking.coupon:
-            self.coupon = reservation.payment.booking.coupon  # Copy the coupon from the reservation if it exists
-        
-        self.save()
+
+    def redeem_coupon(self):
+        """Redeem the coupon and create a CouponUsers entry."""
+        if self.coupon.is_valid_for_user(self.user):  # Ensure the coupon is valid for this user
+            # Redeem the coupon and increase its redemption count
+            self.coupon.redeem_coupon(self.user)
+
+            # Create an entry in CouponUsers
+            CouponUsers.objects.create(
+                coupon=self.coupon,
+                booking=self,
+                email=self.user.email
+            )
+
+    def update_room_availability(self, availability):
+        """Update the availability of the room in the booking."""
+        if self.room:
+            self.room.is_available = availability
+            self.room.save()
+
         
     def are_rooms_available(self, rooms, check_in_date, check_out_date):
         """
@@ -574,37 +558,40 @@ class Booking(Transaction):
             if overlapping_bookings.exists():
                 return False, room  # Return the specific room that's not available
         return True, None
+    
+    #receipt methods
+    
+    # def get_room_charge(self):
+    #     """Calculate the total room charge based on the booking duration and room price."""
+    #     return self.get_duration() * self.room.price
+    
+    def get_coupon_discount(self):
+        """Return the discount amount based on the associated coupon."""
+        if self.coupon:
+            return self.coupon.get_discount_amount(self.get_room_charges())
+        return 0
+
+    def get_total_after_discount(self):
+        """Return the total charge after applying the coupon discount."""
+        room_charge = self.get_room_charges()
+        coupon_discount = self.get_coupon_discount()
+        return float(room_charge) - coupon_discount
+    
+
+    def get_initial_payment(self):
+        """Get the first advance payment made by the customer."""
+        payment = self.payments.filter(status='advance').first()
+        return payment.amount if payment else 0
 
 
-    def get_service_charges(self):
-        """Sum the charges for all room services, if any."""
-        room_services = self.roomservice_set.all()  # Assuming a related name for room services
-        total_service_charges = sum(service.price for service in room_services)
-        return total_service_charges
+    def get_balance_remaining(self):
+        """Calculate the remaining balance after the initial payment."""
+        total_after_discount = self.get_total_after_discount()
+        initial_payment = self.get_initial_payment()
+        return total_after_discount -float(initial_payment)
+    
+    # receipt methods end
 
-    def get_additional_charges(self):
-        """Calculate the total of all additional charges."""
-        additional_charges = AdditionalCharge.objects.filter(booking=self)
-        return sum(charge.amount for charge in additional_charges)
-
-
-    def get_total_payable(self):
-        """Calculate the total amount payable (rooms + services + additional charges)."""
-        total_room_charges = self.get_room_charges()
-        total_service_charges = self.get_service_charges()
-        total_additional_charges = self.get_additional_charges()
-        return total_room_charges + total_service_charges + total_additional_charges
-
-    def update_room_availability(self, availability):
-        """Update the availability of rooms in the booking."""
-        for room in self.room.all():
-            room.is_available = availability
-            room.save()
-
-    def set_checked_in(self):
-        """Mark the booking as checked in."""
-        self.checked_in = True
-        self.save(update_fields=['checked_in'])
 
     @property
     def amount_paid(self):
@@ -616,6 +603,111 @@ class Booking(Transaction):
         payment = Payment.objects.filter(booking=self).last()
         return payment.status if payment else 'Unpaid'
 
+# receipt summary before chckout
+
+    @property
+    def booking_date(self):
+        return self.date  # Date booking was made
+
+    @property
+    def checkin_date(self):
+        return self.check_in_date
+    
+    @property
+    def checkout_date(self):
+        return self.check_out_date
+    
+    @property
+    def num_days(self):
+        return self.get_duration()  # Use the existing method to get the number of days
+    
+    @property
+    def room_charges(self):
+        return self.get_room_charges()  # Use the existing method to calculate room charges
+    
+
+    @property
+    def additional_charges(self):
+        # Use the related_name 'additional_charges' instead of 'additional_charges_set'
+        additional_charges = self.additionalcharges.aggregate(total=Sum('amount'))['total'] or 0
+      
+        return additional_charges
+
+    @property
+    def additional_services(self):
+        # Use the correct related_name 'roomservice'
+        additional_services = self.roomservice.aggregate(total=Sum('price'))['total'] or 0
+        
+        return additional_services
+
+    @property
+    def coupon_discount_value(self):
+        if self.coupon:
+            return self.coupon.get_discount_amount(self.room_charges)
+        return 0
+    
+    @property
+    def sum_of_all_charges(self):
+        
+        # Ensure all values are treated as Decimal
+        room_charges = Decimal(self.get_room_charges() or 0)
+        additional_charges = Decimal(self.additional_charges or 0)
+        additional_services = Decimal(self.additional_services or 0)
+
+        # Calculate total charge as a Decimal
+        sum_of_all_charges = room_charges + additional_charges + additional_services
+        return sum_of_all_charges
+    
+    @property
+    def final_charge(self):
+        sum_of_all_charges= self.sum_of_all_charges
+        # Ensure coupon discount is also Decimal
+        coupon_discount = Decimal(self.coupon_discount_value or 0)
+
+        # Calculate final charge by subtracting the coupon discount (if available)
+        return sum_of_all_charges - coupon_discount
+
+    
+    @property
+    def initial_payment(self):
+        return self.get_initial_payment()  # Use the method to get initial advance payment
+    
+    @property
+    def amount_payable(self):
+        # Calculate amount payable after coupon and initial payment have been applied
+        return self.final_charge - self.initial_payment
+    
+    def get_receipt_summary(self):
+        """Returns a summary of all booking details for the checkout."""
+        return {
+            "booking_id": self.booking_id,
+            "user": self.user.username if self.user else "Guest",
+            "booking_date": self.booking_date,
+            "checkin_date": self.checkin_date,
+            "checkout_date": self.checkout_date,
+            "num_days": self.num_days,
+            "room_charges": self.room_charges,
+            "additional_charges": self.additional_charges,
+            "additional_services": self.additional_services,
+            "sum_of_all_charges": self.sum_of_all_charges,
+            "coupon_applied": bool(self.coupon),
+            "coupon_discount": self.coupon_discount_value,
+            "initial_payment": self.initial_payment,
+            "final_charge": self.final_charge,
+            "amount_payable": self.amount_payable,
+        }
+
+#recceipt summary ends
+
+    def save(self, *args, **kwargs):
+        with transaction.atomic():
+            # Check room availability again in a transaction
+            available, conflicting_room = self.are_rooms_available([self.room], self.check_in_date, self.check_out_date)
+            if not available:
+                raise ValueError(f"Room {self.room.room_number} is not available for the selected dates.")
+            
+            # Proceed with saving the booking
+            super().save(*args, **kwargs)
 
 
 class Coupon(models.Model):
@@ -676,14 +768,19 @@ class Coupon(models.Model):
             self.save()
             return True
         return False
-
+    
+    def get_discount_amount(self, total):
+        if self.type == 'Percentage':
+            return float(total)* (self.discount / 100)
+        elif self.type == 'Fixed':
+            return min(self.discount, total)  # Don't exceed the total
+        return 0
+    
 
 class CouponUsers(models.Model):
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
     booking = models.ForeignKey('Booking', on_delete=models.CASCADE)  # Assuming 'Booking' is defined elsewhere
-    full_name = models.CharField(max_length=1000)
     email = models.CharField(max_length=1000)
-    mobile = models.CharField(max_length=1000)
 
     def __str__(self):
         return str(self.coupon.code)
@@ -701,7 +798,7 @@ class AdditionalCharge(models.Model):
         ('other', 'Other'),
     ]
 
-    booking = models.ForeignKey(Booking, related_name='additional_charges', on_delete=models.CASCADE)
+    booking = models.ForeignKey(Booking, related_name='additionalcharges', on_delete=models.CASCADE)
     category = models.CharField(max_length=50, choices=CHARGE_CATEGORY_CHOICES)
     description = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -709,8 +806,6 @@ class AdditionalCharge(models.Model):
 
     def __str__(self):
         return f"{self.category} - ${self.amount} for Booking {self.booking.booking_id}"
-    
-    
     
  
 class ActivityLog(models.Model):
@@ -722,8 +817,7 @@ class ActivityLog(models.Model):
 
     def __str__(self):
         return str(self.booking)
-    
-    
+
  
 class StaffOnDuty(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
@@ -732,7 +826,6 @@ class StaffOnDuty(models.Model):
 
     def __str__(self):
         return str(self.staff_id)
-    
 
  
 class RoomServices(models.Model):
@@ -742,7 +835,7 @@ class RoomServices(models.Model):
         ('Cleaning', 'Cleaning'),
         ('Technical', 'Technical'),
     )
-    booking = models.ForeignKey(Booking, null=True,  related_name= "roomservice_set", on_delete=models.CASCADE)
+    booking = models.ForeignKey(Booking, null=True,  related_name= "roomservice", on_delete=models.CASCADE)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
     service_type = models.CharField(max_length=20, choices = SERVICES_TYPES, null=True, blank=True)
@@ -760,7 +853,6 @@ class RoomServices(models.Model):
             description=f"Room service: {self.service_type}",
             amount=self.price
         )
-    
     
          
 

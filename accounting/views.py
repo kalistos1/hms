@@ -85,26 +85,26 @@ def purchase_report(request):
             end_date = form.cleaned_data['end_date']
 
             if report_type == 'consumables':
-                report_data = ConsumableItem.objects.filter(
+                report_data = Item.objects.filter(
                     purchase_date__range=[start_date, end_date]
                 ).values(
-                    'name', 'description', 'stock_quantity', 'unit_price', 'total_cost', 
+                    'name', 'description', 'stock_quantity', 'unit_price', 'unit_price', 
                     'purchase_date', 'category__name', 'supplier__name', 'supplier__contact_person', 
-                    'supplier__email', 'supplier__phone', 'supplier__address', 'reorder_level'
+                    'supplier__email', 'supplier__phone', 'supplier__address', 
                 ).annotate(
-                    all_total_cost=Sum('total_cost')
+                    all_total_cost=Sum('unit_price')
                 )
 
             elif report_type == 'equipment':
                 report_data = Equipment.objects.filter(
                     purchase_date__range=[start_date, end_date]
                 ).values(
-                    'name', 'description', 'purchase_price', 'purchase_date', 'status', 
+                    'name', 'category', 'code', 'item__description', 'item__unit_price', 'purchase_date', 'status', 
                     'warranty_period', 'warranty_expiry_date', 'next_service_date', 
-                    'supplier__name', 'supplier__contact_person', 'supplier__email', 
-                    'supplier__phone', 'supplier__address', 'category__name'
+                    'item__supplier__name', 'item__supplier__contact_person', 'item__supplier__email', 
+                    'item__supplier__phone', 'item__supplier__address', 'category__name'
                 ).annotate(
-                    total_price=Sum('purchase_price')
+                    total_price=Sum('item__unit_price')
                 )
 
             if report_data.exists():

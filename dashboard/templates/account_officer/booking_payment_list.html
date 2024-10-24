@@ -60,15 +60,15 @@
                                     </thead>
                                     <tbody>
                                         {% if booking_payments %}
-                                            {% for payments in booking_payments %}
+                                            {% for payment in booking_payments %}
                                                 <tr>
                                                     <td>
                                                         {{payment.payment_date}}
                                                     </td>
                                                     <td>{{payment.amount}}</td>
                                                     <td>{{payment.status}}</td>
-                                                    <td>{{booking.source}}</td>
-                                                    <td>{{booking.description}}</td>
+                                                    <td>{{payment.source}}</td>
+                                                    <td>{{payment.description}}</td>
 
 
 

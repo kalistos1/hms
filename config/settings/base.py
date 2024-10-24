@@ -36,20 +36,19 @@ INSTALLED_APPS = [
     'accounting.apps.AccountingConfig',
     'bookings.apps.BookingsConfig',
     'core',
-    'crm',
+    #'crm',
     'dashboard',
     'hotel',
     'inventory.apps.InventoryConfig',
     'pages',
     'pos',
-    'reports',
-    'rooms',
+   # 'reports',
+   # 'rooms',
     'testimony',
     'hrm',
-    'events',
+   # 'events',
   
 ]
-
 
 
 MIDDLEWARE = [
@@ -60,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
     
     #htmx
     "django_htmx.middleware.HtmxMiddleware",
