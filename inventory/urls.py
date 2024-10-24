@@ -64,4 +64,5 @@ urlpatterns = [
     #inventory
     path('move_product/', views.move_product, name='move_product'),
     path('warehouse/stocks/', warehouse_stock, name='warehouse_stock'),
+    path('supervisor/reports/', views.supervisor_reports, name='supervisor_report'),
 ]

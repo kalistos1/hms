@@ -1,6 +1,6 @@
 {% extends 'dashboard_base.html' %}
 {% load static %}
-{% block title %} Frontdesk | Booking List{% endblock %}
+{% block title %} Supervisor | move Items {% endblock %}
 
 {% block content %}
     <main class="container-fluid px-0">
@@ -29,11 +29,9 @@
    {% comment %} top header ends {% endcomment %}
 
 
-
    {% comment %} body content starts {% endcomment %}
 
-           
-
+        
                 <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
                     {% include '../partials/_messages.html' %}
                     <div class="row g-3">
@@ -52,7 +50,6 @@
                         <div class="col-sm-12">
                             <div class="card">
                                 <div class="card-body">
-
 
                                     <table class="table dataTable align-middle table-hover table-body" style="width: 100%;">
                                         <thead>
@@ -95,12 +92,7 @@
 
                 {% include '../partials/htmx/move_stock.html' %}
 
-          
-
         </div>
-
-
-
 
     </main>
 {% endblock %}
