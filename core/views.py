@@ -51,8 +51,30 @@ def contact_us(request):
 def gallery(request):
     template ='pages/gallery.html'
     
-    return render(request, template)
+    roomtypes = RoomType.objects.all()
+    room_gallery = Room.objects.all()
+    
+    return render(request, template, {"room":roomtypes, "room_gallery":room_gallery})
 
+def gallery_filter(request, foo):
+    template ='pages/gallery.html'
+    
+    roomtypes = RoomType.objects.all()
+    
+    foo = foo.replace('-', '')
+    rooms = RoomType.objects.get(type=foo)
+    room_gallery = Room.objects.filter(room_type=rooms)
+    context = {
+    "rooms":rooms,
+    "room":roomtypes,
+    "room_gallery":room_gallery
+}
+
+    return render(request, template, context)
+    
+    
+    
+    
 
 def all_rooms(request):
     

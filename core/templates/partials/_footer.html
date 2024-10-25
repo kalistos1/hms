@@ -1,7 +1,7 @@
 {% load static %}
 
 
-<div class="py-5 bg-dark">
+{% comment %} <div class="py-5 bg-dark">
     <div class="container">
         <div class="row">
             <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">
@@ -11,14 +11,14 @@
                     <div class="input-group mb-3">
                         <input type="text" name="youremail" id="youremail" class="form-control border-0 rounded-0" placeholder="Enter email here..." aria-label="Recipient's username" aria-describedby="button-addon2">
                         <div class="input-group-append">
-                            <button class="btn btn-primary rounded-0 border-0" type="button" id="button-addon2" onClick="subscribeemail()">Subscribe</button>
+                            <button class="btn btn-primary rounded-0 border-0" type="button" id="_button-addon2" onClick="subscribeemail()">Subscribe</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</div> {% endcomment %}
 
 <footer class="main-footer py-5 border-top-muted bg-dark">
     <div class="container">
@@ -29,7 +29,7 @@
                         <a href="index.html"><img src="assets/img/2021-11-18/F.png" alt class="img-fluid"></a>
                     </div>
                     Plot-7, Road-02, Hotel Motel Zone, San Francisco Road, United States of America <div><br></div>
-                    <a href="https://hotel.bdtask-demo.com/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="751c1b131a351110181a5b161a18">[email&#160;protected]</a>
+                    {% comment %} <a href="https://hotel.bdtask-demo.com/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="751c1b131a351110181a5b161a18">[email&#160;protected]</a> {% endcomment %}
                 </div>
             </div>
             <div class="col-lg-7 col-xl-7 offset-xl-1">
@@ -38,10 +38,10 @@
                         <h3 class="link-title fs-18 mb-3 font-weight-600 position-relative text-white">
                             Pages</h3>
                         <ul class="footer-link list-unstyled menu mb-0">
-                            <li class="mb-2"><a class="link d-block font-weight-500" href="hotel.html">Home</a></li>
-                            <li class="mb-2"><a class="link d-block font-weight-500" href="about.html">About Us</a></li>
-                            <li class="mb-2"><a class="link d-block font-weight-500" href="contact.html">Contact Us</a></li>
-                            <li class="mb-2"><a class="link d-block font-weight-500" href="gallery.html">Gallery</a></li>
+                            <li class="mb-2"><a class="link d-block font-weight-500" href="{% url "core:index" %}">Home</a></li>
+                            <li class="mb-2"><a class="link d-block font-weight-500" href="{% url "core:about" %}">About Us</a></li>
+                            <li class="mb-2"><a class="link d-block font-weight-500" href="{% url "core:contact" %}">Contact Us</a></li>
+                            <li class="mb-2"><a class="link d-block font-weight-500" href="{% url "core:gallery" %}">Gallery</a></li>
                             <li class="mb-2"><a class="link d-block font-weight-500" href="index.html">My Profile</a></li>
                         </ul>
                     </div>
@@ -72,7 +72,7 @@
     <div class="container">
         <div class="row justify-content-end align-items-center">
             <div class="col-md-6">
-                <div class="copy">Powered by bdtask</div>
+                <div class="copy">Powered by Arcadia</div>
             </div>
             <div class="col-md-6">
                 <ul class="list-unstyled text-right mb-0">
