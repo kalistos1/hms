@@ -1,6 +1,6 @@
 {% extends 'dashboard_base.html' %}
 {% load static %}
-{% block title %} Admin | Room Status {% endblock %}
+{% block title %} Frontdesk | Room Status{% endblock %}
 
 {% block content %}
     <main class="container-fluid px-0">
@@ -30,7 +30,7 @@
    {% comment %} top header starts {% endcomment %}
             {% include '../partials/top_header.html' %}
    {% comment %} top header ends {% endcomment %}
-
+            {% include '../partials/_messages.html' %}
 
 
    {% comment %} body content starts {% endcomment %}
@@ -57,15 +57,20 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for status in room_status %}
-                                            <tr>
-                                                <td>{{status.room_number}}</td>
-                                                <td>{{status.room_type}}</td>
-                                                <td>{{status.floor}}</td>
-                                                <td>{{status.booking.check_out_date}}</td>
-                                                <td>{% if status.is_available  == False %} <span class="badge text-bg-warning">Is Not Available </span> {% else %}<span class="badge text-bg-success"> is Available {% endif %}</span></td>
-                                            </tr>
-                                        {% endfor%}
+                                        {% if room_status %}
+                                            {% for status in room_status %}
+                                                <tr>
+                                                    <td>{{status.room_number}}</td>
+                                                    <td>{{status.room_type}}</td>
+                                                    <td>{{status.floor}}</td>
+                                                    <td>{{status.room.checj}}</td>
+                                                    <td>{% if status.is_available  == False %} <span class="badge text-bg-warning">Is Not Available </span> {% else %}<span class="badge text-bg-success"> is Available {% endif %}</span></td>
+                                                </tr>
+                                            {% endfor%}
+                                        {% else %}
+                                            <h4 class="text-center text-warning"> No room Available for checkout today. </h4>
+                                        {% endif %}
+
 
                                     </tbody>
                                 </table>

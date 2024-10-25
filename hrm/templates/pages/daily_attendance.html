@@ -4,8 +4,8 @@
 
 {% block content %}
     <main class="container-fluid px-0">
-    {%  {% if request.user.is_admin %}
-    {% include '../partials/menubars/admin_sidebar.html' %}
+        {%  {% if request.user.is_admin %}
+        {% include '../partials/menubars/admin_sidebar.html' %}
 
 {% elif request.user.is_supervisor %}
     {% include '../partials/menubars/supervisor_sidebar.html' %}
@@ -23,174 +23,174 @@
 
     {% comment %} sidebar ends {% endcomment %}
 
-        <div class="content">
+<div class="content">
 
 
    {% comment %} top header starts {% endcomment %}
-            {% include '../partials/top_header.html' %}
+    {% include '../partials/top_header.html' %}
    {% comment %} top header ends {% endcomment %}
 
    {% comment %} body content starts {% endcomment %}
 <!-- start: page body area -->
-            <div class="px-xl-5 px-lg-4 px-3 py-3 mt-5 page-body">
-                {% include '../partials/_messages.html' %}
-                <div class="row g-3">
-                    <div class="col-sm-12">
-                        <div class="d-flex align-items-center justify-content-between flex-wrap">
-                            <h3 class="fw-bold mb-0"> Daily Attendance for {{ selected_date }} </h3>
-                            <div class="col-auto d-flex w-sm-100">
-                                <button type="button" class="btn btn-warning" data-bs-toggle="offcanvas" data-bs-target="#add-department" aria-controls="add-department">Create Roaster Item</button>
-                            </div>
-                        </div>
+    <div class="px-xl-5 px-lg-4 px-3 py-3 mt-5 page-body">
+        {% include '../partials/_messages.html' %}
+        <div class="row g-3">
+            <div class="col-sm-12">
+                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                    <h3 class="fw-bold mb-0"> Daily Attendance for {{ selected_date }} </h3>
+                    <div class="col-auto d-flex w-sm-100">
+                        <button type="button" class="btn btn-warning" data-bs-toggle="offcanvas" data-bs-target="#add-department" aria-controls="add-department">Create Roaster Item</button>
                     </div>
+                </div>
+            </div>
 
-                    <div class="col-sm-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <table class="table dataTable align-middle table-hover table-body" style="width: 100%;">
-                                    <thead>
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table dataTable align-middle table-hover table-body" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Shift Start</th>
+                                    <th>Shift End</th>
+                                    <th>Check In</th>
+                                    <th>Check Out</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if  attendances %}
+                                    {% for attendance in attendances %}
                                         <tr>
-                                            <th>Employee</th>
-                                            <th>Shift Start</th>
-                                            <th>Shift End</th>
-                                            <th>Check In</th>
-                                            <th>Check Out</th>
-                                            <th>Action</th>
+                                            <td>{{ attendance.employee.user.get_full_name }}</td>
+                                            <td>{{ attendance.employee.schedules.first.schedule_start_date }} {{ attendance.employee.schedules.first.start_time }}</td>
+                                            <td>{{ attendance.employee.schedules.first.schedule_end_date }} {{ attendance.employee.schedules.first.end_time }}</td>
+                                            <td>{{ attendance.check_in }}</td>
+                                            <td>{{ attendance.check_out|default:"Still Active" }}</td>
+                                            <td>
+                                                {% if not attendance.check_out %}
+                                                    <form method="post" action="{% url 'hrm:checkout_employee' attendance.employee.pk %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger" >Check Out</button>
+                                                    </form>
+                                                {% else %}
+                                                    <button disabled>Checked Out</button>
+                                                {% endif %}
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% if  attendances %}
-                                            {% for attendance in attendances %}
-                                                <tr>
-                                                    <td>{{ attendance.employee.user.get_full_name }}</td>
-                                                    <td>{{ attendance.employee.schedules.first.schedule_start_date }} {{ attendance.employee.schedules.first.start_time }}</td>
-                                                    <td>{{ attendance.employee.schedules.first.schedule_end_date }} {{ attendance.employee.schedules.first.end_time }}</td>
-                                                    <td>{{ attendance.check_in }}</td>
-                                                    <td>{{ attendance.check_out|default:"Still Active" }}</td>
-                                                    <td>
-                                                        {% if not attendance.check_out %}
-                                                            <form method="post" action="{% url 'hrm:checkout_employee' attendance.employee.pk %}">
-                                                                {% csrf_token %}
-                                                                <button type="submit" class="btn btn-danger" >Check Out</button>
-                                                            </form>
-                                                        {% else %}
-                                                            <button disabled>Checked Out</button>
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                        {% else %}
-                                            <div class="text-center">
-                                                <h4> No Attendance Yet! </h4>
-                                            </div>
-                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-center">
+                                        <h4> No Attendance Yet! </h4>
+                                    </div>
+                                {% endif %}
 
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
-                </div><!-- Row End -->
+                </div>
             </div>
+        </div><!-- Row End -->
+    </div>
 <!-- Add: Room -->
-            <div
-                class="offcanvas offcanvas-end"
-                tabindex="-1"
-                id="add-department"
-                aria-labelledby="add-department"
-            >
-                <div class="offcanvas-header">
-                    <h5 class="offcanvas-title">Create Roaster</h5>
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="offcanvas"
-                        aria-label="Close"
-                    ></button>
+    <div
+        class="offcanvas offcanvas-end"
+        tabindex="-1"
+        id="add-department"
+        aria-labelledby="add-department"
+    >
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Create Roaster</h5>
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"
+            ></button>
+        </div>
+        <div class="offcanvas-body">
+            <form action ="{% url 'hrm:schedule_create' %}" method ="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group mb-3">
+
+                    {{form.as_p}}
+
                 </div>
-                <div class="offcanvas-body">
-                    <form action ="{% url 'hrm:schedule_create' %}" method ="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="form-group mb-3">
-
-                            {{form.as_p}}
-
-                        </div>
 
 
-                        <div class="d-flex">
-                            <button type="button" class="btn w-100 me-1 py-2 btn-primary">
-                                Clear
-                            </button>
-                            <button type="submit" class="btn w-100 ms-1 py-2 btn-dark">
-                                Save
-                            </button>
-                        </div>
-                    </form>
+                <div class="d-flex">
+                    <button type="button" class="btn w-100 me-1 py-2 btn-primary">
+                        Clear
+                    </button>
+                    <button type="submit" class="btn w-100 ms-1 py-2 btn-dark">
+                        Save
+                    </button>
                 </div>
-            </div>
+            </form>
+        </div>
+    </div>
 
 <!-- Edit: Room-->
-            <div
-                class="offcanvas offcanvas-end"
-                tabindex="-1"
-                id="edit-room"
-                aria-labelledby="edit-room"
-            >
-                <div class="offcanvas-header">
-                    <h5 class="offcanvas-title">Edit Roaster item </h5>
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="offcanvas"
-                        aria-label="Close"
-                    ></button>
-                </div>
-                <div class="offcanvas-body">
-                    <form>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted"
-                            >Room Type <span class="text-danger">*</span></label
-                                >
-                                <input type="text" class="form-control" value="VIP-Guest" />
-                            </div>
-
-                        </form>
-                        <div class="d-flex">
-                            <button type="button" class="btn w-100 ms-1 py-2 btn-primary">
-                                Update
-                            </button>
-                        </div>
+    <div
+        class="offcanvas offcanvas-end"
+        tabindex="-1"
+        id="edit-room"
+        aria-labelledby="edit-room"
+    >
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Edit Roaster item </h5>
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"
+            ></button>
+        </div>
+        <div class="offcanvas-body">
+            <form>
+                <div class="form-group mb-3">
+                    <label class="form-label text-muted"
+                    >Room Type <span class="text-danger">*</span></label
+                        >
+                        <input type="text" class="form-control" value="VIP-Guest" />
                     </div>
+
+                </form>
+                <div class="d-flex">
+                    <button type="button" class="btn w-100 ms-1 py-2 btn-primary">
+                        Update
+                    </button>
+                </div>
+            </div>
 
          {% comment %} body content ends {% endcomment %}
 
 
-                </div>
-                <script>
-                    function deleteSchedule(event, amenityId) {
-                        event.preventDefault(); // Prevent the default link behavior
+        </div>
+        <script>
+            function deleteSchedule(event, amenityId) {
+                event.preventDefault(); // Prevent the default link behavior
 
             // Get the URL template from the data attribute and replace the placeholder
-                        var url = document.querySelector('[data-url]').getAttribute('data-url').replace('0', amenityId);
+                var url = document.querySelector('[data-url]').getAttribute('data-url').replace('0', amenityId);
 
-                        Swal.fire({
-                            title: 'Are you sure?',
-                            text: 'Do you want to delete this Roaster item?',
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonText: 'Yes, delete it!',
-                            cancelButtonText: 'No, cancel!',
-                            confirmButtonColor: '#d33',
-                            cancelButtonColor: '#3085d6',
-                        }).then((result) => {
-                            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'Do you want to delete this Roaster item?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'No, cancel!',
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                }).then((result) => {
+                    if (result.isConfirmed) {
                     // Redirect to the URL to perform the delete operation
-                                window.location.href = url;
-                            }
-                        });
+                        window.location.href = url;
                     }
-                </script>
+                });
+            }
+        </script>
 
-            </main>
-{% endblock %}
+    </main>
+    {% endblock %}

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Checkout Summary</title>
+
+    </head>
+    <body>
+        <h1>Checkout Summary</h1>
+
+        <h2>Booking Details</h2>
+        <ul>
+            <li><strong>Booking ID:</strong> {{ booking_id }}</li>
+            <li><strong>User:</strong> {{ user }}</li>
+            <li><strong>Booking Date:</strong> {{ booking_date }}</li>
+            <li><strong>Check-in Date:</strong> {{ checkin_date }}</li>
+            <li><strong>Check-out Date:</strong> {{ checkout_date }}</li>
+            <li><strong>Number of Days:</strong> {{ num_days }}</li>
+        </ul>
+
+        <h2>Charges</h2>
+        <ul>
+            <li><strong>Room Charges:</strong> ${{ room_charges }}</li>
+            <li><strong>Additional Charges:</strong> ${{ additional_charges }}</li>
+            <li><strong>Service Charges:</strong> ${{ additional_services }}</li>
+            <li> <strong>Sub-total : {{sum_of_all_charges}} </strong></li>
+            <hr>
+            <li><strong>Coupon Applied:</strong> {{ coupon_applied|yesno:"Yes,No" }}</li>
+            <li><strong>Coupon Discount:</strong> ${{ coupon_discount }}</li>
+            <li> <strong>total : {{ final_charge}} </strong></li>
+            <hr>
+        </ul>
+
+        <h2>Total Payment Summary</h2>
+        <ul>
+            <li><strong>Initial Payment:</strong> ${{ initial_payment }}</li>
+            <li><strong>Final Charge:</strong> ${{ final_charge }}</li>
+            <li><strong>Amount Payable:</strong> ${{ amount_payable }}</li>
+        </ul>
+
+    {% comment %} <a href="{% url 'payment_view' booking_id=booking.id %}">Proceed to Payment</a> <!-- Adjust link to your payment view --> {% endcomment %}
+    </body>
+</html>

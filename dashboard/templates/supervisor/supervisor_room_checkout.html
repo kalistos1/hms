@@ -1,6 +1,6 @@
 {% extends 'dashboard_base.html' %}
 {% load static %}
-{% block title %} Admin | Booking List{% endblock %}
+{% block title %} Frontdesk | Checkout List{% endblock %}
 
 {% block content %}
     <main class="container-fluid px-0">
@@ -34,15 +34,16 @@
 
 
    {% comment %} body content starts {% endcomment %}
+            {% include '../partials/_messages.html' %}
 
             <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
                 {% include '../partials/_messages.html' %}
                 <div class="row g-3">
                     <div class="col-sm-12">
                         <div class="d-flex align-items-center justify-content-between flex-wrap">
-                            <h3 class="fw-bold mb-0">Room Booking List</h3>
+                            <h3 class="fw-bold mb-0">Room Checkout List</h3>
                             <div class="col-auto d-flex w-sm-100 mt-3">
-                                {% comment %} <a href="{% url 'dashboard:book_room' %}" class="btn btn-warning btn-set-task w-sm-100 me-4">Room Booking</a> {% endcomment %}
+                                    {% comment %} <a href="{% url 'dashboard:book_room' %}" class="btn btn-warning btn-set-task w-sm-100 me-4">Room Booking</a> {% endcomment %}
                                 {% comment %} <a href="{% url 'dashboard:reserve_room' %}" class="btn btn-warning btn-set-task w-sm-100">Room Reservation</a> {% endcomment %}
                             </div>
                         </div>
@@ -60,25 +61,34 @@
                                             <th>Paid Amount</th>
 
                                             <th>Payment Status</th>
-
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for booking in bookings %}
-                                            <tr>
-                                                <td>
-                                                    {{booking.user.first_name}}  {{booking.user.last_name}}
-                                                </td>
-                                                <td>{{booking.room_type}}</td>
-                                                <td>{{booking.check_in_date}}</td>
-                                                <td>{{booking.check_out_date}}</td>
-                                                <td>{{booking.total}}</td>
+                                        {% if bookings %}
 
-                                                <td><span class="badge text-bg-warning">{{booking.payment_status}}</span></td>
+                                            {% for booking in bookings %}
+                                                <tr>
+                                                    <td>
+                                                        {{booking.user.first_name}}  {{booking.user.last_name}}
+                                                    </td>
+                                                    <td>{{booking.room_type}}</td>
+                                                    <td>{{booking.check_in_date}}</td>
+                                                    <td>{{booking.check_out_date}}</td>
+                                                    <td>{{booking.amount_paid}}</td>
 
-                                            </tr>
-                                        {% endfor %}
+                                                    <td><span class="badge text-bg-warning">{{booking.payment_status}}</span></td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-info btn-sm"  data-bs-toggle="offcanvas" data-bs-target="#extend-booking" aria-controls="extend-booking"  onclick="ExtendBooking(event, {{ booking.id }})"> Extend Booking</button>
+                                                        <span><a type="button" class="btn btn-danger btn-sm" href="{% url 'dashboard:checkout' booking.id %}"> Checkout </a> </span>
 
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+
+                                        {% else %}
+                                            <h4 class="text-center text-warning"> No room Available for checkout today. </h4>
+                                        {% endif %}
 
                                     </tbody>
                                 </table>
@@ -90,39 +100,23 @@
             </div>
    {% comment %} body content ends {% endcomment %}
 
-            {% include '../partials/htmx/fd_add_additional_charge.html' %}
 
-            {% include '../partials/htmx/fd_add_room_service.html' %}
-
+                {% comment %} {% include '../partials/htmx/fd_extend_booking.html' %}
+ {% endcomment %}
 
         </div>
 
 
         <script>
-            function AddRoomService(event, bookingId) {
+            function ExtendBooking(event, bookingId) {
                 // Prevent default behavior (if needed)
                 event.preventDefault();
 
                 // Get the form element in the offcanvas
-                const form = document.querySelector('#add-room-service form');
+                const form = document.querySelector('#extend-booking form');
 
                 // Construct the new action URL by replacing the placeholder 'pk' with the actual booking ID
-                const newActionUrl = "{% url 'dashboard:frontdesk_add_booking_service' 0 %}".replace('0', bookingId);
-
-                // Set the new action URL on the form
-                form.action = newActionUrl;
-            }
-
-
-            function AddAdditionalCharge(event, bookingId) {
-                // Prevent default behavior (if needed)
-                event.preventDefault();
-
-                // Get the form element in the offcanvas
-                const form = document.querySelector('#add-additional-charge form');
-
-                // Construct the new action URL by replacing the placeholder 'pk' with the actual booking ID
-                const newActionUrl = "{% url 'dashboard:frontdesk_add_additional_charge' 0 %}".replace('0', bookingId);
+                const newActionUrl = "{% url 'dashboard:frontdesk_update_checkout_date' 0 %}".replace('0', bookingId);
 
                 // Set the new action URL on the form
                 form.action = newActionUrl;

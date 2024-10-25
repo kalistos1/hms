@@ -159,7 +159,7 @@ class InventoryMovement(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='inventory_movements')
     quantity = models.IntegerField()
-    unit_selling_price = models.DecimalField(help_text="For items being sold at POS", max_digits=12, decimal_places=2, default=0)
+    unit_selling_price = models.DecimalField(help_text="For items being sold at POS", max_digits=12, decimal_places=2, default=0, null= True, blank = True)
     movement_type = models.CharField(max_length=10, choices=MOVEMENT_TYPE_CHOICES)
     transfer_location = models.ForeignKey(DepartmentLocation, on_delete=models.SET_NULL, null=True, blank=True)  # Destination for transfers
     date = models.DateTimeField(auto_now_add=True)
@@ -303,7 +303,7 @@ class StockLog(models.Model):
     
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='stock_logs')
     quantity = models.IntegerField()
-    unit_selling_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    unit_selling_price = models.DecimalField(max_digits=12, decimal_places=2, default=0, null = True, blank = True)
     movement_type = models.CharField(max_length=10, choices=MOVEMENT_TYPE_CHOICES)
     destination = models.CharField(max_length=255, null=True, blank=True)
     reason = models.TextField(blank=True, null=True)

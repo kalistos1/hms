@@ -29,7 +29,7 @@
                         <h6 class="fl-title title-font ps-2 small text-uppercase text-muted py-3" style="--dynamic-color: var(--theme-color1)">Universal</h6>
                         <ul class="list-unstyled mb-4 menu-list">
                             <li>
-                                <a class="active" href="index(Admin).html" aria-label="Hotel Dashboard">
+                                <a class="active" href="" aria-label="Hotel Dashboard">
                                     <svg class="svg-stroke" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                                         <path d="M5 12l-2 0l9 -9l9 9l-2 0"></path>
@@ -52,7 +52,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="transaction(Admin).html" aria-label="Transaction list">
+                                <a href="" aria-label="Transaction list">
                                     <svg class="svg-stroke" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                                         <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12"></path>
@@ -72,9 +72,9 @@
                                     <span class="mx-3">Room Book</span>
                                 </a>
                                 <ul class="collapse list-unstyled" id="RoomMenu">
-                                    <li><a href="room-booking-list.html" aria-label="Booking List">Booking List</a></li>
-                                    <li><a href="checkin-out.html" aria-label="Room Checkout">Room Checkout</a></li>
-                                    <li><a href="room-status.html" aria-label="Room Status">Room Status</a></li>
+                                    <li><a href="{% url 'dashboard:supervisor-booking_list' %}" aria-label="Booking List">Booking List</a></li>
+                                    <li><a href="{% url 'dashboard:supervisor_checkout_list' %}" aria-label="Room Checkout">Room Checkout</a></li>
+                                    <li><a href="{% url 'dashboard:supervisor_room_status' %}" aria-label="Room Status">Room Status</a></li>
                                 </ul>
                             </li>
 
@@ -90,9 +90,9 @@
                                     <span class="mx-3">Room Facilities</span>
                                 </a>
                                 <ul class="collapse list-unstyled" id="RoomFacilitesMenu">
-                                    <li><a href="room-facilites-list.html" aria-label="Facilites List">Facilites List</a></li>
-                                    <li><a href="facilites-details.html" aria-label="Facilites Details">Facilites Details</a></li>
-                                    <li><a href="room-size.html" aria-label="Room Size">Room Size</a></li>
+                                    <li><a href="{% url 'dashboard:admin_list_room_amenities' %}" aria-label="Facilites List">Facilites List</a></li>
+                                    {% comment %} <li><a href="facilites-details.html" aria-label="Facilites Details">Facilites Details</a></li>
+                                    <li><a href="room-size.html" aria-label="Room Size">Room Size</a></li> {% endcomment %}
                                 </ul>
                             </li>
 
@@ -115,9 +115,23 @@
                                     <li><a href="{% url 'inventory:warehouse_stock' %}" aria-label=" warehouse">Move Items </a></li>
                                     <li><a href="{% url 'inventory:equipment_list' %}" aria-label="Items List">Equipment Inventory</a></li>
                                     <li><a href="{% url 'inventory:amenity_item_list' %}" aria-label="amenities">Amenities Inventory</a></li>
-                
+
                                     {% comment %} <li><a href="" aria-label="Items Destroyed">Amenities Inventory</a></li> {% endcomment %}
-                                  </ul>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <a href="" aria-label="Room Book">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                        <path d="M14 12v.01"></path>
+                                        <path d="M3 21h18"></path>
+                                        <path d="M6 21v-16a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v16"></path>
+                                    </svg>
+
+                                    <span class="mx-3"> Roaster list </span>
+                                </a>
+
                             </li>
                             <!-- Other dropdowns... -->
                         </ul>
