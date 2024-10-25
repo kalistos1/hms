@@ -201,7 +201,7 @@
                             </div>
                         </div>
                     </div>
-                
+
 
                 </div>
 
@@ -229,7 +229,7 @@
 
 
 
-                    
+
                     <div class="col-sm-12 col-md-6 col-lg-6">
                         <div class="card">
                             <div class="card-header">
@@ -243,35 +243,35 @@
                                             <th>Last Session</th>
                                             <th>order</th>
                                             <th>Income</th>
-                                            
-                                            
+
+
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% if department_data %}
-                        {% for department in department_data %}
+                                            {% for department in department_data %}
 
-                        {% if department.department_name == "POS"  %}
-                                        <tr>
-                                            <td>
-                                                {{ department.department_name }}
-                                            </td>
-                                            <td>Ended</td>
-                                            <td> {{ total_orders_recent_session }} </td>
-                                            <td> &#8358 {{ department.total_payments_recent_session }}</td>
-                                           
-                                     
-                                        </tr>
+                                                {% if department.department_name == "POS"  %}
+                                                    <tr>
+                                                        <td>
+                                                            {{ department.department_name }}
+                                                        </td>
+                                                        <td>Ended</td>
+                                                        <td> {{ total_orders_recent_session }} </td>
+                                                        <td> &#8358 {{ department.total_payments_recent_session }}</td>
+
+
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
                                         {% endif %}
-                                       {% endfor %}
-                                       {% endif %}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
 
-                     
+
                     <div class="col-sm-12 col-md-6 col-lg-6">
                         <div class="card">
                             <div class="card-header">
@@ -285,27 +285,27 @@
                                             <th>Last Session</th>
                                             <th>order</th>
                                             <th>Income</th>
-                                            
-                                            
+
+
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% if department_data %}
-                        {% for department in department_data %}
-                        {% if department.department_name == "POS"  %}
-                                        <tr>
-                                            <td>
-                                                {{ department.department_name  }}
-                                            </td>
-                                            <td >Active</td>
-                                            <td>  {{ department.total_orders_active_session }} </td>
-                                            <td> &#8358 {{  department.total_payments_active_session }} </td>
-                                           
-                                     
-                                        </tr>
+                                            {% for department in department_data %}
+                                                {% if department.department_name == "POS"  %}
+                                                    <tr>
+                                                        <td>
+                                                            {{ department.department_name  }}
+                                                        </td>
+                                                        <td >Active</td>
+                                                        <td>  {{ department.total_orders_active_session }} </td>
+                                                        <td> &#8358 {{  department.total_payments_active_session }} </td>
+
+
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
                                         {% endif %}
-                                       {% endfor %}
-                                       {% endif %}
                                     </tbody>
                                 </table>
                             </div>
