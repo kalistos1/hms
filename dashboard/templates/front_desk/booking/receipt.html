@@ -7,13 +7,20 @@
 {% block content %}
     <main class="container-fluid px-0">
         {% if request.user.is_admin %}
-            {% include '../../partials/menubars/admin_sidebar.html' %}
+            {% include '../partials/menubars/admin_sidebar.html' %}
+
         {% elif request.user.is_supervisor %}
-            {% include '../../partials/menubars/supervisor_sidebar.html' %}
+            {% include '../partials/menubars/supervisor_sidebar.html' %}
+
         {% elif request.user.is_account_officer %}
-            {% include '../../partials/menubars/accounting_sidebar.html' %}
+            {% include '../partials/menubars/accounting_sidebar.html' %}
+
+        {% elif request.user.is_pos_officer %}
+            {% include '../partials/menubars/pos_sidebar.html' %}
+
         {% else %}
-            {% include '../../partials/menubars/frontdesk_sidebar.html' %}
+            {% include '../partials/menubars/frontdesk_sidebar.html' %}
+
         {% endif %}
 
         <div class="content">

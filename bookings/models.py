@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from shortuuid.django_fields import ShortUUIDField
 from django.utils.html import mark_safe
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.exceptions import ObjectDoesNotExist
 from accounts.models import User
 from django.utils import timezone
 from django_countries.fields import CountryField
@@ -17,6 +18,7 @@ from django.db import transaction
 from inventory.models import Amenity, Equipment, Item, Warehouse,InventoryMovement
 from django.db.models import Sum
 from decimal import Decimal
+from hrm.models import DepartmentLocation
 
 
 
@@ -83,8 +85,7 @@ class Hotel(models.Model):
     def rating_count(self):
         rating_count = Review.objects.filter(hotel=self, active=True).count()
         return rating_count
- 
- 
+  
     
 class HotelGallery(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
@@ -97,7 +98,6 @@ class HotelGallery(models.Model):
     class Meta:
         verbose_name_plural = "Hotel Gallery"
     
-
 
 class HotelFeatures(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
@@ -126,8 +126,7 @@ class HotelFAQs(models.Model):
     class Meta:
         verbose_name_plural = "Hotel FAQs"
      
-    
-       
+           
         
 class RoomType(models.Model):
     
@@ -137,7 +136,6 @@ class RoomType(models.Model):
         ('Presidential', 'Presidential'),
         
     )
-
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
     banner_img = models.ImageField(upload_to="room_type", null=True, blank=True)
     type = models.CharField(max_length=20, choices = ROOM_TYPES, null=True, blank=True)
@@ -160,8 +158,7 @@ class RoomType(models.Model):
             uniqueid = uuid_key[:4]
             self.slug = slugify(self.type) + "-" + str(uniqueid.lower())
         super(RoomType, self).save(*args, **kwargs)
-        
-               
+                       
         
 class Room(models.Model):
     FLOOR = (
@@ -220,18 +217,25 @@ class RoomInventory(models.Model):
         unique_together = ('room', 'equipment', 'consumable', 'amenity')
 
     def __str__(self):
-        return f"{self.room.name} - {self.equipment or self.consumable or self.amenity}"
+        return f"{self.room.room_number} - {self.equipment or self.consumable or self.amenity}"
 
     def clean(self):
         # Ensure that only one of equipment, amenity, or consumable is set
         if sum(bool(field) for field in [self.equipment, self.amenity, self.consumable]) != 1:
             raise ValidationError("Exactly one of equipment, amenity, or consumable must be set.")
 
+
     def save(self, *args, **kwargs):
         self.clean()  # Ensure data integrity
 
         # Use transaction to ensure atomicity
         with transaction.atomic():
+            # Retrieve the DepartmentLocation instance for 'room'
+            try:
+                room_location = DepartmentLocation.objects.get(name='rooms')
+            except ObjectDoesNotExist:
+                raise ValidationError("Department location for 'room' does not exist.")
+
             if self.pk:
                 # Existing record; determine if quantity or item has changed
                 previous = RoomInventory.objects.get(pk=self.pk)
@@ -245,9 +249,10 @@ class RoomInventory(models.Model):
                         item=item,
                         warehouse=self.warehouse,
                         quantity=quantity_diff,
+                       
                         movement_type='TRANSFER',
-                        transfer_location='room',
-                        reason=f"Assigned to room {self.room.name}"
+                        transfer_location=room_location,
+                        reason=f"Assigned to room {self.room.room_number}"
                     )
                 elif quantity_diff < 0:
                     # Deallocating items from the room
@@ -256,9 +261,10 @@ class RoomInventory(models.Model):
                         item=item,
                         warehouse=self.warehouse,
                         quantity=abs(quantity_diff),
+                      
                         movement_type='RETURN',
-                        transfer_location='warehouse',
-                        reason=f"Removed from room {self.room.name}"
+                        transfer_location=self.warehouse.department_location,  # Assuming warehouse location here
+                        reason=f"Removed from room {self.room.room_number}"
                     )
             else:
                 # New record; allocate items to the room
@@ -268,31 +274,35 @@ class RoomInventory(models.Model):
                     item=item,
                     warehouse=self.warehouse,
                     quantity=self.quantity,
+                  
                     movement_type='TRANSFER',
-                    transfer_location='room',
-                    reason=f"Assigned to room {self.room.name}"
+                    transfer_location=room_location,
+                    reason=f"Assigned to room {self.room.room_number}"
                 )
 
             super(RoomInventory, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        # When deleting, return the stock to the warehouse
-        with transaction.atomic():
-            item = self.get_assigned_item()
-            self.warehouse.add_stock(item, self.quantity)
-            InventoryMovement.objects.create(
-                item=item,
-                warehouse=self.warehouse,
-                quantity=self.quantity,
-                movement_type='RETURN',
-                transfer_location='warehouse',
-                reason=f"Deleted from room {self.room.name}"
-            )
-            super(RoomInventory, self).delete(*args, **kwargs)
+            # When deleting, return the stock to the warehouse
+            with transaction.atomic():
+                item = self.get_assigned_item()
+                self.warehouse.add_stock(item, self.quantity)
+                InventoryMovement.objects.create(
+                    item=item,
+                    warehouse=self.warehouse,
+                    quantity=self.quantity,
+                   
+                    movement_type='RETURN',
+                    transfer_location='warehouse',
+                    reason=f"Deleted from room {self.room.room_number}"
+                )
+                super(RoomInventory, self).delete(*args, **kwargs)
 
     def get_assigned_item(self):
-        """Helper method to get the assigned item regardless of type."""
-        return self.equipment or self.amenity or self.consumable
+        item = Item.objects.filter(stock_type='equipment', equipment__isnull=False).first()
+        if not item:
+            raise ValidationError("No available equipment item for assignment.")
+        return item
 
 
 class Payment(models.Model):
@@ -320,7 +330,6 @@ class Payment(models.Model):
     def __str__(self):
         return f"Payment {self.transaction_id} - {self.status}"
     
-
 
 class Payment(models.Model):
     PAYMENT_STATUS_CHOICES = [

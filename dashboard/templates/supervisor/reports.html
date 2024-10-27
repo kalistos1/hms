@@ -1,0 +1,125 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+{% block title %} Supervisor | Reports {% endblock %}
+
+{% block content %}
+    <main class="container-fluid px-0">
+    {% comment %} sidebar here {% endcomment %}
+        {% if request.user.is_admin %}
+            {% include '../partials/menubars/admin_sidebar.html' %}
+
+        {% elif request.user.is_supervisor %}
+            {% include '../partials/menubars/supervisor_sidebar.html' %}
+
+        {% elif request.user.is_account_officer %}
+            {% include '../partials/menubars/accounting_sidebar.html' %}
+
+        {% else %}
+            {% include '../partials/menubars/frontdesk_sidebar.html' %}
+
+        {% endif %}
+
+    {% comment %} sidebar ends {% endcomment %}
+
+        <div class="content">
+
+
+   {% comment %} top header starts {% endcomment %}
+            {% include '../partials/top_header.html' %}
+   {% comment %} top header ends {% endcomment %}
+
+   {% comment %} body content starts {% endcomment %}
+
+            <div class="px-xl-5 px-lg-4 px-3 py-3 page-body mt-5">
+                {% include '../partials/_messages.html' %}
+                <div class="row g-3">
+                    <div class="col-sm-12">
+
+                        <div class="d-flex align-items-center justify-content-between flex-wrap">
+                            <h3 class="fw-bold mb-0">Reports</h3>
+
+
+
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-body">
+
+                                <ul class="row justify-content-center pt-5 g-2 list-unstyled li_animate row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-1 row-deck mb-lg-5 mb-4">
+
+
+
+                                    <li class="col">
+                                        <a class="card hr-arrow p-4" href="{% url 'accounting:payment_reports' %}" title="Reports" style="--dynamic-color: #ffc107;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="mb-3" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                <path d="M8 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h5.697"></path>
+                                                <path d="M18 14v4h4"></path>
+                                                <path d="M18 11v-4a2 2 0 0 0 -2 -2h-2"></path>
+                                                <path d="M8 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"></path>
+                                                <path d="M18 18m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
+                                                <path d="M8 11h4"></path>
+                                                <path d="M8 15h3"></path>
+                                            </svg>
+                                            <h6 class="title mb-1">Booking Reports</h6>
+                                            <p class="small text-muted mb-0 d-none d-xl-inline-flex">Description text here...</p>
+                                            <div class="go-corner">
+                                                <div class="go-arrow">→</div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li class="col">
+                                        <a class="card hr-arrow p-4" href="{% url 'accounting:purchase_reports' %}" title="Reports" style="--dynamic-color:#ffc107;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="mb-3" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                <path d="M8 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h5.697"></path>
+                                                <path d="M18 14v4h4"></path>
+                                                <path d="M18 11v-4a2 2 0 0 0 -2 -2h-2"></path>
+                                                <path d="M8 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"></path>
+                                                <path d="M18 18m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
+                                                <path d="M8 11h4"></path>
+                                                <path d="M8 15h3"></path>
+                                            </svg>
+                                            <h6 class="title mb-1">Purchase Report</h6>
+                                            <p class="small text-muted mb-0 d-none d-xl-inline-flex">Description text here...</p>
+                                            <div class="go-corner">
+                                                <div class="go-arrow">→</div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li class="col">
+                                        <a class="card hr-arrow p-4" href="{% url 'accounting:payment_reports' %}" title="Reports" style="--dynamic-color:#ffc107;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="mb-3" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                <path d="M8 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h5.697"></path>
+                                                <path d="M18 14v4h4"></path>
+                                                <path d="M18 11v-4a2 2 0 0 0 -2 -2h-2"></path>
+                                                <path d="M8 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"></path>
+                                                <path d="M18 18m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
+                                                <path d="M8 11h4"></path>
+                                                <path d="M8 15h3"></path>
+                                            </svg>
+                                            <h6 class="title mb-1">Stock Report</h6>
+                                            <p class="small text-muted mb-0 d-none d-xl-inline-flex">Description text here...</p>
+                                            <div class="go-corner">
+                                                <div class="go-arrow">→</div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                </ul>
+
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- Row End -->
+
+            </div>
+   {% comment %} body content ends {% endcomment %}
+
+
+
+
+
+        </div>
+
+
+    </main>
+{% endblock %}

@@ -14,6 +14,9 @@
         {% elif request.user.is_account_officer %}
             {% include '../partials/menubars/accounting_sidebar.html' %}
 
+        {% elif request.user.is_pos_officer %}
+            {% include '../partials/menubars/pos_sidebar.html' %}
+
         {% else %}
             {% include '../partials/menubars/frontdesk_sidebar.html' %}
 
@@ -48,19 +51,26 @@
                                 <table class="table dataTable align-middle table-hover table-body" style="width: 100%;">
                                     <thead>
                                         <tr>
-                                            <th>Amenity Id</th>
-                                            <th>Amenity Name</th>
-                                            <th>Description</th>
-                                            <th>Action </th>
+                                            <th>Room</th>
+                                            <th>Equipment </th>
+                                            <th>Amenity</th>
+                                            <th>Consumable</th>
+                                            <th>Quantity </th>
+                                            <th>Status </th>
+                                            <th> action </th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% if amenities %}
                                             {% for amenity in amenities %}
                                                 <tr>
-                                                    <td>{{ amenity.id}}</td>
-                                                    <td>{{amenity.name }}</td>
-                                                    <td>{{amenity.description }}</td>
+                                                    <td>{{ amenity.room}}</td>
+                                                    <td>{{amenity.equipment }}</td>
+                                                    <td>{{amenity.amenity }}</td>
+                                                    <td>{{amenity.consumable }}</td>
+                                                    <td>{{amenity.quantity }}</td>
+                                                    <td>{{amenity.status }}</td>
+
                                                     <td>
                                                         <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#edit-amenity"><i class="fa fa-pencil-square fa-2x"></i></button>
                                                         <a href="#" data-url="{% url 'dashboard:admin_delete_room_amenity' 0 %}" onclick="deleteAmenity(event, {{ amenity.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>

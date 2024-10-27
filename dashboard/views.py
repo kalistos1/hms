@@ -177,9 +177,12 @@ def warehouse_delete(request, pk):
 # Amenities
 def admin_create_room_amenity(request):
     if request.method == 'POST':
+        warehouse = Warehouse.objects.first()
         form = RoomAmenityForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            facility = form.save(commit=False)
+            facility.warehouse = warehouse
+            facility.save()
             messages.success(request, 'Room Amenity created successfully!')
             return redirect('dashboard:admin_list_room_amenities')  
         else:
@@ -189,6 +192,7 @@ def admin_create_room_amenity(request):
     else:
         messages.error(request, 'Something Went Wrong. Try Again.')
         return redirect('dashboard:admin_list_room_amenities') 
+    
     
 
 def admin_list_room_amenities(request):
@@ -577,6 +581,54 @@ def supervisor_dashboard(request):
     return render (request,template)
 
 
+def supervisor_view_bookings (request):
+    template = "supervisor/supervisor_bookinglist.html"
+    today =timezone.now().date()
+    bookings = Booking.objects.filter(date=today).order_by('-date') 
+    context = {
+        'bookings':bookings,
+    }
+    return render(request, template, context)
+
+
+def supervisor_view_roomstatus (request):
+    template="supervisor/supervisor_room_status.html"
+    if request.user.is_supervisor:
+
+        today = timezone.now().date()
+        user = request.user
+        employee = Employee.objects.get(user=user)
+
+        # Get the active attendance record for today
+        active_attendance = Attendance.objects.filter(employee=employee, active=True).first()
+        
+        room_status = Room.objects.all()
+        context = {
+            'room_status':room_status,
+             'active_attendance': active_attendance,
+        }
+        
+        return render (request,template, context)
+    else:
+        return redirect('core:index')
+    
+
+def supervisor_checkout_list (request):
+    template="supervisor/supervisor_room_checkout.html"
+
+    if request.user.is_supervisor:
+        booking_list = Booking.objects.filter(
+                check_out_date__lte=timezone.now().date(),
+                is_active=True,
+                checked_in=True
+            )
+        context ={
+            'bookings': booking_list,
+        }
+        return render(request,template,context)
+    else:
+        return redirect('core:index')
+
 
 #supervisor views ends here 
 # ==========================================================================================================
@@ -924,13 +976,14 @@ def frontdesk_room_status(request):
         }
         
         return render (request,template, context)
+    else:
+        return redirect('core:index')
 
 
 # bookings
 
 def frontdesk_booking_list(request):
     template = "front_desk/bookinglist.html"
-
     if request.user.is_frontdesk_officer:
         today = timezone.now().date()
         user = request.user
@@ -1050,6 +1103,8 @@ def frontdesk_checkout_list(request):
             'active_attendance':active_attendance,
         }
         return render(request, template, context)
+    else:
+        return redirect('core:index')
     
 
 def generate_unique_username(base_username):
@@ -1060,102 +1115,12 @@ def generate_unique_username(base_username):
 
 
 # #htmx view for avaiilable room 
-
 def available_rooms_view(request):
     room_type_id = request.GET.get('room_type')
     rooms = Room.objects.filter(room_type_id=room_type_id, is_available=True)
 
     return render(request, 'partials/htmx/available-rooms.html', {'rooms': rooms})
 
-# def front_desk_booking(request):
-#     if request.user.is_frontdesk_officer:
-#         today = timezone.now().date()
-#         user = request.user
-#         employee = Employee.objects.get(user=user)
-#         hide_completed = True
-
-#         active_attendance = Attendance.objects.filter(employee=employee, active=True).first()    
-#         room_type_id = request.POST.get('room_type') if request.method == 'POST' else None
-
-#         if request.method == 'POST':
-#             basic_info_form = BasicUserInfoForm(request.POST)
-#             profile_info_form = ProfileInfoForm(request.POST)
-#             booking_choice_form = BookingChoiceForm(request.POST)
-#             room_booking_form = RoomBookingForm(request.POST, room_type_id=room_type_id)  # Pass room_type_id
-#             room_reservation_form = RoomReservationForm(request.POST)
-#             payment_form = PaymentForm(request.POST, exclude_completed=hide_completed)
-
-#             if basic_info_form.is_valid() and profile_info_form.is_valid() and booking_choice_form.is_valid():
-#                 email = basic_info_form.cleaned_data['email']
-#                 phone = basic_info_form.cleaned_data['phone']
-                
-#                 # Check if the user exists, if not, create one
-#                 user = User.objects.filter(email=email).first() 
-
-#                 if not user:
-#                     user = basic_info_form.save(commit=False)
-#                     user.set_password(user.phone)  # Set phone number as password
-#                     user.username = user.email
-#                     user.save()
-
-#                     profile, created = Profile.objects.get_or_create(user=user)
-#                     profile_form_data = profile_info_form.cleaned_data
-#                     for field, value in profile_form_data.items():
-#                         setattr(profile, field, value)
-#                     profile.save()
-
-#                 # Check the user's choice (either booking or reservation)
-#                 choice = booking_choice_form.cleaned_data['choice']
-
-#                 booking = None
-#                 reservation = None
-
-#                 if choice == 'booking':
-#                     if room_booking_form.is_valid():
-#                         booking = room_booking_form.save(commit=False)
-#                         booking.user = user
-#                         booking.save()  # Save the booking instance
-
-#                         # Save any other details or related objects if necessary
-#                     else:
-#                         print('Booking form errors:', room_booking_form.errors)
-#                 elif choice == 'reservation':
-#                     if room_reservation_form.is_valid():
-#                         reservation = room_reservation_form.save(commit=False)
-#                         reservation.user = user
-#                         reservation.save()
-
-#                 # Process payment if the form is valid
-#                 if payment_form.is_valid():
-#                     payment = payment_form.save(commit=False)
-#                     payment.user = user
-#                     if booking:
-#                         payment.booking = booking
-#                     elif reservation:
-#                         payment.booking = reservation  # If it's a reservation, associate the payment with the reservation
-#                     payment.save()
-
-#                 # Redirect to the receipt page
-#                 return redirect('dashboard:receipt', booking_id=booking.booking_id if booking else reservation.id)
-
-#         else:
-#             # Initialize forms for GET request
-#             basic_info_form = BasicUserInfoForm()
-#             profile_info_form = ProfileInfoForm()
-#             booking_choice_form = BookingChoiceForm()
-#             room_booking_form = RoomBookingForm(room_type_id=room_type_id)  
-#             room_reservation_form = RoomReservationForm()
-#             payment_form = PaymentForm(exclude_completed=hide_completed)
-
-#         return render(request, 'front_desk/roombook.html', {
-#             'basic_info_form': basic_info_form,
-#             'profile_info_form': profile_info_form,
-#             'booking_choice_form': booking_choice_form,
-#             'room_booking_form': room_booking_form,
-#             'room_reservation_form': room_reservation_form,
-#             'payment_form': payment_form,
-#             'active_attendance': active_attendance,
-#         })
 
 def front_desk_booking(request):
     if request.user.is_frontdesk_officer:
@@ -1372,10 +1337,8 @@ def receipt_view(request, booking_id):
     return render(request, 'front_desk/booking/receipt.html', context)
 
 
-
 def frontdesk_add_room_service(request, pk):
     booking_instance = Booking.objects.get(pk = pk)
-    
     if request.method == "POST":
         add_room_service_form = RoomServiceForm(request.POST)
         if add_room_service_form.is_valid():
@@ -1396,9 +1359,7 @@ def frontdesk_add_room_service(request, pk):
         
 
 def frontdesk_add_additional_charge(request, pk):
-
     booking_instance = Booking.objects.get(pk = pk)
-    
     if request.method == "POST":
         additional_service_form = AdditionalChargeForm(request.POST)
         if additional_service_form.is_valid():
@@ -1415,7 +1376,6 @@ def frontdesk_add_additional_charge(request, pk):
         messages.error(request,f"Invalid Form: unable to room service to booking")
         return redirect("dashboard:frontdesk_booking_list")
     
-
 
 def frontdesk_apply_coupon_to_booking(request, pk):
     
@@ -1451,11 +1411,9 @@ def frontdesk_apply_coupon_to_booking(request, pk):
     return redirect('dashboard:checkout', pk=pk)
 
 
-
-
 def checkout_view(request, id):
    
-        # Get the user and booking
+    # Get the user and booking
     booking = get_object_or_404(Booking, id=id)
 
     # Get the receipt summary
@@ -1482,6 +1440,7 @@ def checkout_view(request, id):
     }
 
     return render(request, 'front_desk/booking/checkout_details.html', context)
+
 
 def frontdesk_checkout_payment_view(request, pk):
     booking = get_object_or_404(Booking, pk=pk)

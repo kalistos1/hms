@@ -14,6 +14,9 @@
         {% elif request.user.is_account_officer %}
             {% include '../partials/menubars/accounting_sidebar.html' %}
 
+        {% elif request.user.is_pos_officer %}
+            {% include '../partials/menubars/pos_sidebar.html' %}
+
         {% else %}
             {% include '../partials/menubars/frontdesk_sidebar.html' %}
 

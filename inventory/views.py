@@ -252,7 +252,7 @@ def amenity_item_update(request, pk):
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
-        form = ConsumableItemForm(instance=amenity)
+        form = ItemForm(instance=amenity)
     return render(request, 'pages/amenity_item_form.html', {'form': form})
 
 
@@ -286,9 +286,6 @@ def move_product(request):
     else:
         messages.error(request,'Something happened, item was not moved')
         return redirect('dashboard:warehouse_info')
-
-
-    
 
 
 # Equipment Usage Log Views
@@ -473,3 +470,8 @@ def inspection_checklist_delete(request, pk):
         messages.success(request, 'Inspection checklist deleted successfully.')
         return redirect('inspection_checklist_list')
     return render(request, 'checklists/inspection_checklist_confirm_delete.html', {'checklist': checklist})
+
+
+
+def supervisor_reports(request):
+    return render(request,'supervisor/reports.html')

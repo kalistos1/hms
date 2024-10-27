@@ -76,8 +76,13 @@ urlpatterns = [
     #pos officer
     path('pos/order_list/', views.pos_orders, name='pos_orders'),
     path('pos/received_stock/', views.user_update_received_stock, name='received_stock'),
-    path('pos/mark_product_as_received/<int:pk>/', views.mark_product_as_received, name="mark_as_received")
-
+    path('pos/mark_product_as_received/<int:pk>/', views.mark_product_as_received, name="mark_as_received"),
+   
+   #supervisor 
+    path('supervisor/booking_list/', views.supervisor_view_bookings, name='supervisor-booking_list'),
+    path('supervisor/room_status/', views.supervisor_view_roomstatus, name='supervisor_room_status'),
+    path('supervisor/check_out_list/', views.supervisor_checkout_list, name='supervisor_checkout_list'),
+   
    
 ]
 
