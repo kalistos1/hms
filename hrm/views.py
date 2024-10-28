@@ -7,9 +7,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.db import transaction
-from datetime import timedelta
+from datetime import date, timedelta
 from django.db.models import Q
-from datetime import datetime
 from django.utils import timezone
 
 
@@ -230,13 +229,32 @@ def leave_request_delete(request, pk):
 
 # List all staff schedules
 def staff_schedule_list(request):
-    schedules = StaffSchedules.objects.all()
+    schedules = StaffSchedules.objects.all().order_by('-schedule_start_date')
     form = StaffScheduleForm(request.POST)
     context={
         'schedules': schedules,
         'form':form,
         }
     return render(request, 'pages/schedule_list.html', context)
+
+
+#staff schedule list for today tand tomorrow
+def current_schedule_list(request):
+    # Define today's date and tomorrow's date
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+    # Filter schedules that fall between today and tomorrow
+    schedules = StaffSchedules.objects.filter(
+        schedule_start_date__gte=today,
+        schedule_start_date__lt=tomorrow
+    ).order_by('schedule_start_date')
+    form = StaffScheduleForm(request.POST or None)
+    context = {
+        'schedules': schedules,
+        'form': form,
+    }
+    return render(request, 'pages/current_schedule_list.html', context)
+
 
 # Create a new staff schedule
 def staff_schedule_create(request):
@@ -283,10 +301,9 @@ def staff_schedule_delete(request, pk):
 
 
 def admin_worker_attendance(request):
-
     # Get the current date or a date passed via GET parameter
     selected_date = request.GET.get('date', timezone.now().date())
-    
+
     # Find schedules that intersect with the selected date (either start or end date falls on or spans the date)
     schedules = StaffSchedules.objects.filter(
         Q(schedule_start_date__lte=selected_date) & Q(schedule_end_date__gte=selected_date)
@@ -304,11 +321,7 @@ def admin_worker_attendance(request):
     }
     return render(request, 'pages/daily_attendance.html', context)
 
-
-
-
-
-
+# admin checkout  employee
 @transaction.atomic
 def checkout_employee(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
@@ -349,18 +362,17 @@ def checkout_employee(request, pk):
                 # Mark the schedule as 'Ended'
                 schedule.active = 'Ended'
                 schedule.save()
-
-
     # Send success message to the user
     messages.success(request, f"{employee.user.get_full_name()} has successfully checked out and their schedule has been ended.")
     return redirect('hrm:daily_attendance')  # Adjust redirect as needed
 
 
+
+#staff checkin self
 # @login_required
 def check_in(request):
     user = request.user
     employee = get_object_or_404(Employee, user=user)
-    
     # Get today's schedule for the employee
     today = timezone.now().date()
     schedule = StaffSchedules.objects.filter(employee=employee, active="False", schedule_start_date=today).first()
@@ -402,6 +414,50 @@ def check_in(request):
     messages.success(request, "Attendance Signed successfully!")
     return redirect('signin')
 
+
+#supervisor checkin employee
+def supervisor_check_in_employee(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    # Get today's schedule for the employee
+    today = timezone.now().date()
+    schedule = StaffSchedules.objects.filter(employee=employee, active="False", schedule_start_date=today).first()
+
+    if not schedule:
+        messages.error(request, "No schedule found for today.")
+        return redirect('signin') 
+    
+    # Check if employee already checked in today
+    if Attendance.objects.filter(employee=employee, check_in__date=today, check_out__isnull=True).exists():
+        messages.warning(request, "You have already checked in.")
+        return redirect('signin')  # redirect to a relevant page
+    
+    # Check for lateness based on schedule
+    scheduled_start_time = timezone.make_aware(timezone.datetime.combine(today, schedule.start_time))
+    current_time = timezone.now()
+    late_arrival = current_time > scheduled_start_time
+
+    # Check if user is trying to sign in before their time
+    if current_time < scheduled_start_time:
+        messages.error(request, "It is not yet time for  to sign this worker in!")
+        return redirect('hrm:current_schedule_list')
+    
+    # Retrieve the employee's department location (linked via DepartmentLocation)
+    department_location = employee.department_location
+
+    Attendance.objects.create(
+        employee=employee,
+        shift_type=schedule.schedule_shift_type,
+        shift_location=department_location,  # Use employee's department location directly
+        late_arrival=late_arrival,
+        active=True,
+
+    )
+
+    # Update schedule status
+    schedule.active = "True"
+    schedule.save()
+    messages.success(request, "Attendance Signed successfully!")
+    return redirect('hrm:current_schedule_list')
 
 
 # def check_out(request):
@@ -513,3 +569,66 @@ def check_out(request):
     logout(request)
     messages.success(request, "You have successfully checked out.")
     return redirect('core:index')
+
+
+
+def check_out_employee(request, pk):
+    import datetime
+    now = timezone.now()  # Timezone-aware current date and time
+    today = now.date()    # Current date (timezone-naive, but safe for date comparisons)
+    employee = get_object_or_404(Employee, pk=pk)
+
+    # Fetch the schedule that spans today
+    schedule = StaffSchedules.objects.filter(
+        employee=employee,
+        schedule_start_date__lte=today,  # Schedule that started before or on today
+        schedule_end_date__gte=today     # Schedule that ends on or after today
+    ).first()
+
+    # Fetch active attendance record where check-out is not yet recorded
+    attendance = Attendance.objects.filter(employee=employee, check_out__isnull=True).first()
+
+    if not attendance:
+        messages.error(request, "No active check-in found.")
+        return redirect('signin')
+
+    # Update attendance with check-out time and deactivate it
+    attendance.check_out = now
+    attendance.active = False
+    attendance.save()
+
+    if schedule:
+        # Combine the schedule end date and time (this is a naive datetime)
+        schedule_end_datetime_naive = datetime.combine(schedule.schedule_end_date, schedule.end_time)
+
+        # Make the schedule_end_datetime timezone-aware to match with 'now'
+        schedule_end_datetime = timezone.make_aware(schedule_end_datetime_naive, timezone.get_current_timezone())
+
+        # Check if the employee checks out BEFORE the schedule's end date and time
+        if now < schedule_end_datetime:
+            # Mark the schedule as 'Ended' since the employee checked out early
+            schedule.active = 'Ended'
+            schedule.save()
+            messages.warning(request, "You checked out before your scheduled end time.")
+
+        # Check if the current time is now or past the schedule's end datetime
+        elif now >= schedule_end_datetime:
+            # Mark the schedule as 'Ended'
+            schedule.active = 'Ended'
+            schedule.save()
+
+        # Additionally, check if today's date is past the schedule's end date
+        elif today > schedule.schedule_end_date:
+            # If the current date is past the schedule end date, mark it as 'Ended'
+            schedule.active = 'Ended'
+            schedule.save()
+
+        # Check if attendance is inactive and schedule is still marked active as 'True' (since it's stored as a string)
+        elif not attendance.active and schedule.active == 'True':
+            # Mark the schedule as 'Ended' for consistency if check-out is done
+            schedule.active = 'Ended'
+            schedule.save()
+
+    # Log out the user after successful check-out
+    messages.success(request, "You have successfully checked out.")
+    return redirect('hrm:current_schedule_list')

@@ -612,7 +612,7 @@ def supervisor_view_roomstatus (request):
     else:
         return redirect('core:index')
     
-
+#room checkout
 def supervisor_checkout_list (request):
     template="supervisor/supervisor_room_checkout.html"
 

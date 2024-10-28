@@ -22,13 +22,18 @@ urlpatterns = [
     path('departments/update_employee/<int:pk>/', views.employee_update, name='employee_update'),
     
     path('departments/schedules/', views.staff_schedule_list, name='staff_schedule'),
+    path('department/current_staff_schedule',views.current_schedule_list, name ="current_schedule_list"),
     path('departments/create_schedule/', views.staff_schedule_create, name='schedule_create'),
     path('departments/delete_schedule/<int:pk>/', views.staff_schedule_delete, name='schedule_delete'),
     path('departments/update_schedule/<int:pk>/', views.staff_schedule_update, name='schedule_update'),
 
     path('departments/daily_attendance/', views.admin_worker_attendance, name='daily_attendance'),
     path('departments/checkout_attendance/<int:pk>/', views.checkout_employee, name='checkout_employee'),
+    
     path('check-in/', views.check_in, name='check_in'),
+    path('supervisor_checkin_employee/', views.supervisor_check_in_employee, name='supervisor_check_in_employee'),
+   
 
     path('check-out/', views.check_out, name='check_out'),
+    path('supervisor_checkout_employee/<int:pk>/', views.check_out_employee, name='supervisor_checkout_employee'),
 ]
