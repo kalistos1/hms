@@ -3,7 +3,15 @@
 {% block title %}Home | Hotel website  {% endblock %}
 
 {% block content %}
-
+<style>
+    .badge{
+        color: #000;
+        background:#fff;
+    }
+    .badge-pill{
+        border: 1px solid #ffee27;
+    }
+</style>
 <!-- ===============slide button=============== -->
     <div class="container">
         <div class="row justify-content-center">
@@ -17,11 +25,11 @@
     <div class="hero-header">
         <div class="header-slider header-slider-preloader slider-two" id="home">
             <div class="animation-slide owl-carousel owl-theme" id="animation-slide">
-                <div class="item bg-img-hero" data-image-src="https://hotel.bdtask-demo.com/xainhotel/assets/img/banner/2019-05-27/s1.jpg">
+                <div class="item bg-img-hero" data-image-src="{% static "frontpage/assets/img/banner/s1.jpg" %}">
                 </div>
-                <div class="item bg-img-hero" data-image-src="https://hotel.bdtask-demo.com/xainhotel/assets/img/banner/2019-05-27/s2.jpg">
+                <div class="item bg-img-hero" data-image-src="{% static "frontpage/assets/img/banner/s2.jpg" %}">
                 </div>
-                <div class="item bg-img-hero" data-image-src="https://hotel.bdtask-demo.com/xainhotel/assets/img/banner/2020-02-26/b.jpg">
+                <div class="item bg-img-hero" data-image-src="{% static "frontpage/assets/img/banner/b.jpg" %}">
                 </div>
             </div>
         </div>
@@ -94,7 +102,7 @@
                         <br>
                         <a href="#" class="search-title fs-13 text-uppercase">Select Room Type</a>
                         <br>
-                        <select  style="width:150px; border:5px solid black; padding:5px;" class=" border" name="room-type" required>
+                        <select  style="width:150px; border:5px solid black; padding:5px; outline: none;" class=" border" name="room-type" required>
                             <option class ="form-control" value="">Room Type</option>
                             {% for r in hotel.hotel_room_types %}
                                 <option class ="form-control" value="{{r.slug}}">{{r.type}}</option>
@@ -104,10 +112,14 @@
 
                     </div>
 
-                    <div class="col-lg-2" style="background-color:#fee277;">
-                        <button type="submit" class=" btn btn-info d-flex flex-column align-items-center justify-content-around " >
+                    <div class="col-lg-2" style="background-color: #fee277;">
+                        <button type="submit" class=" btn d-flex flex-column align-items-center justify-content-around " style="background-color: #fee277;">
 
-                            Check Availability </button>
+                            <p style="color: #000;">
+
+                                Check Availability
+                            </p>
+                        </button>
                     </div>
                 </div>
             </form>
@@ -121,7 +133,7 @@
                 <div class="col-sm-6 col-md-3 mb-4 mb-md-0">
                     <div class="feature-box text-center">
                         <div class="feature-box-icon mb-3">
-                            <img src="assets/img/banner/2021-11-18/p1.png" alt="Card image" class="img-fluid">
+                            <img src="{% static "frontpage/assets/img/banner/2021-11-18/p1.png" %}" alt="Card image" class="img-fluid">
                         </div>
                         <h4 class="feature-box-title fs-21 font-weight-600">
                             Save up to 10%</h4>
@@ -180,13 +192,13 @@
                 <div class="col-lg-7 col-md-6 col-12 mt-4 mt-sm-0 pt-2 pt-sm-0">
                     <div class="ml-lg-5 ml-md-4">
                         <div class="section-title">
-                            <span class="badge badge-pill badge-soft-primary">About</span>
-                            <h4 class="title mt-3 mb-4"><span class="text-primary">Comfort are Perfectly Combined Here</span></h4>
+                            <span class="badge badge-pill badge-soft-primary" >About</span>
+                            <h4 class="title mt-3 mb-4"><span class="text-dark">Comfort are Perfectly Combined Here</span></h4>
                             <p class="text-muted para-desc mx-auto mb-0">
                                 This charming private 19th-century mansion, which originally belonged to the family, has been completely renovated with care &amp;amp; passion while respecting the spirit of place.
                                 Divo Hotel surrounded herself by a team of French artisans to create a sophisticated place in a refined.</p>
                             <div class="mt-4">
-                                <a href="#" class="btn btn-primary">We Provide</a>
+                                <a href="#" class="btn" style="background-color:#ffee27; font-weight: 600;">We Provide</a>
                             </div>
                         </div>
                     </div>
@@ -195,13 +207,13 @@
             </div>
         </div>
     </div>
-    <div class="section container rounded join-content box-shadow mb-5 shadow">
+    {% comment %} <div class="section container rounded join-content box-shadow mb-5 shadow">
         <div class="text-center col-middle">
             <h2 class="fs-32 text-white mb-4 ">This charming private 19th century mansion, which originally </h2>
             <a href="user/login.html" class="btn btn-outline-white mr-3">Sign In</a>
             <a href="register.html" class="btn btn-white">Join Us</a>
         </div>
-    </div>
+    </div> {% endcomment %}
 
     <div class="section bg-gray">
         <div class="container">
@@ -224,8 +236,8 @@
                         <div class="col-lg-4 col-md-4 col-sm-6">
                             <div class="card border-0 box-shadow rounded-0 mb-4">
                                 <a href="{% url 'core:room_type_list' room_type.slug %}" class="card-img position-relative">
-                                    <img src="{{ room_type.banner_img.url }}" class="img-fluid wd_xs_100" alt="...">
-                                    <button type="button" class="position-absolute btn btn-primary btn-sm">Book Now</button>
+                                    <img src="{{ room_type.img.url }}" class="img-fluid wd_xs_100" alt="...">
+                                    <button type="button" class="position-absolute btn btn-sm " style="background-color: #ffee27;">Book Now</button>
                                 </a>
                                 <div class="card-body">
                                     <h3 class="text-center card-title mb-0 weeklyoffer-title  "><a href="#" class="text-dark fw-bolder">{{ room_type.type }}</a></h3>
@@ -239,7 +251,7 @@
             </div>
         </div>
     </div>
-    <div class="section section-destination">
+    {% comment %} <div class="section section-destination">
         <div class="container">
             <div class="row">
                 <div class="col-md-10 offset-md-1">
@@ -310,7 +322,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> {% endcomment %}
 
 {% endblock %}
 
