@@ -69,7 +69,7 @@
                                             <td>{{ attendance.check_out|default:"Still Active" }}</td>
                                             <td>
                                                 {% if not attendance.check_out %}
-                                                    <form method="post" action="{% url 'hrm:checkout_employee' attendance.employee.pk %}">
+                                                    <form method="post" action="{% url 'hrm:supervisor_checkout_employee' attendance.employee.pk %}">
                                                         {% csrf_token %}
                                                         <button type="submit" class="btn btn-danger" >Check Out</button>
                                                     </form>

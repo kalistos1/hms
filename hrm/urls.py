@@ -28,12 +28,14 @@ urlpatterns = [
     path('departments/update_schedule/<int:pk>/', views.staff_schedule_update, name='schedule_update'),
 
     path('departments/daily_attendance/', views.admin_worker_attendance, name='daily_attendance'),
+
+    #old
     path('departments/checkout_attendance/<int:pk>/', views.checkout_employee, name='checkout_employee'),
     
     path('check-in/', views.check_in, name='check_in'),
     path('supervisor_checkin_employee/', views.supervisor_check_in_employee, name='supervisor_check_in_employee'),
-   
-
     path('check-out/', views.check_out, name='check_out'),
+    
+    #new
     path('supervisor_checkout_employee/<int:pk>/', views.check_out_employee, name='supervisor_checkout_employee'),
 ]
