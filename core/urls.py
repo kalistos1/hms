@@ -10,6 +10,7 @@ urlpatterns = [
     path ('about/', views.about_us, name="about"),
     path ('contact_us/', views.contact_us, name="contact"),
     path ('gallery/', views.gallery, name="gallery"),
+    path ('gallery_filter/<str:foo>/', views.gallery_filter, name="gallery-filter"),
     path ('room_list/', views.all_rooms, name="all_rooms"),
     path('roomtype/room_list/<slug:slug>/', views.room_list, name='room_type_list'),
     path("detail/<slug:slug>/room-type/<slug:rt_slug>/", views.room_type_detail, name="room_type_detail"),

@@ -118,7 +118,7 @@
 
                                     {% comment %} <li><a href="" aria-label="Items Destroyed">Amenities Inventory</a></li> {% endcomment %}
                                 </ul>
-                            </li>
+                          </li>
 
                             <li>
                                 <a href="#roaster" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Room Book">
@@ -141,27 +141,8 @@
                                     <span class="mx-3">Workers Roaster</span>
                                 </a>
                                 <ul class="collapse list-unstyled" id="roaster">
+                                    
 
-                                    <li>
-                                        <a href="{% url 'hrm:current_schedule_list' %}" aria-label="Assigned List" >
-                                          <span class="mx-3">Todays Schedules</span>
-                                        </a>
-                                      </li>
-                                      <li>
-                                        <a href="{% url 'hrm:daily_attendance' %}" aria-label="hrm attendance" >
-                                          <span class="mx-3"> Attendance
-                                        </a >
-                                        </li>
-                                        <li>
-                                          <a href="{% url 'hrm:staff_schedule' %}" aria-label="Assigned List" >
-                                            <span class="mx-3">All schedules </span>
-                                          </a>
-                                        </li>
-                  
-                                        
-                                        </ul>
-                                    {% comment %} <li><a href="" aria-label="Items Destroyed">Amenities Inventory</a></li> {% endcomment %}
-                               
                             </li>
 
 
