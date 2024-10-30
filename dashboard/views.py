@@ -576,9 +576,80 @@ def admin_room_status(request):
 
 
 
+
 def supervisor_dashboard(request):
-    template = "supervisor/dashboard.html"    
-    return render (request,template)
+    template = "supervisor/dashboard.html"
+    today = timezone.now().date()
+    yesterday = today - timedelta(days=1)
+
+    # Get today's and yesterday's bookings
+    todays_bookings = Booking.objects.filter(date__date=today).order_by('-date')
+    yesterdays_bookings = Booking.objects.filter(date__date=yesterday).order_by('-date')
+
+    # Calculate total amount for today's bookings in Payment and PaymentCompletion models
+    todays_payment_total = Payment.objects.filter(
+        booking__in=todays_bookings
+    ).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+
+    todays_completion_total = PaymentCompletion.objects.filter(
+        payment__booking__in=todays_bookings
+    ).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+
+    # Calculate total amount for yesterday's bookings in Payment and PaymentCompletion models
+    yesterdays_payment_total = Payment.objects.filter(
+        booking__in=yesterdays_bookings
+    ).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+
+    yesterdays_completion_total = PaymentCompletion.objects.filter(
+        payment__booking__in=yesterdays_bookings
+    ).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+
+    todays_total_payment = todays_payment_total + todays_completion_total 
+    yesterdays_total_payment =  yesterdays_payment_total + yesterdays_completion_total 
+
+    context = {
+        'todays_bookings': todays_bookings,
+        'yesterdays_bookings': yesterdays_bookings,
+        'todays_total_payment': todays_total_payment,
+        'yesterdays_total_payment':yesterdays_total_payment,
+        
+    }
+
+    return render(request, template, context)
+
+def supervisor_transaction_list (request):
+    template = "supervisor/transactions.html"
+
+
+    # Calculate date ranges for today and yesterday
+    today = timezone.now().date()
+    yesterday = today - timedelta(days=1)
+
+    # Fetch orders by department for yesterday and include items
+    orders_yesterday = (
+        Order.objects
+        .filter(created_at__date=yesterday)
+        .select_related('staff__department_location')  # Access department location
+        .prefetch_related('items', 'pospayment_set')  # Prefetch items and payments for the orders
+        .annotate(total_amount_paid=Sum('pospayment__amount_paid'))  # Calculate total amount paid for each order
+    )
+
+    # Fetch orders by department for today and include items
+    orders_today = (
+        Order.objects
+        .filter(created_at__date=today)
+        .select_related('staff__department_location')
+        .prefetch_related('items', 'pospayment_set')
+        .annotate(total_amount_paid=Sum('pospayment__amount_paid'))
+    )
+
+    context = {
+        'orders_yesterday': orders_yesterday,
+        'orders_today': orders_today,
+    }
+
+    return render(request, template,context)
+
 
 
 def supervisor_view_bookings (request):
@@ -612,6 +683,7 @@ def supervisor_view_roomstatus (request):
     else:
         return redirect('core:index')
     
+
 #room checkout
 def supervisor_checkout_list (request):
     template="supervisor/supervisor_room_checkout.html"

@@ -84,7 +84,6 @@ class Employee(models.Model):
     
 
 
-
 class Attendance(models.Model):
     SHIFTTYPE = (
       
