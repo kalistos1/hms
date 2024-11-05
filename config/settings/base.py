@@ -60,9 +60,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     
-    
     #htmx
     "django_htmx.middleware.HtmxMiddleware",
+
+    #costume middleware
+    'hotel.middleware.role_based_redirect_middleware.RoleBasedRedirectMiddleware',
 ]
 
 

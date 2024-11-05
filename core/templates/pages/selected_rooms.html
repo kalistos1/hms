@@ -154,7 +154,7 @@
                                     <li>
                                         <h5>Room: {{item.room_name}}  <small><a style="cursor: pointer;" class="delete-item" data-item="{{ id }}"><i class="fas fa-trash" style="color: red;"></i></a></small> </h5>
                                         <p><strong>Beds :</strong> {{item.number_of_beds}}  </p>
-                                        <span>${{item.room_price}} </span>
+                                        <span>${{item.room_type.base_price}} </span>
                                     </li>
                                 {% endfor %}
                             </ul>

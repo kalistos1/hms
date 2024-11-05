@@ -4,7 +4,11 @@ from django.urls import reverse
 from django.contrib import messages
 from .models import *
 from .forms import *
+from core.decorators import required_roles
+
 # Supplier Views
+
+
 def supplier_list(request):
     suppliers = Supplier.objects.all()
     form = SupplierForm()
@@ -13,6 +17,7 @@ def supplier_list(request):
         'form':form
         }
     return render(request, 'pages/supplier_list.html',context)
+
 
 
 def supplier_create(request):
@@ -267,25 +272,46 @@ def amenity_item_delete(request, pk):
 
 
 def move_product(request):
-    if request.method  == "POST":
-        form =  InventoryMovementForm(request.POST)
-        warehouse = Warehouse.objects.first()
-        employee = get_object_or_404(Employee, user=request.user)
+    warehouse = Warehouse.objects.first()
+    employee = get_object_or_404(Employee, user=request.user)
 
-        if form.is_valid:
-           move_data = form.save(commit=False)
-           move_data.warehouse = warehouse
-           move_data.performed_by = employee
-           move_data.save()
+    if request.method == "POST":
+        form = InventoryMovementForm(request.POST)
+        form2 = InventoryMovementForm2(request.POST, exclude_types=True)
 
-           messages.success(request, 'item Moved Succesful')
-           return redirect('inventory:warehouse_stock')
-        else:
-            messages.error(request,'Something happened, item was not moved')
-            return redirect('dashboard:warehouse_info')
+        # Process form1
+        if 'submit_form1' in request.POST:
+            if form.is_valid():
+                move_data = form.save(commit=False)
+                move_data.warehouse = warehouse
+                move_data.performed_by = employee
+                move_data.save()
+
+                messages.success(request, 'Item moved successfully with Form 1')
+                return redirect('inventory:warehouse_stock')
+            else:
+                messages.error(request, 'Something happened, item was not moved with Form 1')
+
+        # Process form2
+        elif 'submit_form2' in request.POST:
+            if form2.is_valid():
+                move_data = form2.save(commit=False)
+                move_data.warehouse = warehouse
+                move_data.performed_by = employee
+                move_data.save()
+
+                messages.success(request, 'Item moved successfully with Form 2')
+                return redirect('inventory:warehouse_stock')
+            else:
+                messages.error(request, 'Something happened, item was not moved with Form 2')
+
+        return redirect('dashboard:warehouse_info')
+    
     else:
+
         messages.error(request,'Something happened, item was not moved')
         return redirect('dashboard:warehouse_info')
+
 
 
 # Equipment Usage Log Views

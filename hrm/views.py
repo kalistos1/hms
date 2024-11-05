@@ -10,18 +10,21 @@ from django.db import transaction
 from datetime import date, timedelta
 from django.db.models import Q
 from django.utils import timezone
+from core.decorators import required_roles
 
 
+
+@required_roles('is_admin','is_supervisor')
 def hrm_dashboard(request):
     return render(request, )
 
 
+@required_roles('is_admin','is_supervisor')
 def hrm_quick_links(request):
-
     return render(request,'pages/hrm_quick_links.html' )
 
 
-
+@required_roles('is_admin','is_supervisor')
 def department_list(request):
     departments = Department.objects.all()
     form = DepartmentForm()
@@ -34,6 +37,7 @@ def department_list(request):
 
 
 # Create a new department
+@required_roles('is_admin','is_supervisor')
 def department_create(request):
     if request.method == 'POST':
         form = DepartmentForm(request.POST)
@@ -51,6 +55,7 @@ def department_create(request):
 
 
 # Update an existing department
+@required_roles('is_admin','is_supervisor')
 def department_update(request, pk):
     department = get_object_or_404(Department, pk=pk)
     if request.method == 'POST':
@@ -63,6 +68,7 @@ def department_update(request, pk):
 
 
 # Delete a department
+@required_roles('is_admin','is_supervisor')
 def department_delete(request, pk):
     department = get_object_or_404(Department, pk=pk)
     if request.method == 'GET':
@@ -75,6 +81,7 @@ def department_delete(request, pk):
 
 
 # List all department locations
+@required_roles('is_admin','is_supervisor')
 def department_location_list(request):
     locations = DepartmentLocation.objects.all()
     form  = DepartmentLocationForm()
@@ -86,6 +93,7 @@ def department_location_list(request):
 
 
 # Create a new department location
+@required_roles('is_admin','is_supervisor')
 def department_location_create(request):
     if request.method == 'POST':
         form = DepartmentLocationForm(request.POST)
@@ -98,6 +106,7 @@ def department_location_create(request):
         return redirect('hrm:department_locations')
 
 # Update an existing department location
+@required_roles('is_admin','is_supervisor')
 def department_location_update(request, pk):
     location = get_object_or_404(DepartmentLocation, pk=pk)
     if request.method == 'POST':
@@ -114,6 +123,7 @@ def department_location_update(request, pk):
 
 
 # Delete a department location
+@required_roles('is_admin','is_supervisor')
 def department_location_delete(request, pk):
     location = get_object_or_404(DepartmentLocation, pk=pk)
     if request.method == 'GET':
@@ -127,6 +137,7 @@ def department_location_delete(request, pk):
 
 
 # List all employees
+@required_roles('is_admin','is_supervisor')
 def employee_list(request):
     employees = Employee.objects.all()
     form = EmployeeForm()
@@ -139,6 +150,7 @@ def employee_list(request):
 
 
 # Create a new employee
+@required_roles('is_admin','is_supervisor')
 def employee_create(request):
 
     if request.method == 'POST':
@@ -161,6 +173,7 @@ def employee_create(request):
 
 
 # Update an existing employee
+@required_roles('is_admin','is_supervisor')
 def employee_update(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     if request.method == 'POST':
@@ -175,6 +188,7 @@ def employee_update(request, pk):
 
 
 # Delete an employee
+@required_roles('is_admin','is_supervisor')
 def employee_delete(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     if request.method == 'GET':
@@ -188,12 +202,14 @@ def employee_delete(request, pk):
 
 
 # List all leave requests
+@required_roles('is_admin','is_supervisor')
 def leave_request_list(request):
     leave_requests = LeaveRequest.objects.all()
     return render(request, 'leave_request_list.html', {'leave_requests': leave_requests})
 
 
 # Create a new leave request
+@required_roles('is_admin','is_supervisor')
 def leave_request_create(request):
     if request.method == 'POST':
         form = LeaveRequestForm(request.POST, request.FILES)
@@ -206,6 +222,7 @@ def leave_request_create(request):
 
 
 # Update an existing leave request
+@required_roles('is_admin','is_supervisor')
 def leave_request_update(request, pk):
     leave_request = get_object_or_404(LeaveRequest, pk=pk)
     if request.method == 'POST':
@@ -219,6 +236,7 @@ def leave_request_update(request, pk):
 
 
 # Delete a leave request
+@required_roles('is_admin','is_supervisor')
 def leave_request_delete(request, pk):
     leave_request = get_object_or_404(LeaveRequest, pk=pk)
     if request.method == 'GET':
@@ -228,6 +246,7 @@ def leave_request_delete(request, pk):
 
 
 # List all staff schedules
+@required_roles('is_admin','is_supervisor')
 def staff_schedule_list(request):
     schedules = StaffSchedules.objects.all().order_by('-schedule_start_date')
     form = StaffScheduleForm(request.POST)
@@ -239,6 +258,7 @@ def staff_schedule_list(request):
 
 
 #staff schedule list for today tand tomorrow
+@required_roles('is_admin','is_supervisor')
 def current_schedule_list(request):
     # Define today's date and tomorrow's date
     today = date.today()
@@ -256,7 +276,9 @@ def current_schedule_list(request):
     return render(request, 'pages/current_schedule_list.html', context)
 
 
+
 # Create a new staff schedule
+@required_roles('is_admin','is_supervisor')
 def staff_schedule_create(request):
     if request.method == 'POST':
         form = StaffScheduleForm(request.POST)
@@ -274,7 +296,9 @@ def staff_schedule_create(request):
         return redirect('hrm:staff_schedule')
 
 
+
 # Update an existing staff schedule
+@required_roles('is_admin','is_supervisor')
 def staff_schedule_update(request, pk):
     schedule = get_object_or_404(StaffSchedules, pk=pk)
     if request.method == 'POST':
@@ -288,7 +312,9 @@ def staff_schedule_update(request, pk):
         return redirect('hrm:staff_schedule')
 
 
+
 # Delete a staff schedule
+@required_roles('is_admin','is_supervisor')
 def staff_schedule_delete(request, pk):
     schedule = get_object_or_404(StaffSchedules, pk=pk)
     if request.method == 'GET':
@@ -300,6 +326,7 @@ def staff_schedule_delete(request, pk):
         return redirect('hrm:staff_schedule')
 
 
+@required_roles('is_admin','is_supervisor')
 def admin_worker_attendance(request):
     # Get the current date or a date passed via GET parameter
     selected_date = request.GET.get('date', timezone.now().date())
@@ -321,7 +348,10 @@ def admin_worker_attendance(request):
     }
     return render(request, 'pages/daily_attendance.html', context)
 
+
+
 # admin checkout  employee
+@required_roles('is_admin','is_supervisor')
 @transaction.atomic
 def checkout_employee(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
@@ -369,7 +399,7 @@ def checkout_employee(request, pk):
 
 
 #staff checkin self
-# @login_required
+@required_roles('is_admin','is_supervisor','is_account_officer', 'is_frontdesk_officer','is_pos_officer','is_worker')
 def check_in(request):
     user = request.user
     employee = get_object_or_404(Employee, user=user)
@@ -416,6 +446,7 @@ def check_in(request):
 
 
 #supervisor checkin employee
+@required_roles('is_admin','is_supervisor')
 def supervisor_check_in_employee(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     # Get today's schedule for the employee
@@ -506,7 +537,7 @@ def supervisor_check_in_employee(request, pk):
 
 
 
-
+@required_roles('is_admin','is_supervisor','is_account_officer', 'is_frontdesk_officer','is_pos_officer','is_worker')
 def check_out(request):
     import datetime
     now = timezone.now()  # Timezone-aware current date and time
@@ -571,9 +602,9 @@ def check_out(request):
     return redirect('core:index')
 
 
-
+@required_roles('is_admin','is_supervisor')
 def check_out_employee(request, pk):
-    import datetime
+    from datetime import datetime 
     now = timezone.now()  # Timezone-aware current date and time
     today = now.date()    # Current date (timezone-naive, but safe for date comparisons)
     employee = get_object_or_404(Employee, pk=pk)

@@ -180,7 +180,7 @@ class InventoryMovement(models.Model):
 
         # Handle different movement types
         if self.movement_type == 'IN':
-            self.item.stock_quantity += self.quantity
+            self.item.stock_quantity -= self.quantity
             warehouse_stock.add_stock(self.quantity)  # Add to warehouse stock
             destination = "Warehouse"
 

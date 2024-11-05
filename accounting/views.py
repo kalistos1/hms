@@ -8,6 +8,7 @@ from .forms import PurchaseReportForm
 from django.db.models import Sum,Count
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
+from core.decorators import required_roles
 
 
 

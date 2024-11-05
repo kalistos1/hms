@@ -31,22 +31,22 @@ from inventory.models import *
 from pos.forms import updateReceivedItemForm
 from django.utils.timezone import make_aware,is_aware
 from accounting . models import *
-from inventory.forms import InventoryMovementForm
+from inventory.forms import InventoryMovementForm,  InventoryMovementForm2
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from hrm.models import Employee, Attendance, StaffSchedules
 from decimal import Decimal
+from django.contrib.auth.decorators import login_required
+from core.decorators import required_roles
 
-# admin view s start
-# =========================================================================================
-# ==========================================================================================
 
 def admin_dashboard(request):
     # template = "admin_user/dashboard.html"
     return redirect( 'dashboard:account_dashboard' )
 
 
+@required_roles('is_supervisor', 'is_pos_officer')
 def hotel_setup(request):
 
     if request.method == 'POST':
@@ -102,7 +102,6 @@ def warehouse_setup(request):
             return redirect('dashboard:warehouse_info')  
             
     else:
-        messages.error(request, 'Something Went Wrong, Try Again.')
         return redirect('dashboard:warehouse_info') 
 
 
@@ -124,7 +123,8 @@ def warehouse_info(request):
         total_stock = 0
 
     form = WarehouseForm() 
-    inventory_form = InventoryMovementForm()  
+    inventory_form = InventoryMovementForm(exclude_types=True)  
+    inventory_form2 = InventoryMovementForm2(exclude_types=True) 
     context = {
         'total_quantity': total_quantity,
         'quantity_by_stock_type': quantity_by_stock_type,
@@ -136,6 +136,7 @@ def warehouse_info(request):
         'warehouse': warehouse,
         'form':form,
         'inventory_form':inventory_form,
+        'inventory_form2':inventory_form2,
 
         }
 
@@ -156,9 +157,11 @@ def warehouse_stock(request):
         context = {
             'error': 'No stock found in the warehouse.'
         }
-    form = InventoryMovementForm()
+    form = InventoryMovementForm(exclude_types=True)
+    form2 = InventoryMovementForm2(exclude_types=True)
     context.update({
         'form': form,
+        'form2':form2,
     })
 
     return render(request, 'supervisor/move_item.html', context)
@@ -768,7 +771,7 @@ def supervisor_checkout_list (request):
 
 
 #     return render (request,template, context)
-
+@required_roles('is_admin','is_account_officer')
 def account_dashboard(request):
     template = "account_officer/dashboard.html"    
     today = timezone.now().date()
@@ -836,17 +839,19 @@ def account_dashboard(request):
 
             # Sum orders for the recent session in this department
             total_pos_orders_recent_session = Order.objects.filter(
-                staff=last_pos_ended_session.employee.user,
-                staff__employee_profile__department_location__in=department_locations,
+                staff=last_pos_ended_session.employee,  # Use Employee instance directly
+                staff__department_location__in=department_locations,
                 created_at__range=[session_start, session_end]
             ).aggregate(total=Sum(F('total_amount')))['total'] or 0
 
-            # Sum payments for the recent session in this department
+
+           # Sum payments for the recent session in this department
             total_pos_payments_recent_session = PosPayment.objects.filter(
-                order__staff=last_pos_ended_session.employee.user,
-                order__staff__employee_profile__department_location__in=department_locations,
+                order__staff=last_pos_ended_session.employee,  # Use Employee instance directly
+                order__staff__department_location__in=department_locations,
                 payment_date__range=[session_start, session_end]
             ).aggregate(total=Sum(F('amount_paid')))['total'] or 0
+
 
         # Get the active POS session for this department
         pos_active_session = Attendance.objects.filter(
@@ -929,7 +934,8 @@ def account_dashboard(request):
 
     active_session_payment_sum = active_session_payments.aggregate(total=Sum('amount'))['total'] if active_session_payments else 0.00
     active_session_payment_completion_sum = active_session_payment_completions.aggregate(total=Sum('amount'))['total'] if active_session_payment_completions else 0.00
-    active_session_total_payments = active_session_payment_sum + active_session_payment_completion_sum
+    active_session_total_payments = Decimal(active_session_payment_sum) + Decimal(active_session_payment_completion_sum)
+
 
     context = {
         'todays_bookings': todays_bookings,
@@ -961,8 +967,6 @@ def account_dashboard(request):
 #Frontdesk  views starts here 
 # ==========================================================================================================
 # ==========================================================================================================
-
-
 
 def frontdesk_dashboard(request):
     template = "front_desk/dashboard.html"

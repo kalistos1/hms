@@ -31,6 +31,30 @@ class InventoryCategoryForm(forms.ModelForm):
 class InventoryMovementForm(forms.ModelForm):
     class Meta:
         model = InventoryMovement
+        fields = ['item', 'warehouse', 'quantity', 'unit_selling_price', 'movement_type',  'reason']
+        widgets = {
+            'item': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Choose Item'}),
+            'warehouse': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Choose Warehouse'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter quantity'}),
+            'unit_selling_price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter selling price'}),
+            'movement_type': forms.Select(attrs={'class': 'form-control'}),
+            'reason': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Provide a reason for the movement', 'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        exclude_types = kwargs.pop('exclude_types', False)
+        super(InventoryMovementForm, self).__init__(*args, **kwargs)
+        
+        # Update widget attributes
+        if exclude_types:
+            self.fields['movement_type'].choices = [
+                (key, value) for key, value in self.fields['movement_type'].choices if key in ['IN', 'OUT']
+            ]
+
+
+class InventoryMovementForm2(forms.ModelForm):
+    class Meta:
+        model = InventoryMovement
         fields = ['item', 'warehouse', 'quantity', 'unit_selling_price', 'movement_type', 'transfer_location', 'reason']
         widgets = {
             'item': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Choose Item'}),
@@ -41,7 +65,17 @@ class InventoryMovementForm(forms.ModelForm):
             'transfer_location': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Transfer location (if any)'}),
             'reason': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Provide a reason for the movement', 'rows': 3}),
         }
+
+    def __init__(self, *args, **kwargs):
+        exclude_types = kwargs.pop('exclude_types', False)
+        super(InventoryMovementForm2, self).__init__(*args, **kwargs)
         
+        # Update movement_type choices to exclude IN, OUT, and ADJUST if exclude_types is True
+        if exclude_types:
+            self.fields['movement_type'].choices = [
+                (key, value) for key, value in self.fields['movement_type'].choices if key not in ['IN', 'OUT', 'ADJUST']
+            ]
+
 
 class SupplierForm(forms.ModelForm):
 

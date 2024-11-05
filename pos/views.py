@@ -14,7 +14,7 @@ from .forms import  updateReceivedItemForm, WaiterCheckoutForm
 from django.contrib import messages
 from django.urls import reverse
 from django.utils.html import escape
-
+from core.decorators import required_roles
 
 
 def pos_index(request, slug=None):

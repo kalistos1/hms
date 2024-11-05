@@ -124,7 +124,7 @@
                                 <h6 class="card-title mb-0"> previous session Bookings</h6>
                             </div>
                             <div class="card-body">
-                                <h2>{{last_session_bookings}}</h2>
+                                <h2>{{last_session_bookings.count}}</h2>
                                 <span class="badge bg-warning"> </span>
                                 <span class="text-muted">bookings in previous user session </span>
                             </div>
@@ -149,7 +149,7 @@
                                 <h6 class="card-title mb-0">Active Session Bookings</h6>
                             </div>
                             <div class="card-body">
-                                <h2>{{active_session_bookings}}</h2>
+                                <h2>{{active_session_bookings.count}}</h2>
                                 <span class="badge bg-primary"> </span>
                                 <span class="text-muted">Number of bookings for the current active session</span>
                             </div>

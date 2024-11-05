@@ -5,7 +5,7 @@ from django.template.loader import render_to_string
 from .models import Hotel, Room, Booking, RoomServices, HotelGallery, HotelFeatures, RoomType
 from datetime import datetime
 from decimal import Decimal
-
+from core.decorators import required_roles
 
 def check_room_availability(request):
     if request.method == "POST":

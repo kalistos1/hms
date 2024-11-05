@@ -15,6 +15,7 @@ from datetime import datetime
 from decimal import Decimal
 import stripe
 import json
+from .decorators import required_roles
 
 # Create your views here.
 
@@ -121,6 +122,8 @@ def room_type_detail(request, slug, rt_slug):
     id = request.GET.get("hotel-id")
     checkin = request.GET.get("checkin")
     checkout = request.GET.get("checkout")
+    print('uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu',room_type.base_price)
+    print('uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu',checkout)
     adult = request.GET.get("adult")
     children = request.GET.get("children")
     room_type_ = request.GET.get("room-type")
@@ -147,7 +150,7 @@ def room_type_detail(request, slug, rt_slug):
 
 
 def selected_rooms(request):
-    # request.session.pop('selection_data_obj', None)
+    #request.session.pop('selection_data_obj', None)
 
     total = 0
     room_count = 0
@@ -160,6 +163,9 @@ def selected_rooms(request):
   
     
     if 'selection_data_obj' in request.session:
+
+        selection_data = request.session['selection_data_obj']
+        print("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjSelection Data:", selection_data)  # Print the contents
 
         if request.method == "POST":
             for h_id, item in request.session['selection_data_obj'].items():
@@ -180,29 +186,30 @@ def selected_rooms(request):
                 room_type = RoomType.objects.get(id=room_type_)
 
                 
-
-                
             date_format = "%Y-%m-%d"
             checkin_date = datetime.strptime(checkin, date_format)
             checout_date = datetime.strptime(checkout, date_format)
             time_difference = checout_date - checkin_date
             total_days = time_difference.days
 
+            # Get and parse full name
             full_name = request.POST.get("full_name")
             email = request.POST.get("email")
             phone = request.POST.get("phone")
 
+            # Split the full name to first and last names
+            name_parts = full_name.split()
+            first_name = name_parts[0] if name_parts else ""
+            last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+
+            # Create the booking
             booking = Booking.objects.create(
                 hotel=hotel,
                 room_type=room_type,
                 check_in_date=checkin,
                 check_out_date=checkout,
-                # total_days=total_days,
                 num_adults=adult,
                 num_children=children,
-                # full_name=full_name,
-                # email=email,
-                # phone=phone
             )
 
             if request.user.is_authenticated:
@@ -213,35 +220,43 @@ def selected_rooms(request):
                 
                 if not user:
                     # If user doesn't exist, create a new one
+                    user = User(email=email, username=email)
                     user.set_password(phone)  # Set phone number as password
-                    user.username = email  # Set email as the username
+                    user.first_name = first_name
+                    user.last_name = last_name
                     user.save()
-                    # booking.user = None
-                    booking.save()
-                       
-
-            
-
-
+                    
+                    booking.user = user
+                    booking.save()           
 
             for h_id, item in request.session['selection_data_obj'].items():
                 room_id = int(item["room_id"])
                 room = Room.objects.get(id=room_id)
-                booking.room.add(room)
-
+                
+                booking = Booking.objects.create(
+                    hotel=hotel,
+                    room_type=room_type,
+                    room=room,  # Assign a single room per booking
+                    check_in_date=checkin,
+                    check_out_date=checkout,
+                    num_adults=adult,
+                    num_children=children,
+                    user=request.user if request.user.is_authenticated else user
+                )
+                
+                # Add total amount calculations if needed
+                days = total_days
+                print('ccccccccccccccccccccccccccccccccccccccccccccccccc', days)
+                price = room_type.base_price if not room.price_override else room.price_override
+                total_amount = price * days
+                print('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy',total_amount)
+                booking.total_amount = total_amount
+                booking.save()
+                
                 room_count += 1
-                days = booking.total_days
-                price = booking.room_type.price
+                total += total_amount
+                print('ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',total)
 
-                room_price = price * room_count
-                total = room_price * days
-
-                # print("room_price ==",room_price)
-                # print("total ==",total)
-            
-            booking.total += float(total)
-            booking.before_discount += float(total)
-            booking.save()
 
             messages.success(request, "Checkout Now!")
             return redirect("core:checkout", booking.booking_id)
@@ -297,29 +312,40 @@ def selected_rooms(request):
         messages.warning(request, "You don't have any room selections yet!")
         return redirect("/")
 
+
+
 def checkout(request, booking_id):
-    booking = Booking.objects.get(booking_id=booking_id)
+    try:
+        # Retrieve the booking and the latest payment attempt
+        booking = Booking.objects.get(booking_id=booking_id)
+        latest_payment = booking.payments.order_by('-date').first()
 
-    if booking.payment_status == "paid":
-        messages.success(request, "This order has been paid for!")
-        return redirect("/")
-    else:
-        booking.payment_status = "processing"
-        booking.save()
+        # Check if the latest payment was completed
+        if latest_payment and latest_payment.status == "completed":
+            messages.success(request, "This order has already been paid for!")
+            return redirect("/")
+        elif latest_payment:
+            latest_payment.status = "processing"
+            latest_payment.save()
 
-
-    # Coupon
-    now = timezone.now()
-    if request.method == "POST":
-        # Get code entered in the input field
-        code = request.POST.get('code')
-        print("code ======", code)
-        try:
-            coupon = Coupon.objects.get(code__iexact=code,valid_from__lte=now,valid_to__gte=now,active=True)
-            if coupon in booking.coupons.all():
-                messages.warning(request, "Coupon Already Activated")
-                return redirect("hotel:checkout", booking.booking_id)
-            else:
+        # Handle coupon application if form is submitted
+        now = timezone.now()
+        if request.method == "POST":
+            code = request.POST.get('code')
+            try:
+                # Validate and retrieve the coupon
+                coupon = Coupon.objects.get(
+                    code__iexact=code,
+                    valid_from__lte=now,
+                    valid_to__gte=now,
+                    active=True
+                )
+                # Check if coupon is already applied to this booking
+                if coupon in booking.coupons.all():
+                    messages.warning(request, "Coupon already activated for this booking.")
+                    return redirect("hotel:checkout", booking_id=booking.id)
+                
+                # Apply the coupon and create a record in CouponUsers
                 CouponUsers.objects.create(
                     booking=booking,
                     coupon=coupon,
@@ -327,31 +353,33 @@ def checkout(request, booking_id):
                     email=booking.email,
                     mobile=booking.phone,
                 )
-
-                if coupon.type == "Percentage":
-                    discount = booking.total * coupon.discount / 100
-                else:
-                    discount = coupon.discount
-
+                
+                # Calculate and apply the discount based on coupon type
+                discount = (booking.total * coupon.discount / 100) if coupon.type == "Percentage" else coupon.discount
                 booking.coupons.add(coupon)
                 booking.total -= discount
                 booking.saved += discount
                 booking.save()
 
-                
-                messages.success(request, "Coupon Found and Activated")
-                return redirect("hotel:checkout", booking.booking_id)
-        except Coupon.DoesNotExist:
-            messages.error(request, "Coupon Not Found")
-            return redirect("core:checkout", booking.booking_id)
-    
-    context = {
-        "booking":booking,  
-        "stripe_publishable_key":settings.STRIPE_PUBLIC_KEY,
-        "flutter_publick_key":settings.FLUTTERWAVE_PUBLIC,
-        "website_address":settings.WEBSITE_ADDRESS,
-    }
-    return render(request, "pages/checkout.html", context)
+                messages.success(request, "Coupon found and activated!")
+                return redirect("hotel:checkout", booking_id=booking.id)
+
+            except Coupon.DoesNotExist:
+                messages.error(request, "Coupon not found or expired.")
+                return redirect("hotel:checkout", booking_id=booking.id)
+
+        # Context for rendering the checkout page
+        context = {
+            "booking": booking,
+            "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
+            "flutterwave_public_key": settings.FLUTTERWAVE_PUBLIC,
+            "website_address": settings.WEBSITE_ADDRESS,
+        }
+        return render(request, "pages/checkout.html", context)
+
+    except Booking.DoesNotExist:
+        messages.error(request, "Booking not found.")
+        return redirect("/")
 
 
 @csrf_exempt
@@ -482,43 +510,44 @@ def invoice(request, booking_id):
     }
     return render(request, "hotel/invoice.html", context)
 
+
 @csrf_exempt
 def update_room_status(request):
     today = timezone.now().date()
 
     booking = Booking.objects.filter(is_active=True)   
     for b in booking:
-        if b.checked_in_tracker != True:
+        if b.is_active != True:
             if b.check_in_date > today:
-                b.checked_in_tracker = False
+                b.is_active = False
                 b.save()
 
-                for r in b.room.all():
+                for r in b.room:
                     r.is_available = True
                     r.save()
                 
 
             else:
-                b.checked_in_tracker = True
+                b.is_active = True
                 b.save()
 
-                for r in b.room.all():
+                for r in b.room:
                     r.is_available = False
                     r.save()
         else:
             if b.check_out_date > today:
-                b.checked_out_tracker = False
+                b.is_active = False
                 b.save()
 
-                for r in b.room.all():
+                for r in b.room:
                     r.is_available = False
                     r.save()
 
             else:
-                b.checked_out_tracker = True
+                b.is_active = True
                 b.save()
 
-                for r in b.room.all():
+                for r in b.room:
                     r.is_available = True
                     r.save()
 

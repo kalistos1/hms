@@ -308,6 +308,7 @@ class RoomInventory(models.Model):
 class Payment(models.Model):
     PAYMENT_STATUS_CHOICES = [
         ('pending', 'pending'),
+        ("processing", "Processing"),
         ('advance', 'advance'),
         ('completed', 'completed'),
         ('failed', 'Failed'),
