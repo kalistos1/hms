@@ -12,7 +12,7 @@ from core.decorators import required_roles
 
 
 
-
+@required_roles('is_admin','is_account_officer')
 def booking_payments_list(request):
     booking_payments = PaymentRecord.objects.filter(source='booking').order_by('-payment_date')
     context = {
@@ -21,7 +21,7 @@ def booking_payments_list(request):
     return render(request, 'account_officer/booking_payment_list.html', context)
 
 
-
+@required_roles('is_admin','is_account_officer')
 def pos_payments_list(request):
     pos_payments = PaymentRecord.objects.filter(source='pos').order_by('-payment_date')
     context = {
@@ -30,7 +30,7 @@ def pos_payments_list(request):
     return render(request, 'account_officer/pos_payment_list.html', context)
 
 
-
+@required_roles('is_admin','is_account_officer')
 def payment_report_view(request):
     form = PaymentReportForm(request.GET or None)  # Bind GET parameters to the form
     payment_records = PaymentRecord.objects.none()  # Default empty queryset
@@ -66,7 +66,7 @@ def payment_report_view(request):
     # Otherwise, render the full page
     return render(request, 'account_officer/booking_pos_report.html', context)
 
-
+@required_roles('is_admin','is_account_officer')
 def purchase_report(request):
     form = PurchaseReportForm()
     report_data = None

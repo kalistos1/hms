@@ -17,6 +17,7 @@ from django.utils.html import escape
 from core.decorators import required_roles
 
 
+@required_roles('is_admin','is_pos_officer','is_supervisor')
 def pos_index(request, slug=None):
     
     categories = ProductCategory.objects.all()
@@ -50,6 +51,7 @@ def pos_index(request, slug=None):
 
 
 # HTMX view to load products based on category
+@required_roles('is_admin','is_pos_officer','is_supervisor')
 def category_products_view(request, slug):
     category = get_object_or_404(ProductCategory, slug=slug)
     products = Product.objects.filter(category=category)
@@ -57,6 +59,7 @@ def category_products_view(request, slug):
 
 
 # views.py
+@required_roles('is_admin','is_pos_officer','is_supervisor')
 def get_user_cart(request):
     if request.user.is_authenticated:
         cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -68,7 +71,7 @@ def get_user_cart(request):
     return cart
 
 
-
+@required_roles('is_admin','is_pos_officer','is_supervisor')
 def add_to_cart(request, pk):
     product = get_object_or_404(Product, pk=pk)
     cart = get_user_cart(request)
@@ -92,8 +95,6 @@ def increase_item_quantity(request, item_id):
     return HttpResponse(html)
 
 
-
-
 def decrease_item_quantity(request, item_id):
     item = get_object_or_404(CartItem, id=item_id)
     item.quantity -= 1
@@ -107,7 +108,7 @@ def decrease_item_quantity(request, item_id):
     return HttpResponse(html)
 
 
-
+@required_roles('is_admin','is_pos_officer','is_supervisor')
 def checkout_view(request):
     cart = get_user_cart(request)
     current_user = request.user
@@ -171,7 +172,7 @@ def checkout_view(request):
     
     return HttpResponse(html)
    
-
+@required_roles('is_admin','is_pos_officer','is_supervisor')
 @transaction.atomic
 def process_checkout(request):
    
@@ -287,13 +288,13 @@ def process_checkout(request):
     return HttpResponse('Invalid request method', status=400)
 
 
-
+@required_roles('is_admin','is_pos_officer','is_supervisor')
 def cart_view(request):
     cart = get_user_cart(request)
     return render(request, 'cart/cart.html', {'cart': cart})
 
 
-
+@required_roles('is_admin','is_pos_officer','is_supervisor')
 def update_cart_total(request):
     cart = get_user_cart(request)
     html = render_to_string('partials/htmx/_cart_total.html', {'cart': cart})

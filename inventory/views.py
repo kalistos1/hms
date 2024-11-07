@@ -8,7 +8,7 @@ from core.decorators import required_roles
 
 # Supplier Views
 
-
+@required_roles('is_admin','is_supervisor')
 def supplier_list(request):
     suppliers = Supplier.objects.all()
     form = SupplierForm()
@@ -19,6 +19,7 @@ def supplier_list(request):
     return render(request, 'pages/supplier_list.html',context)
 
 
+@required_roles('is_admin','is_supervisor')
 def supplier_create(request):
     if request.method == 'POST':
         form = SupplierForm(request.POST)
@@ -33,6 +34,7 @@ def supplier_create(request):
     return redirect('inventory:supplier_list')
 
 
+@required_roles('is_admin','is_supervisor')
 def supplier_update(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
     if request.method == 'POST':
@@ -54,6 +56,7 @@ def supplier_update(request, pk):
 
 
 # for htmx
+@required_roles('is_admin','is_supervisor')
 def admin_update_supplier_form(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
     form = SupplierForm(instance=supplier)
@@ -61,7 +64,7 @@ def admin_update_supplier_form(request, pk):
 
 
 
-
+@required_roles('is_admin','is_supervisor')
 def supplier_delete(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
     if request.method == 'GET':
@@ -73,7 +76,7 @@ def supplier_delete(request, pk):
     return redirect('inventory:supplier_list')
 
 
-
+@required_roles('is_admin','is_supervisor')
 # Category Views
 def category_list(request):
     categories = ItemCategory.objects.all()
@@ -84,7 +87,7 @@ def category_list(request):
         }
     return render(request, 'pages/item_category.html',context)
 
-
+@required_roles('is_admin','is_supervisor')
 def category_create(request):
     if request.method == 'POST':
         form = InventoryCategoryForm(request.POST)
@@ -99,7 +102,7 @@ def category_create(request):
     return redirect('inventory:category_list')
 
 
-
+@required_roles('is_admin','is_supervisor')
 def category_update(request, pk):
     category = get_object_or_404(ItemCategory, pk=pk)
     if request.method == 'POST':
@@ -121,13 +124,14 @@ def category_update(request, pk):
 
 
 # for htmx
+@required_roles('is_admin','is_supervisor')
 def admin_update_category_form(request, pk):
     category = get_object_or_404(ItemCategory, pk=pk)
     form =  InventoryCategoryForm(instance=category)
     return render(request, 'partials/htmx/edit_category_partial.html', {'form': form, 'category': category})
 
 
-
+@required_roles('is_admin','is_supervisor')
 def category_delete(request, pk):
     category = get_object_or_404(ItemCategory, pk=pk)
     if request.method == 'GET':
@@ -141,6 +145,7 @@ def category_delete(request, pk):
 
 
 # Equipment Views
+@required_roles('is_admin','is_supervisor')
 def equipment_list(request):
     equipments = Equipment.objects.all()
     form = EquipmentForm()
@@ -151,7 +156,7 @@ def equipment_list(request):
     return render(request, 'pages/equipment_list.html',context)
 
 
-
+@required_roles('is_admin','is_supervisor')
 def equipment_create(request):
     if request.method == 'POST':
         form = EquipmentForm(request.POST)
@@ -166,7 +171,7 @@ def equipment_create(request):
     return  redirect('inventory:equipment_list')
 
 
-
+@required_roles('is_admin','is_supervisor')
 def equipment_update(request, pk):
     equipment = get_object_or_404(Equipment, pk=pk)
     if request.method == 'POST':
@@ -190,12 +195,13 @@ def equipment_update(request, pk):
 
 
 # for htmx
+@required_roles('is_admin','is_supervisor')
 def admin_update_equipment_form(request, pk):
     equipment = get_object_or_404(Equipment, pk=pk)
     form =  EquipmentForm(instance=equipment)
     return render(request, 'partials/htmx/edit_equipment_partial.html', {'form': form, 'equipment': equipment})
 
-
+@required_roles('is_admin','is_supervisor')
 def equipment_delete(request, pk):
     equipment = get_object_or_404(Equipment, pk=pk)
     if request.method == 'GET':
@@ -207,6 +213,7 @@ def equipment_delete(request, pk):
 
 
 # Consumable Item Views
+@required_roles('is_admin','is_supervisor')
 def consumable_item_list(request):
     consumable_items = Item.objects.all()
     form = ItemForm()
@@ -217,7 +224,7 @@ def consumable_item_list(request):
 
     return render(request, 'pages/consumable_item_list.html', context)
 
-
+@required_roles('is_admin','is_supervisor')
 def consumable_item_create(request):
     if request.method == 'POST':
         form = ItemForm(request.POST)
@@ -232,6 +239,7 @@ def consumable_item_create(request):
     return redirect ('inventory:consumable_item_list')
 
 
+@required_roles('is_admin','is_supervisor')
 def consumable_item_update(request, pk):
     item = get_object_or_404(Item, pk=pk)
     if request.method == 'POST':
@@ -253,12 +261,13 @@ def consumable_item_update(request, pk):
 
 
 # for htmx
+@required_roles('is_admin','is_supervisor')
 def admin_update_item_form(request, pk):
     item = get_object_or_404(Item, pk=pk)
     form =  ItemForm(instance=item)
     return render(request, 'partials/htmx/edit_item_partial.html', {'form': form, 'item': item})
 
-
+@required_roles('is_admin','is_supervisor')
 def consumable_item_delete(request, pk):
     consumable_item = get_object_or_404(Item, pk=pk)
     if request.method == 'GET':
@@ -270,6 +279,7 @@ def consumable_item_delete(request, pk):
 
 
 # Amenity Item Views
+@required_roles('is_admin','is_supervisor')
 def amenity_item_list(request):
     amenities = Amenity.objects.all()
     form = AmenityForm()
@@ -280,7 +290,7 @@ def amenity_item_list(request):
 
     return render(request, 'pages/amenity_list.html', context)
 
-
+@required_roles('is_admin','is_supervisor')
 def amenity_item_create(request):
     if request.method == 'POST':
         form = AmenityForm(request.POST)
@@ -294,7 +304,7 @@ def amenity_item_create(request):
         messages.error(request, 'Something went wrong check form and resubmit')
     return redirect ('inventory:amenity_item_list')
 
-
+@required_roles('is_admin','is_supervisor')
 def amenity_item_update(request, pk):
     amenity = get_object_or_404(Amenity, pk=pk)
     if request.method == 'POST':
@@ -318,12 +328,13 @@ def amenity_item_update(request, pk):
 
 
 # for htmx
+@required_roles('is_admin','is_supervisor')
 def admin_update_amenity_form(request, pk):
     amenity = get_object_or_404(Amenity, pk=pk)
     form =  AmenityForm(instance=amenity)
     return render(request, 'partials/htmx/edit_amenity_partial.html', {'form': form, 'amenity': amenity})
 
-
+@required_roles('is_admin','is_supervisor')
 def amenity_item_delete(request, pk):
     amenity = get_object_or_404(Amenity, pk=pk)
     if request.method == 'GET':
@@ -334,7 +345,7 @@ def amenity_item_delete(request, pk):
     return redirect('inventory:amenity_item_list')
 
 
-
+@required_roles('is_admin','is_supervisor')
 def move_product(request):
     warehouse = Warehouse.objects.first()
     employee = get_object_or_404(Employee, user=request.user)
@@ -562,6 +573,6 @@ def inspection_checklist_delete(request, pk):
     return render(request, 'checklists/inspection_checklist_confirm_delete.html', {'checklist': checklist})
 
 
-
+@required_roles('is_admin','is_supervisor')
 def supervisor_reports(request):
     return render(request,'supervisor/reports.html')

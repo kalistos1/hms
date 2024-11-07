@@ -41,12 +41,13 @@ from django.contrib.auth.decorators import login_required
 from core.decorators import required_roles
 
 
+@required_roles('is_admin',)
 def admin_dashboard(request):
     # template = "admin_user/dashboard.html"
     return redirect( 'dashboard:account_dashboard' )
 
 
-@required_roles('is_supervisor', 'is_pos_officer')
+@required_roles('is_supervisor',)
 def hotel_setup(request):
 
     if request.method == 'POST':
@@ -66,6 +67,7 @@ def hotel_setup(request):
         return redirect('dashboard:hotel_info') 
 
 
+@required_roles('is_admin',)
 def admin_hotel_info(request):
     hotels =  Hotel.objects.all()
     form = HotelForm()   
@@ -76,6 +78,7 @@ def admin_hotel_info(request):
     return render(request, 'admin_user/hotel_info.html',context)
 
 
+@required_roles('is_admin',)
 def admin_delete_hotel(request, pk):    
     hotel = get_object_or_404(Hotel, pk=pk)
     if request.method == 'GET':
@@ -86,10 +89,9 @@ def admin_delete_hotel(request, pk):
     return redirect('dashboard:hotel_info')
 
 
-
 #warehouse setup
+@required_roles('is_admin','is_supervisor')
 def warehouse_setup(request):
-
     if request.method == 'POST':
         form = WarehouseForm(request.POST, request.FILES)
 
@@ -105,9 +107,9 @@ def warehouse_setup(request):
         return redirect('dashboard:warehouse_info') 
 
 
+@required_roles('is_admin','supervisor')
 def warehouse_info(request):
     # inventory data
-
     total_quantity = Item.objects.aggregate(total=Sum('stock_quantity'))['total']
     quantity_by_stock_type = Item.objects.values('stock_type').annotate(total_quantity=Sum('stock_quantity'))
     stock_by_category = Item.objects.values('stock_type').annotate(
@@ -143,11 +145,10 @@ def warehouse_info(request):
     return render(request, 'admin_user/warehouse_info.html',context)
 
 
-
+@required_roles('is_admin','is_supervisor')
 def warehouse_stock(request):
     # Get the first warehouse as a default example (you may want to adjust this logic)
     warehouse = Warehouse.objects.first()
-
     try:   
         stocks = WarehouseStock.objects.filter(warehouse=warehouse).select_related('item__category')
         context = {
@@ -166,6 +167,8 @@ def warehouse_stock(request):
 
     return render(request, 'supervisor/move_item.html', context)
 
+
+@required_roles('is_admin','is_supervisor')
 def admin_update_warehouse(request, pk):
     warehouse = get_object_or_404(Warehouse, pk=pk)
     if request.method == 'POST':
@@ -185,12 +188,13 @@ def admin_update_warehouse(request, pk):
 
 
 # for htmx
+@required_roles('is_admin','is_supervisor')
 def admin_update_warehouse_form(request, pk):
     warehouse = get_object_or_404(Warehouse, pk=pk)
     form = WarehouseForm(instance=warehouse)
     return render(request, 'partials/htmx/edit_warehouse_partial.html', {'form': form, 'warehouse': warehouse})
 
-
+@required_roles('is_admin','is_supervisor')
 def warehouse_delete(request, pk):    
     warehouse = get_object_or_404(Warehouse, pk=pk)
     if request.method == 'GET':
@@ -202,6 +206,7 @@ def warehouse_delete(request, pk):
 
 
 # Amenities
+@required_roles('is_admin','is_supervisor')
 def admin_create_room_amenity(request):
     if request.method == 'POST':
         warehouse = Warehouse.objects.first()
@@ -221,7 +226,7 @@ def admin_create_room_amenity(request):
         return redirect('dashboard:admin_list_room_amenities') 
     
     
-
+@required_roles('is_admin','is_supervisor')
 def admin_list_room_amenities(request):
     amenities =  RoomInventory.objects.all()
     form = RoomAmenityForm()   
@@ -232,6 +237,7 @@ def admin_list_room_amenities(request):
     return render(request, 'admin_user/room_amenities_list.html',context)
 
 
+@required_roles('is_admin','is_supervisor')
 def admin_update_room_amenity(request, pk):
     amenity = get_object_or_404( RoomInventory, pk=pk)
     if request.method == 'POST':
@@ -251,12 +257,14 @@ def admin_update_room_amenity(request, pk):
 
 
 # for htmx
+@required_roles('is_admin','is_supervisor')
 def admin_update_amenity_form(request, pk):
     amenity = get_object_or_404(RoomInventory, pk=pk)
     form = RoomAmenityForm(instance=amenity)
     return render(request, 'partials/htmx/edit_room_amenity_partials.html', {'form': form, 'amenity': amenity})
 
 
+@required_roles('is_admin','is_supervisor')
 def admin_delete_room_amenity(request, pk):    
     amenity = get_object_or_404( RoomInventory, pk=pk)
     if request.method == 'GET':
@@ -268,6 +276,7 @@ def admin_delete_room_amenity(request, pk):
 
 
 #rooms
+@required_roles('is_admin','is_supervisor')
 def admin_create_room(request):
     hotel = Hotel.objects.filter(status='Live').first()
     if request.method == 'POST':
@@ -288,7 +297,7 @@ def admin_create_room(request):
         return redirect('dashboard:admin_list_room') 
     
 
-
+@required_roles('is_admin','is_supervisor')
 def admin_list_room(request):
     rooms = Room.objects.select_related('room_type').all()
     form = RoomForm()
@@ -300,7 +309,7 @@ def admin_list_room(request):
     return render(request, 'admin_user/room_list.html',context)
 
 
-
+@required_roles('is_admin','is_supervisor')
 def admin_update_room(request, pk):
     room = get_object_or_404(Room, pk=pk)
     if request.method == 'POST':
@@ -320,13 +329,14 @@ def admin_update_room(request, pk):
 
 
 # for htmx
+@required_roles('is_admin','is_supervisor')
 def admin_update_room_form(request, pk):
     room = get_object_or_404(Room, pk=pk)
     form = RoomForm(instance=room)
     return render(request, 'partials/htmx/edit_room_partial.html', {'form': form, 'room': room})
 
 
-
+@required_roles('is_admin','is_supervisor')
 def admin_delete_room(request, pk):    
     room = get_object_or_404(Room, pk=pk)
     if request.method == 'GET':
@@ -338,6 +348,7 @@ def admin_delete_room(request, pk):
 
 
 #room type
+@required_roles('is_admin','is_supervisor')
 def admin_create_room_type(request):
     hotel = Hotel.objects.filter(status='Live').first()
     if request.method == 'POST':
@@ -358,7 +369,7 @@ def admin_create_room_type(request):
         return redirect('dashboard:admin_list_room_types') 
     
 
-
+@required_roles('is_admin','is_supervisor')
 def admin_list_room_type(request):
     room_types = RoomType.objects.annotate(num_rooms=Count('room'))
     form = RoomTypeForm()
@@ -370,7 +381,7 @@ def admin_list_room_type(request):
     return render(request, 'admin_user/room_type_list.html',context)
 
 
-
+@required_roles('is_admin','is_supervisor')
 def admin_update_room_type(request, pk):
     room_type = get_object_or_404(RoomType, pk=pk)
     if request.method == 'POST':
@@ -391,12 +402,14 @@ def admin_update_room_type(request, pk):
 
 
 # for htmx
+@required_roles('is_admin','is_supervisor')
 def admin_update_roomtype_form(request, pk):
     room_type = get_object_or_404(RoomType, pk=pk)
     form = RoomTypeForm(instance=room_type)
     return render(request, 'partials/htmx/edit_room_type_partials.html', {'form': form, 'room_type': room_type})
 
 
+@required_roles('is_admin','is_supervisor')
 def admin_delete_room_type(request, pk):   
     room_type = get_object_or_404(RoomType, pk=pk)
     if request.method == 'GET':
@@ -408,6 +421,7 @@ def admin_delete_room_type(request, pk):
 
 
 #coupons
+@required_roles('is_admin','is_supervisor')
 def admin_create_coupon(request):
     hotel = Hotel.objects.filter(status='Live').first()
     if request.method == 'POST':
@@ -425,7 +439,7 @@ def admin_create_coupon(request):
         return redirect('dashboard:admin_list_coupon') 
     
 
-
+@required_roles('is_admin','is_supervisor')
 def admin_list_coupon(request):
     coupons = Coupon.objects.all()
     form = CreateCouponForm()
@@ -437,7 +451,7 @@ def admin_list_coupon(request):
     return render(request, 'admin_user/coupon_list.html',context)
 
 
-
+@required_roles('is_admin','is_supervisor')
 def admin_update_coupon(request, pk):
     coupon = get_object_or_404(Coupon, pk=pk)
     if request.method == 'POST':
@@ -458,13 +472,14 @@ def admin_update_coupon(request, pk):
 
 
 # for htmx
+@required_roles('is_admin','is_supervisor')
 def admin_update_coupon_form(request, pk):
     coupon = get_object_or_404(Coupon, pk=pk)
     form = CreateCouponForm(instance=coupon)
     return render(request, 'partials/htmx/edit_coupon_partials.html', {'form': form, 'coupon': coupon})
 
 
-
+@required_roles('is_admin','is_supervisor')
 def admin_delete_coupon(request, pk):
     coupon = get_object_or_404(Coupon, pk=pk)
     if request.method == 'GET':
@@ -477,7 +492,7 @@ def admin_delete_coupon(request, pk):
 
 # Privilaged Users
 # =================
-
+@required_roles('is_admin','is_supervisor')
 def admin_users_list(request):
     template ="admin_user/admin_user.html"
   
@@ -515,7 +530,7 @@ def admin_users_list(request):
     return render(request, template, context)
 
 
-
+@required_roles('is_admin','is_supervisor')
 def add_admin_privilaged_user(request):
     admin_form = AddAdminForm()
     supervisor_form = AddSupervisorForm()
@@ -584,27 +599,28 @@ def add_admin_privilaged_user(request):
     return redirect('dashboard:admin_users_list')
 
 
-@required_roles('is_admin','is_supervisor')
+@required_roles('is_admin', 'is_supervisor')
 def privilaged_user_update(request, pk):
     user = get_object_or_404(User, pk=pk)
     if request.method == 'POST':
         form = AddWorkerForm(request.POST, instance=user)
         if form.is_valid():
-            form.save()
+            form.save()  # Password is handled within the form
 
             if request.htmx:
                 return JsonResponse({'success': True, 'message': 'Worker updated successfully!'}, status=200)
             messages.success(request, 'Worker updated successfully!')
-            return redirect('hrm:department_locations')
+            return redirect('dashboard:admin_users_list')
         else:
             if request.htmx:
                 return render(request, 'partials/htmx/edit_worker_partial.html', {'form': form, 'user': user})
             messages.error(request, 'Error updating worker. Please correct the errors.')
-        
-        return redirect('dashboard:admin_users_list')
+
+    return redirect('dashboard:admin_users_list')
 
 
 # for htmx
+@required_roles('is_admin','is_supervisor')
 def admin_update_privilaged_user_form(request, pk):
     user = get_object_or_404(User, pk=pk)
     form = AddWorkerForm(instance=user)
@@ -612,7 +628,7 @@ def admin_update_privilaged_user_form(request, pk):
  
 
 
-
+@required_roles('is_admin','is_supervisor')
 def admin_delete_privilaged_user(request, pk):
     room_type = get_object_or_404(User, pk=pk)
     if request.method == 'GET':
@@ -625,9 +641,9 @@ def admin_delete_privilaged_user(request, pk):
 
 
 #booking list
+@required_roles('is_admin','is_supervisor')
 def admin_booking_list(request):
     template = "admin_user/admin_bookinglist.html"
-  
     
     bookin_list = Booking.objects.all()
     room_service_form =  RoomServiceForm()
@@ -642,15 +658,14 @@ def admin_booking_list(request):
     
 
 #room status 
+@required_roles('is_admin','is_supervisor')
 def admin_room_status(request):
     template = "admin_user/admin_roomstatus.html"
 
-        
     room_status = Room.objects.all()
     context = {
         'room_status':room_status
     }
-    
     return render (request,template, context)
 
 
@@ -666,7 +681,7 @@ def admin_room_status(request):
 
 
 
-
+@required_roles('is_supervisor',)
 def supervisor_dashboard(request):
     template = "supervisor/dashboard.html"
     today = timezone.now().date()
@@ -702,15 +717,14 @@ def supervisor_dashboard(request):
         'yesterdays_bookings': yesterdays_bookings,
         'todays_total_payment': todays_total_payment,
         'yesterdays_total_payment':yesterdays_total_payment,
-        
     }
 
     return render(request, template, context)
 
+
+@required_roles('is_admin','is_supervisor')
 def supervisor_transaction_list (request):
     template = "supervisor/transactions.html"
-
-
     # Calculate date ranges for today and yesterday
     today = timezone.now().date()
     yesterday = today - timedelta(days=1)
@@ -742,6 +756,7 @@ def supervisor_transaction_list (request):
 
 
 
+@required_roles('is_admin','is_supervisor')
 def supervisor_view_bookings (request):
     template = "supervisor/supervisor_bookinglist.html"
     today =timezone.now().date()
@@ -752,6 +767,7 @@ def supervisor_view_bookings (request):
     return render(request, template, context)
 
 
+@required_roles('is_admin','is_supervisor')
 def supervisor_view_roomstatus (request):
     template="supervisor/supervisor_room_status.html"
     if request.user.is_supervisor:
@@ -774,7 +790,9 @@ def supervisor_view_roomstatus (request):
         return redirect('core:index')
     
 
+
 #room checkout
+@required_roles('is_admin','is_supervisor')
 def supervisor_checkout_list (request):
     template="supervisor/supervisor_room_checkout.html"
 
@@ -1055,6 +1073,7 @@ def account_dashboard(request):
 # ==========================================================================================================
 # ==========================================================================================================
 
+@required_roles('is_frontdesk_officer',)
 def frontdesk_dashboard(request):
     template = "front_desk/dashboard.html"
     
@@ -1104,7 +1123,6 @@ def frontdesk_dashboard(request):
                 date_joined__range=(check_in_time, check_out_time)
 
             )
-
             context = {
                 'all_bookings': todays_bookings.count(),
                 'todays_bookings': todays_bookings,
@@ -1120,7 +1138,10 @@ def frontdesk_dashboard(request):
             # Handle case where there is no active attendance for the employee
             return render(request, template, {'error': 'No active attendance found for the session.'})
 
+
+
 #room status 
+@required_roles('is_frontdesk_officer',)
 def frontdesk_room_status(request):
     template = "front_desk/roomstatus.html"
     
@@ -1144,7 +1165,7 @@ def frontdesk_room_status(request):
 
 
 # bookings
-
+@required_roles('is_frontdesk_officer',)
 def frontdesk_booking_list(request):
     template = "front_desk/bookinglist.html"
     if request.user.is_frontdesk_officer:
@@ -1226,6 +1247,7 @@ def frontdesk_booking_list(request):
 
 
 
+@required_roles('is_frontdesk_officer',)
 def frontdesk_update_checkout_date(request, pk):
     booking = get_object_or_404(Booking, pk=pk)
 
@@ -1241,6 +1263,7 @@ def frontdesk_update_checkout_date(request, pk):
      
 
 # checkout list
+@required_roles('is_frontdesk_officer',)
 def frontdesk_checkout_list(request):
     template = "front_desk/check_out_list.html"
 
@@ -1252,13 +1275,11 @@ def frontdesk_checkout_list(request):
         # Get the active attendance record for today
         active_attendance = Attendance.objects.filter(employee=employee, active=True).first()
  
-       
         booking_list = Booking.objects.filter(
             check_out_date__lte=timezone.now(),
             is_active=True,
             checked_in=True
         )
-        
         form = UpdateCheckOutDateForm()
         context = {
             'form': form,
@@ -1278,13 +1299,15 @@ def generate_unique_username(base_username):
 
 
 # #htmx view for avaiilable room 
+@required_roles('is_frontdesk_officer',)
 def available_rooms_view(request):
     room_type_id = request.GET.get('room_type')
     rooms = Room.objects.filter(room_type_id=room_type_id, is_available=True)
-
     return render(request, 'partials/htmx/available-rooms.html', {'rooms': rooms})
 
 
+
+@required_roles('is_frontdesk_officer',)
 def front_desk_booking(request):
     if request.user.is_frontdesk_officer:
         today = timezone.now().date()
@@ -1393,6 +1416,7 @@ def front_desk_booking(request):
         })
 
 
+@required_roles('is_frontdesk_officer',)
 def front_desk_reservation(request):
     if request.method == 'POST':
         basic_info_form = BasicUserInfoForm(request.POST)
@@ -1476,7 +1500,7 @@ def front_desk_reservation(request):
     })
 
 
-
+@required_roles('is_frontdesk_officer',)
 def receipt_view(request, booking_id):
     # Get the booking object
     booking = get_object_or_404(Booking, booking_id=booking_id)
@@ -1496,10 +1520,10 @@ def receipt_view(request, booking_id):
         'initial_amount_paid': booking.get_initial_payment(),  # Amount paid by the customer
         'balance_remaining': booking.get_balance_remaining(),  # Remaining balance
     }
-    
     return render(request, 'front_desk/booking/receipt.html', context)
 
 
+@required_roles('is_frontdesk_officer',)
 def frontdesk_add_room_service(request, pk):
     booking_instance = Booking.objects.get(pk = pk)
     if request.method == "POST":
@@ -1520,7 +1544,7 @@ def frontdesk_add_room_service(request, pk):
         return redirect("dashboard:frontdesk_booking_list")
             
         
-
+@required_roles('is_frontdesk_officer',)
 def frontdesk_add_additional_charge(request, pk):
     booking_instance = Booking.objects.get(pk = pk)
     if request.method == "POST":
@@ -1540,10 +1564,9 @@ def frontdesk_add_additional_charge(request, pk):
         return redirect("dashboard:frontdesk_booking_list")
     
 
+@required_roles('is_frontdesk_officer',)
 def frontdesk_apply_coupon_to_booking(request, pk):
-    
     booking = get_object_or_404(Booking, pk=pk)
-
     if request.method == 'POST':
         coupon_code = request.POST.get('coupon_code')
 
@@ -1574,8 +1597,8 @@ def frontdesk_apply_coupon_to_booking(request, pk):
     return redirect('dashboard:checkout', pk=pk)
 
 
+@required_roles('is_frontdesk_officer',)
 def checkout_view(request, id):
-   
     # Get the user and booking
     booking = get_object_or_404(Booking, id=id)
 
@@ -1605,6 +1628,7 @@ def checkout_view(request, id):
     return render(request, 'front_desk/booking/checkout_details.html', context)
 
 
+@required_roles('is_frontdesk_officer',)
 def frontdesk_checkout_payment_view(request, pk):
     booking = get_object_or_404(Booking, pk=pk)
     total_after_discount = booking.amount_payable
@@ -1674,6 +1698,7 @@ def frontdesk_checkout_payment_view(request, pk):
 #========================================================================================================
 #=======================================================================================================
 
+@required_roles(' is_pos_officer',)
 def pos_user_dashboard(request):
     template = 'pos_officer/dashboard.html'
 
@@ -1784,9 +1809,9 @@ def pos_user_dashboard(request):
     return render(request, template, {'error': 'No active attendance or schedule found.'})
 
 
+@required_roles(' is_pos_officer',)
 def pos_orders(request):
     template = "pos_officer/orders.html"
-    
     if request.user.is_pos_officer:
         user = request.user
         employee = get_object_or_404(Employee, user=user)
@@ -1824,7 +1849,7 @@ def pos_orders(request):
         return redirect('dashboard:pos_orders')
 
 
-
+@required_roles(' is_pos_officer',)
 def user_update_received_stock(request):
     template = 'pos_officer/daily_stock_received.html'
 
@@ -1906,6 +1931,7 @@ def user_update_received_stock(request):
         return redirect('dashboard:received_stock')  # Redirect unauthorized users
  
 
+@required_roles(' is_pos_officer',)
 def mark_product_as_received(request,pk):
     stock = get_object_or_404(StockReceipt, pk=pk)
     if request.method =="POST":
