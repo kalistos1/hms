@@ -11,24 +11,29 @@ urlpatterns = [
     path('suppliers/create/', views.supplier_create, name='supplier_create'),
     path('suppliers/<int:pk>/update/', views.supplier_update, name='supplier_update'),
     path('suppliers/<int:pk>/delete/', views.supplier_delete, name='supplier_delete'),
+    path('suppliers/update-form/<int:pk>/', views.admin_update_supplier_form, name='admin_update_supplier_form'),
 
     # categor URLs
     path('categories/', views.category_list, name='category_list'),
     path('category/create/', views.category_create, name='category_create'),
     path('category/<int:pk>/update/', views.category_update, name='category_update'),
     path('category/<int:pk>/delete/', views.category_delete, name='category_delete'),
+    path('category/update-form/<int:pk>/', views.admin_update_category_form, name='admin_update_category_form'),
 
     # Equipment URLs
     path('equipments/', views.equipment_list, name='equipment_list'),
     path('equipments/create/', views.equipment_create, name='equipment_create'),
     path('equipments/<int:pk>/update/', views.equipment_update, name='equipment_update'),
     path('equipments/<int:pk>/delete/', views.equipment_delete, name='equipment_delete'),
+    path('equipment/update-form/<int:pk>/', views.admin_update_equipment_form, name='admin_update_equipment_form'),
+
 
     # Consumable Item URLs
     path('consumable-items/', views.consumable_item_list, name='consumable_item_list'),
     path('consumable-items/create/', views.consumable_item_create, name='consumable_item_create'),
     path('consumable-items/<int:pk>/update/', views.consumable_item_update, name='consumable_item_update'),
     path('consumable-items/<int:pk>/delete/', views.consumable_item_delete, name='consumable_item_delete'),
+    path('item/update-form/<int:pk>/', views.admin_update_item_form, name='admin_update_item_form'),
 
 
     # Amenity Item URLs
@@ -36,6 +41,7 @@ urlpatterns = [
     path('amenity-items/create/', views.amenity_item_create, name='amenity_item_create'),
     path('amenity-items/<int:pk>/update/', views.amenity_item_update, name='amenity_item_update'),
     path('amenity-items/<int:pk>/delete/', views.amenity_item_delete, name='amenity_item_delete'),
+    path('amenity/update-form/<int:pk>/', views.admin_update_amenity_form, name='admin_update_amenity_form'),
 
 
     # Equipment Usage Log URLs

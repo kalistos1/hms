@@ -153,9 +153,9 @@
                   </a>
 
                   <ul class="collapse list-unstyled" id ="ReportsMenu">
-                    <li><a href="" aria-label="Booking Reports">Booking Reports</a></li>
-                    <li><a href="" aria-label="Purchase Report">Purchase Reports</a></li>
-                    <li><a href="" aria-label="Stock Report">Stock Reports</a></li>
+                    <li><a href="{% url 'accounting:payment_reports' %}" aria-label="Booking Reports">Booking/POS Reports</a></li>
+                    <li><a href="{% url 'accounting:purchase_reports' %}" aria-label="Purchase Report">Purchase Reports</a></li>
+                    <li><a href="#" aria-label="Stock Report">Stock Reports</a></li>
                   </ul>
                 </li>
 
@@ -250,7 +250,7 @@
                       <li>
                         <a href="{% url 'hrm:daily_attendance' %}" aria-label="hrm attendance" >
                           <span class="mx-3"> Attendance
-                        </a >
+                          </a >
                         </li>
                       </ul>
                     </li>

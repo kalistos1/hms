@@ -11,6 +11,7 @@ from datetime import date, timedelta
 from django.db.models import Q
 from django.utils import timezone
 from core.decorators import required_roles
+from django.http import JsonResponse
 
 
 
@@ -62,9 +63,24 @@ def department_update(request, pk):
         form = DepartmentForm(request.POST, instance=department)
         if form.is_valid():
             form.save()
+
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': 'department updated successfully!'}, status=200)
+            messages.success(request, 'department updated successfully!')
             return redirect('hrm:departments')
-    else:
-       return redirect('hrm:departments')
+        else:
+            if request.htmx:
+                return render(request, 'partials/htmx/edit_department_partial.html', {'form': form, 'department': department})
+            messages.error(request, 'Error updating department. Please correct the errors.')
+        
+        return redirect('hrm:departments')
+
+
+# for htmx
+def admin_update_department_form(request, pk):
+    department = get_object_or_404(Department, pk=pk)
+    form = DepartmentForm(instance=department)
+    return render(request, 'partials/htmx/edit_department_partial.html', {'form': form, 'department': department})
 
 
 # Delete a department
@@ -105,6 +121,7 @@ def department_location_create(request):
         messages.error(request, 'unable to Location for the department')
         return redirect('hrm:department_locations')
 
+
 # Update an existing department location
 @required_roles('is_admin','is_supervisor')
 def department_location_update(request, pk):
@@ -113,13 +130,25 @@ def department_location_update(request, pk):
         form = DepartmentLocationForm(request.POST, instance=location)
         if form.is_valid():
             form.save()
-            messages.success(request, 'location for the department updated succesfully')
+
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': 'department location updated successfully!'}, status=200)
+            messages.success(request, 'department location updated successfully!')
             return redirect('hrm:department_locations')
-    else:
-        form = DepartmentLocationForm(instance=location)
-        messages.error(request, "Unable to update the department location")
+        else:
+            if request.htmx:
+                return render(request, 'partials/htmx/edit_department_location_partial.html', {'form': form, 'location': location})
+            messages.error(request, 'Error updating department location. Please correct the errors.')
+        
         return redirect('hrm:department_locations')
-    
+
+
+# for htmx
+def admin_update_department_location_form(request, pk):
+    location = get_object_or_404(DepartmentLocation, pk=pk)
+    form = DepartmentLocationForm(instance=location)
+    return render(request, 'partials/htmx/edit_department_location_partial.html', {'form': form, 'location': location})
+ 
 
 
 # Delete a department location
@@ -180,12 +209,25 @@ def employee_update(request, pk):
         form = EmployeeForm(request.POST, instance=employee)
         if form.is_valid():
             form.save()
-            messages.success(request,'employee information updated successfully')
-            return redirect('hrm:employee_list')
-    else:
-        messages.success(request,'Unable to Update employee Information')
-        return redirect('hrm:employee_list')
 
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': 'Employee Information updated successfully!'}, status=200)
+            messages.success(request, 'Employee information updated successfully!')
+            return redirect('hrm:employees')
+        else:
+            if request.htmx:
+                return render(request, 'partials/htmx/edit_employee_partial.html', {'form': form, 'employee': employee})
+            messages.error(request, 'Error updating employee information. Please correct the errors.')
+        
+        return redirect('hrm:employees')
+
+
+# for htmx
+def admin_update_employee_form(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    form = EmployeeForm(instance=employee)
+    return render(request, 'partials/htmx/edit_employee_partial.html', {'form': form, 'employee': employee})
+ 
 
 # Delete an employee
 @required_roles('is_admin','is_supervisor')
@@ -305,12 +347,24 @@ def staff_schedule_update(request, pk):
         form = StaffScheduleForm(request.POST, instance=schedule)
         if form.is_valid():
             form.save()
-            messages.success(request,"roaster item updated successfully")
+
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': ' Employee Schedule updated successfully!'}, status=200)
+            messages.success(request, 'employee schedule updated successfully!')
             return redirect('hrm:staff_schedule')
-    else:
-        messages.error(request,"Unable to update roaster item")
+        else:
+            if request.htmx:
+                return render(request, 'partials/htmx/edit_schedule_partial.html', {'form': form, 'schedule': schedule})
+            messages.error(request, 'Error updating employee schedule. Please correct the errors.')
+        
         return redirect('hrm:staff_schedule')
 
+
+# for htmx
+def admin_update_schedule_form(request, pk):
+    schedule = get_object_or_404(StaffSchedules, pk=pk)
+    form = StaffScheduleForm(instance=schedule)
+    return render(request, 'partials/htmx/edit_schedule_partial.html', {'form': form, 'schedule': schedule})
 
 
 # Delete a staff schedule

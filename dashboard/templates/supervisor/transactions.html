@@ -55,12 +55,12 @@
                                             <th>Order ID</th>
                                             <th>Amount Paid</th>
                                             <th>Order Items</th>
-                                            
+
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% if  orders_yesterday %}
-                                        {% for order in orders_yesterday %}
+                                            {% for order in orders_yesterday %}
                                                 <tr>
                                                     <td>{{ order.staff.department_location.name }}</td>
                                                     <td>{{ order.id }}</td>
@@ -68,10 +68,10 @@
                                                     <td>
 
                                                         {% for item in order.items.all %}
-                                                           <li>{{ item.product.name }} - Quantity: {{ item.quantity }} - Price: {{ item.price }}</li>
+                                                            <li>{{ item.product.name }} - Quantity: {{ item.quantity }} - Price: {{ item.price }}</li>
                                                         {% endfor %}
                                                     </td>
-                                                    
+
                                                 </tr>
                                             {% endfor%}
                                         {% else %}
@@ -85,26 +85,26 @@
                         </div>
                     </div>
 
-<hr>
+                    <hr>
 
                     <div class="col col-sm-12 col-md-12 col-lg-12 mt-4">
                         <div class="card">
                             <div class="card-body text-sm">
                                 <table class="table dataTable align-middle table-hover table-body table-sm table-responsive" style="width: 100%;">
-                                   <h4 c;ass="text-center"> Yesterdays Orders </h4>
-                                   
+                                    <h4 c;ass="text-center"> Yesterdays Orders </h4>
+
                                     <thead>
                                         <tr>
                                             <th class="text-sm fs-6">Department</th>
                                             <th>Order ID</th>
                                             <th>Amount Paid</th>
                                             <th>Order Items</th>
-                                            
+
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% if orders_today %}
-                                        {% for order in orders_today %}
+                                            {% for order in orders_today %}
                                                 <tr>
                                                     <td>{{ order.staff.department_location.name }}</td>
                                                     <td>{{ order.id }}</td>
@@ -112,10 +112,10 @@
                                                     <td>
 
                                                         {% for item in order.items.all %}
-                                                           <li>{{ item.product.name }} - Quantity: {{ item.quantity }} - Price: {{ item.price }}</li>
+                                                            <li>{{ item.product.name }} - Quantity: {{ item.quantity }} - Price: {{ item.price }}</li>
                                                         {% endfor %}
                                                     </td>
-                                                    
+
                                                 </tr>
                                             {% endfor%}
                                         {% else %}

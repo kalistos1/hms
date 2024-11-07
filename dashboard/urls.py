@@ -22,7 +22,9 @@ urlpatterns = [
     path('admin/warehouse-setup/create/',views.warehouse_setup, name="warehouse_setup"),
     path('admin/warehouse_setup/',views.warehouse_info, name="warehouse_info"),
     path('admin/warehouse/delete/<int:pk>/', views.warehouse_delete, name='warehouse_delete'),
-    
+    path('admin/warehouse/update/<int:pk>/', views.admin_update_warehouse, name='admin_update_warehouse'),
+    path('admin/warehouse/update-form/<int:pk>/', views.admin_update_warehouse_form, name='admin_update_warehouse_form'),
+
      
     #admin views
     # amenities
@@ -30,17 +32,20 @@ urlpatterns = [
     path('admin/room-amenities/create/', views.admin_create_room_amenity, name='admin_create_room_amenity'),
     path('admin/room-amenities/update/<int:pk>/', views.admin_update_room_amenity, name='admin_update_room_amenity'),
     path('admin/room-amenities/delete/<int:pk>/', views.admin_delete_room_amenity, name='admin_delete_room_amenity'),
-    
+    path('admin/room-amenities/update-form/<int:pk>/', views.admin_update_amenity_form, name='admin_update_room_amenity_form'),
+
     #room type
     path('admin/room-type/', views.admin_list_room_type, name='admin_list_room_types'),
     path('admin/room-type/create/', views.admin_create_room_type, name='admin_create_room_type'),
     path('admin/room-type/update/<int:pk>/', views.admin_update_room_type, name='admin_update_room_type'),
     path('admin/room-type/delete/<int:pk>/', views.admin_delete_room_type, name='admin_delete_room_type'),
-  
+    path('admin/room-type/update-form/<int:pk>/', views.admin_update_roomtype_form, name='admin_update_roomtype_form'),
+
    #room
     path('admin/rooms/', views.admin_list_room, name='admin_list_room'),
     path('admin/room/create/', views.admin_create_room, name='admin_create_room'),
     path('admin/room/update/<int:pk>/', views.admin_update_room, name='admin_update_room'),
+    path('admin/room/update-form/<int:pk>/', views.admin_update_room_form, name='admin_update_room_form'),
     path('admin/room/delete/<int:pk>/', views.admin_delete_room, name='admin_delete_room'),
     
     
@@ -49,11 +54,18 @@ urlpatterns = [
     path('admin/couponcreate/', views.admin_create_coupon, name='admin_create_coupon'),
     path('admin/coupon/update/<int:pk>/', views.admin_update_coupon, name='admin_update_coupon'),
     path('admin/coupon/delete/<int:pk>/', views.admin_delete_coupon, name='admin_delete_coupon'),
-    
+    path('admin/coupon/update-form/<int:pk>/', views.admin_update_coupon_form, name='admin_update_coupon_form'),
+
     #Admin users
     path('admin/privilaged_users/list/', views.admin_users_list, name='admin_users_list'),
     path('admin/privilaged_user/create/', views.add_admin_privilaged_user, name='add_admin_privilaged_user'),
     path('admin/privilaged_user/delete/<int:pk>/', views.admin_delete_privilaged_user, name='admin_delete_privilaged_user'),
+    path('admin/privilaged_user/update/<int:pk>/', views.privilaged_user_update, name='privilaged_user_update'),
+    path('admin/privilaged_user/update-form/<int:pk>/', views.admin_update_privilaged_user_form, name='admin_update_privilaged_user_form'),
+   
+   
+   
+   
     path('admin/view/room_status/',views.admin_room_status, name ="admin_room_status"),
     path('admin/view/booking_list/',views.admin_booking_list, name ="admin_booking_list"),
 

@@ -166,6 +166,30 @@ def warehouse_stock(request):
 
     return render(request, 'supervisor/move_item.html', context)
 
+def admin_update_warehouse(request, pk):
+    warehouse = get_object_or_404(Warehouse, pk=pk)
+    if request.method == 'POST':
+        form = WarehouseForm(request.POST, request.FILES, instance=warehouse)
+        if form.is_valid():
+            form.save()
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': 'Room updated successfully!'}, status=200)
+            messages.success(request, 'warehouse updated successfully!')
+            return redirect('dashboard:warehouse_info')
+        else:
+            if request.htmx:
+                return render(request, 'partials/htmx/edit_warehouse_partial.html', {'form': form, 'warehouse': warehouse})
+            messages.error(request, 'Error updating Room. Please correct the errors.')
+    
+    return redirect('dashboard:warehouse_info')
+
+
+# for htmx
+def admin_update_warehouse_form(request, pk):
+    warehouse = get_object_or_404(Warehouse, pk=pk)
+    form = WarehouseForm(instance=warehouse)
+    return render(request, 'partials/htmx/edit_warehouse_partial.html', {'form': form, 'warehouse': warehouse})
+
 
 def warehouse_delete(request, pk):    
     warehouse = get_object_or_404(Warehouse, pk=pk)
@@ -214,14 +238,23 @@ def admin_update_room_amenity(request, pk):
         form = RoomAmenityForm(request.POST, instance=amenity)
         if form.is_valid():
             form.save()
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': 'Room updated successfully!'}, status=200)
             messages.success(request, 'Room Amenity updated successfully!')
             return redirect('list_room_amenities')
         else:
-            messages.error(request, 'Error updating Room Amenity. Please correct the errors below.')
-    else:
-        form = RoomAmenityForm(instance=amenity)
+            if request.htmx:
+               return render(request, 'partials/htmx/edit_room_amenity_partials.html', {'form': form, 'amenity': amenity})
+            messages.error(request, 'Error updating Room. Please correct the errors.')
+    
+    return redirect('dashboard:admin_list_room_amenities')
 
-    return render(request, 'room_amenities/update.html', {'form': form})
+
+# for htmx
+def admin_update_amenity_form(request, pk):
+    amenity = get_object_or_404(RoomInventory, pk=pk)
+    form = RoomAmenityForm(instance=amenity)
+    return render(request, 'partials/htmx/edit_room_amenity_partials.html', {'form': form, 'amenity': amenity})
 
 
 def admin_delete_room_amenity(request, pk):    
@@ -257,7 +290,6 @@ def admin_create_room(request):
 
 
 def admin_list_room(request):
-    
     rooms = Room.objects.select_related('room_type').all()
     form = RoomForm()
     
@@ -272,17 +304,26 @@ def admin_list_room(request):
 def admin_update_room(request, pk):
     room = get_object_or_404(Room, pk=pk)
     if request.method == 'POST':
-        form = RoomAmenityForm(request.POST, instance=room)
+        form = RoomForm(request.POST, request.FILES, instance=room)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Room Amenity updated successfully!')
-            return redirect('list_room_amenities')
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': 'Room updated successfully!'}, status=200)
+            messages.success(request, 'Room updated successfully!')
+            return redirect('dashboard:admin_list_room')
         else:
-            messages.error(request, 'Error updating Room Amenity. Please correct the errors below.')
-    else:
-        form = RoomAmenityForm(instance=room)
+            if request.htmx:
+                return render(request, 'partials/htmx/edit_room_partial.html', {'form': form, 'room': room})
+            messages.error(request, 'Error updating Room. Please correct the errors.')
+    
+    return redirect('dashboard:admin_list_room')
 
-    return render(request, 'room_amenities/update.html', {'form': form})
+
+# for htmx
+def admin_update_room_form(request, pk):
+    room = get_object_or_404(Room, pk=pk)
+    form = RoomForm(instance=room)
+    return render(request, 'partials/htmx/edit_room_partial.html', {'form': form, 'room': room})
 
 
 
@@ -331,20 +372,29 @@ def admin_list_room_type(request):
 
 
 def admin_update_room_type(request, pk):
-    amenity = get_object_or_404(RoomAmenity, pk=pk)
+    room_type = get_object_or_404(RoomType, pk=pk)
     if request.method == 'POST':
-        form = RoomAmenityForm(request.POST, instance=amenity)
+        form = RoomTypeForm(request.POST, instance=room_type)
         if form.is_valid():
             form.save()
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': 'Room updated successfully!'}, status=200)
             messages.success(request, 'Room Amenity updated successfully!')
             return redirect('dashboard:admin_list_room_types')
         else:
-            messages.error(request, 'Error updating Room Amenity. Please correct the errors below.')
-    else:
-        form = RoomAmenityForm(instance=amenity)
+            if request.htmx:
+                return render(request, 'partials/htmx/edit_room_type_partials.html', {'form': form, 'room_type': room_type})
 
-    return render(request, 'room_amenities/update.html', {'form': form})
+        messages.error(request, 'Error updating Room Amenity. Please correct the errors below.')
+    
+    return redirect('dashboard:admin_list_room_types')
 
+
+# for htmx
+def admin_update_roomtype_form(request, pk):
+    room_type = get_object_or_404(RoomType, pk=pk)
+    form = RoomTypeForm(instance=room_type)
+    return render(request, 'partials/htmx/edit_room_type_partials.html', {'form': form, 'room_type': room_type})
 
 
 def admin_delete_room_type(request, pk):   
@@ -389,28 +439,37 @@ def admin_list_coupon(request):
 
 
 def admin_update_coupon(request, pk):
-    amenity = get_object_or_404(Coupon, pk=pk)
+    coupon = get_object_or_404(Coupon, pk=pk)
     if request.method == 'POST':
-        form = CreateCouponForm(request.POST, instance=amenity)
+        form = CreateCouponForm(request.POST, instance=coupon)
         if form.is_valid():
             form.save()
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': 'Room updated successfully!'}, status=200)
+            
             messages.success(request, 'Room Amenity updated successfully!')
             return redirect('dashboard:admin_list_coupon')
         else:
-            messages.error(request, 'Error updating Room Amenity. Please correct the errors below.')
-    else:
-        form = CreateCouponForm(instance=amenity)
+            if request.htmx:
+                return render(request, 'partials/htmx/edit_coupon_partials.html', {'form': form, 'coupon': coupon})
 
-    return render(request, {'form': form})
+            messages.error(request, 'Error updating Coupon. Please correct the errors below.')
+    return redirect('dashboard:admin_list_coupon')
+
+
+# for htmx
+def admin_update_coupon_form(request, pk):
+    coupon = get_object_or_404(Coupon, pk=pk)
+    form = CreateCouponForm(instance=coupon)
+    return render(request, 'partials/htmx/edit_coupon_partials.html', {'form': form, 'coupon': coupon})
 
 
 
 def admin_delete_coupon(request, pk):
-    
-    room_type = get_object_or_404(Coupon, pk=pk)
+    coupon = get_object_or_404(Coupon, pk=pk)
     if request.method == 'GET':
-        room_type.delete()
-        messages.success(request, 'Room Amenity deleted successfully!')
+        coupon.delete()
+        messages.success(request, 'coupon deleted successfully!')
         return redirect('dashboard:admin_list_coupon')
     
     return redirect('dashboard:admin_list_coupon')
@@ -458,7 +517,6 @@ def admin_users_list(request):
 
 
 def add_admin_privilaged_user(request):
-    
     admin_form = AddAdminForm()
     supervisor_form = AddSupervisorForm()
     frontdesk_form = AddFrontdeskForm()
@@ -526,8 +584,36 @@ def add_admin_privilaged_user(request):
     return redirect('dashboard:admin_users_list')
 
 
+@required_roles('is_admin','is_supervisor')
+def privilaged_user_update(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        form = AddWorkerForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': 'Worker updated successfully!'}, status=200)
+            messages.success(request, 'Worker updated successfully!')
+            return redirect('hrm:department_locations')
+        else:
+            if request.htmx:
+                return render(request, 'partials/htmx/edit_worker_partial.html', {'form': form, 'user': user})
+            messages.error(request, 'Error updating worker. Please correct the errors.')
+        
+        return redirect('dashboard:admin_users_list')
+
+
+# for htmx
+def admin_update_privilaged_user_form(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    form = AddWorkerForm(instance=user)
+    return render(request, 'partials/htmx/edit_worker_partial.html', {'form': form, 'user': user})
+ 
+
+
+
 def admin_delete_privilaged_user(request, pk):
-    
     room_type = get_object_or_404(User, pk=pk)
     if request.method == 'GET':
         room_type.delete()
@@ -535,6 +621,7 @@ def admin_delete_privilaged_user(request, pk):
         return redirect('dashboard:admin_users_list')
     
     return redirect('dashboard:admin_users_list')
+
 
 
 #booking list

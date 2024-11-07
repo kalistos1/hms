@@ -3,14 +3,14 @@
 {% block title %} Our Gallery{% endblock %}
 
 {% block content %}
-<style>
-    .container-fluid label a{
-        color: #000;
-    }
-    .container-fluid a:hover{
-        color: #ffee27;
-    }
-</style>
+    <style>
+        .container-fluid label a{
+            color: #000;
+        }
+        .container-fluid a:hover{
+            color: #ffee27;
+        }
+    </style>
 
 
     <section class="hero_single">
@@ -22,21 +22,21 @@
     <div class="section-gallery">
         <div class="container-fluid p-0 text-[#ffee27]">
             <div class="filters my-5 px-3 text-center">
-                <label class="font-weight-600 text-dark mr-3"> 
+                <label class="font-weight-600 text-dark mr-3">
                     <span class='text-[#ffee27]'>
                         -
-                       </span> 
-                <a href="{% url "core:gallery" %}">
-                    Show All
-                </a>
+                    </span>
+                    <a href="{% url "core:gallery" %}">
+                        Show All
+                    </a>
                 </label>
                 {% for rs in room %}
-                <label class="font-weight-600 text-[#ffee27] mr-3"><a href="{% url "core:gallery-filter" rs %}">
-                   <span class='text-[#ffee27]'>
-                    -
-                   </span> {{rs.type}}
-                </a></label>
-                
+                    <label class="font-weight-600 text-[#ffee27] mr-3"><a href="{% url "core:gallery-filter" rs %}">
+                        <span class='text-[#ffee27]'>
+                            -
+                        </span> {{rs.type}}
+                    </a></label>
+
                 {% endfor %}
             </div>
             {% include "./galleryfilter.html" %}

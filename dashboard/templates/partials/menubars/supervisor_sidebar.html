@@ -103,7 +103,7 @@
                                         <path d="M3 4h6a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-6z" />
                                         <path d="M15 4h6a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-6z" />
                                         <path d="M9 6h6v12h-6z" />
-                                      </svg>
+                                    </svg>
                                     <span class="mx-3">Inventory</span>
                                 </a>
                                 <ul class="collapse list-unstyled" id="inventory">
@@ -118,58 +118,58 @@
 
                                     {% comment %} <li><a href="" aria-label="Items Destroyed">Amenities Inventory</a></li> {% endcomment %}
                                 </ul>
-                          </li>
+                            </li>
 
                             <li>
-                                                               
-                               
-                               
-                               <a href="#roaster" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Room Book">
-                                   
-                                <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+
+
+
+                                <a href="#roaster" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle" aria-label="Room Book">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="svg-stroke" width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                     <!-- Pen tip -->
-                                    <path d="M12 21l1.5 -1.5l2 -7l-6 -6l-7 7l7 7z" fill="currentColor" stroke="none"/>
+                                        <path d="M12 21l1.5 -1.5l2 -7l-6 -6l-7 7l7 7z" fill="currentColor" stroke="none"/>
                                     <!-- Pen cap -->
-                                    <path d="M14.5 3.5l6 6" />
-                                    <path d="M18 7l-5 5" />
-                                    <path d="M3 21l7 -7" />
+                                        <path d="M14.5 3.5l6 6" />
+                                        <path d="M18 7l-5 5" />
+                                        <path d="M3 21l7 -7" />
                                     <!-- Decorative grip area -->
-                                    <path d="M9 12l2 -2" />
-                                    <path d="M10 11l1 -1" />
-                                  </svg>
-                                  
-                                  
-                                  
-                                <span class="mx-3">Workers Roaster</span>
-                            </a>
-                            <ul class="collapse list-unstyled" id="roaster">
+                                        <path d="M9 12l2 -2" />
+                                        <path d="M10 11l1 -1" />
+                                    </svg>
 
-                                <li>
-                                    <a href="{% url 'hrm:current_schedule_list' %}" aria-label="Assigned List" >
-                                      <span class="mx-3">Todays Schedules</span>
-                                    </a>
-                                </li>
 
-                                  <li>
-                                    <a href="{% url 'hrm:daily_attendance' %}" aria-label="hrm attendance" >
-                                      <span class="mx-3"> Attendance
-                                    </a >
-                                </li>
 
-                                 <li>
-                                      <a href="{% url 'hrm:staff_schedule' %}" aria-label="Assigned List" >
-                                        <span class="mx-3">All schedules </span>
-                                      </a>
-                                 </li>    
-                            </ul>
+                                    <span class="mx-3">Workers Roaster</span>
+                                </a>
+                                <ul class="collapse list-unstyled" id="roaster">
+
+                                    <li>
+                                        <a href="{% url 'hrm:current_schedule_list' %}" aria-label="Assigned List" >
+                                            <span class="mx-3">Todays Schedules</span>
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a href="{% url 'hrm:daily_attendance' %}" aria-label="hrm attendance" >
+                                            <span class="mx-3"> Attendance
+                                            </a >
+                                        </li>
+
+                                        <li>
+                                            <a href="{% url 'hrm:staff_schedule' %}" aria-label="Assigned List" >
+                                                <span class="mx-3">All schedules </span>
+                                            </a>
+                                        </li>
+                                    </ul>
                                 {% comment %} <li><a href="" aria-label="Items Destroyed">Amenities Inventory</a></li> {% endcomment %}
-                            </li> 
+                                </li>
                             <!-- Other dropdowns... -->
-                        </ul>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </nav>
-</aside>
+        </nav>
+    </aside>

@@ -105,7 +105,15 @@
 
 
                                                     <td>
-                                                        <button type="button" class="btn" data-bs-toggle="offcanvas" data-bs-target="#edit-room" aria-controls="edit-room"><i class="fa fa-pencil-square fa-2x"></i></button>
+                                                        <button type="button"
+                                                        class="btn"
+                                                        hx-get="{% url 'dashboard:admin_update_privilaged_user_form' user.pk %}"
+                                                        hx-target="#edit-user .offcanvas-body"
+                                                        hx-trigger="click"
+                                                        data-bs-toggle="offcanvas"
+                                                        data-bs-target="#edit-user">
+                                                    <i class="fa fa-pencil-square fa-2x"></i>
+                                                </button>
                                                         <a href="#" data-url="{% url 'dashboard:admin_delete_privilaged_user' 0 %}" onclick="deleteUser(event, {{ user.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
                                                     </td>
                                                 </tr>
@@ -365,6 +373,20 @@
                 </div>
             </div>
 
+
+            <!-- edit user-->
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="edit-user" aria-labelledby="edit-user">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+            <!-- HTMX will load the form content here -->
+                </div>
+            </div>
+            
+            
+
         </div>
         <script>
             function deleteUser(event, amenityId) {
@@ -389,6 +411,27 @@
                     }
                 });
             }
+
+
+
+              // update reload 
+              document.addEventListener('htmx:afterRequest', (event) => {
+                if (event.detail.xhr && event.detail.xhr.response) {
+                    const response = JSON.parse(event.detail.xhr.response);
+                    if (response.success) {
+                            // Close the offcanvas
+                        const offcanvas = document.querySelector('#edit-user');
+                        if (offcanvas) {
+                            const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
+                            if (offcanvasInstance) {
+                                offcanvasInstance.hide();
+                            }
+                        }
+                            // Reload the page
+                        location.reload();
+                    }
+                }
+            });
         </script>
 
     </main>

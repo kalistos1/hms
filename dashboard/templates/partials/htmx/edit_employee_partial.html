@@ -1,0 +1,7 @@
+<form method="post" action="{% url 'hrm:employee_update' employee.pk %}" enctype="multipart/form-data" hx-post="{% url 'hrm:employee_update' employee.pk %}" hx-target="#edit-employee .offcanvas-body" hx-swap="innerHTML">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="d-flex">
+        <button type="submit" class="btn w-100 ms-1 py-2 btn-primary">Update</button>
+    </div>
+</form>

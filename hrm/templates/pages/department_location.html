@@ -65,7 +65,15 @@
                                                     <td>{{ location.name }}</td>
                                                     <td>{{ location.description }}</td>
                                                     <td>
-                                                        <button type="button" class="btn" data-bs-toggle="offcanvas" data-bs-target="#edit-room" aria-controls="edit-room"><i class="fa fa-pencil-square fa-2x"></i></button>
+                                                        <button type="button"
+                                                                class="btn"
+                                                                hx-get="{% url 'hrm:admin_update_department_location_form' location.pk %}"
+                                                                hx-target="#edit-department-location .offcanvas-body"
+                                                                hx-trigger="click"
+                                                                data-bs-toggle="offcanvas"
+                                                                data-bs-target="#edit-department-location">
+                                                            <i class="fa fa-pencil-square fa-2x"></i>
+                                                        </button>
                                                         <a href="#" data-url="{% url 'hrm:department_locations_delete' 0 %}" onclick="deleteLocation(event, {{ location.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
                                                     </td>
                                                 </tr>
@@ -121,43 +129,19 @@
                 </div>
             </div>
 
-<!-- Edit: Room-->
-            <div
-                class="offcanvas offcanvas-end"
-                tabindex="-1"
-                id="edit-room"
-                aria-labelledby="edit-room"
-            >
-                <div class="offcanvas-header">
-                    <h5 class="offcanvas-title">Edit Room</h5>
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="offcanvas"
-                        aria-label="Close"
-                    ></button>
-                </div>
-                <div class="offcanvas-body">
-                    <form>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted"
-                            >Room Type <span class="text-danger">*</span></label
-                                >
-                                <input type="text" class="form-control" value="VIP-Guest" />
-                            </div>
-
-                        </form>
-                        <div class="d-flex">
-                            <button type="button" class="btn w-100 ms-1 py-2 btn-primary">
-                                Update
-                            </button>
-                        </div>
-                    </div>
-
-         {% comment %} body content ends {% endcomment %}
+<!-- Edit: department location-->
+         
+<div class="offcanvas offcanvas-end" tabindex="-1" id="edit-department-location" aria-labelledby="edit-department-location">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Edit Room</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+<!-- HTMX will load the form content here -->
+    </div>
+</div>
 
 
-                </div>
                 <script>
                     function deleteLocation(event, amenityId) {
                         event.preventDefault(); // Prevent the default link behavior
@@ -181,6 +165,25 @@
                             }
                         });
                     }
+
+                             // update reload 
+                document.addEventListener('htmx:afterRequest', (event) => {
+                    if (event.detail.xhr && event.detail.xhr.response) {
+                        const response = JSON.parse(event.detail.xhr.response);
+                        if (response.success) {
+                                // Close the offcanvas
+                            const offcanvas = document.querySelector('#edit-department-location');
+                            if (offcanvas) {
+                                const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
+                                if (offcanvasInstance) {
+                                    offcanvasInstance.hide();
+                                }
+                            }
+                                // Reload the page
+                            location.reload();
+                        }
+                    }
+                });
                 </script>
 
             </main>

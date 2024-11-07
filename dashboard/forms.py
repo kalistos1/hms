@@ -13,7 +13,7 @@ class DateInput(forms.DateInput):
 class RoomAmenityForm(forms.ModelForm):
     class Meta:
         model =  RoomInventory
-        fields = ['room','equipment','amenity','consumable','quantity','status']
+        fields = ['room','equipment','amenity','quantity','status']
     
 
     def __init__(self, *args, **kwargs):
@@ -22,7 +22,7 @@ class RoomAmenityForm(forms.ModelForm):
         self.fields['room'].widget.attrs.update({'class': 'form-control', 'placeholder': 'room'})
         self.fields['equipment'].widget.attrs.update({'class': 'form-control', 'placeholder': 'equipment'})
         self.fields['amenity'].widget.attrs.update({'class': 'form-control', 'placeholder': 'amenity'})
-        self.fields['consumable'].widget.attrs.update({'class': 'form-control', 'placeholder': 'consumable'})
+       
         self.fields['quantity'].widget.attrs.update({'class': 'form-control', 'placeholder': 'quantity'})
         self.fields['status'].widget.attrs.update({'class': 'form-control', 'placeholder': 'status'})
         
@@ -32,17 +32,17 @@ class RoomTypeForm(forms.ModelForm):
     
     class Meta:
         model = RoomType
-        fields = ['banner_img','type','base_price', 'number_of_beds', 'room_capacity',]
+        fields = ['type','base_price', 'number_of_beds', 'room_capacity','banner_img',]
 
     def __init__(self, *args, **kwargs):
         super(RoomTypeForm, self).__init__(*args, **kwargs)
       
-        self.fields['banner_img'].widget.attrs.update({'class': 'form-control-file'})
+       
         self.fields['type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Type'})
         self.fields['base_price'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Price'})
         self.fields['number_of_beds'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of Beds'})
         self.fields['room_capacity'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Room Capacity'})
-         
+        self.fields['banner_img'].widget.attrs.update({'class': 'form-control-file'})
               
 
 class RoomForm(forms.ModelForm):

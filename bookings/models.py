@@ -209,19 +209,18 @@ class RoomInventory(models.Model):
     warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='room_allocations')
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, null=True, blank=True)
     amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE, null=True, blank=True)
-    consumable = models.ForeignKey(Item, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES)
 
     class Meta:
-        unique_together = ('room', 'equipment', 'consumable', 'amenity')
+        unique_together = ('room', 'equipment', 'amenity')
 
     def __str__(self):
         return f"{self.room.room_number} - {self.equipment or self.consumable or self.amenity}"
 
     def clean(self):
         # Ensure that only one of equipment, amenity, or consumable is set
-        if sum(bool(field) for field in [self.equipment, self.amenity, self.consumable]) != 1:
+        if sum(bool(field) for field in [self.equipment, self.amenity]) != 1:
             raise ValidationError("Exactly one of equipment, amenity, or consumable must be set.")
 
 
@@ -298,12 +297,24 @@ class RoomInventory(models.Model):
                 )
                 super(RoomInventory, self).delete(*args, **kwargs)
 
-    def get_assigned_item(self):
-        item = Item.objects.filter(stock_type='equipment', equipment__isnull=False).first()
-        if not item:
-            raise ValidationError("No available equipment item for assignment.")
-        return item
+    # def get_assigned_item(self):
+    #     item = Item.objects.filter(stock_type='equipment', equipment__isnull=False).first()
+    #     if not item:
+    #         raise ValidationError("No available equipment item for assignment.")
+    #     return item
+    
 
+    def get_assigned_item(self, stock_type='equipment'):
+        if stock_type not in ['equipment', 'amenity']:
+            raise ValidationError("Invalid stock type. Choose 'equipment' or 'amenity'.")
+
+        # Filter based on the provided stock type
+        item = Item.objects.filter(stock_type=stock_type).first()
+        
+        if not item:
+            raise ValidationError(f"No available {stock_type} item for assignment.")
+
+        return item
 
 class Payment(models.Model):
     PAYMENT_STATUS_CHOICES = [

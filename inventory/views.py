@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.contrib import messages
 from .models import *
@@ -19,7 +19,6 @@ def supplier_list(request):
     return render(request, 'pages/supplier_list.html',context)
 
 
-
 def supplier_create(request):
     if request.method == 'POST':
         form = SupplierForm(request.POST)
@@ -34,20 +33,32 @@ def supplier_create(request):
     return redirect('inventory:supplier_list')
 
 
-
 def supplier_update(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
     if request.method == 'POST':
         form = SupplierForm(request.POST, instance=supplier)
         if form.is_valid():
             form.save()
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': ' Update was successfully!'}, status=200)
+
             messages.success(request, 'Supplier updated successfully.')
             return redirect('inventory:supplier_list')
         else:
+            if request.htmx:
+                return render(request, 'partials/htmx/edit_supplier_partials.html', {'form': form, 'room': room})
+
             messages.error(request, 'Please correct the errors below.')
-    else:
-        form = SupplierForm(instance=supplier)
+
     return render(request, 'suppliers/supplier_form.html', {'form': form})
+
+
+# for htmx
+def admin_update_supplier_form(request, pk):
+    supplier = get_object_or_404(Supplier, pk=pk)
+    form = SupplierForm(instance=supplier)
+    return render(request, 'partials/htmx/edit_supplier_partials.html', {'form': form, 'supplier': supplier})
+
 
 
 
@@ -95,13 +106,25 @@ def category_update(request, pk):
         form = InventoryCategoryForm(request.POST, instance=category)
         if form.is_valid():
             form.save()
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': 'category updated successfully!'}, status=200)
+
             messages.success(request, 'Category updated successfully.')
             return redirect('inventory:category_list')
         else:
+            if request.htmx:
+                return render(request, 'partials/htmx/edit_category_partial.html', {'form': form, 'category': category})
             messages.error(request, 'Please correct the errors below.')
-    else:
-        form = SupplierForm(instance=category)
-    return render(request, 'suppliers/supplier_form.html', {'form': form})
+
+    return redirect('inventory:category_list')
+
+
+
+# for htmx
+def admin_update_category_form(request, pk):
+    category = get_object_or_404(ItemCategory, pk=pk)
+    form =  InventoryCategoryForm(instance=category)
+    return render(request, 'partials/htmx/edit_category_partial.html', {'form': form, 'category': category})
 
 
 
@@ -150,13 +173,27 @@ def equipment_update(request, pk):
         form = EquipmentForm(request.POST, instance=equipment)
         if form.is_valid():
             form.save()
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': 'Equipment updated successfully!'}, status=200)
+
             messages.success(request, 'Equipment updated successfully.')
-            return redirect('inventory:equipment_list')
+            return  redirect('inventory:equipment_list')
+
         else:
+          
+            if request.htmx:
+              
+                return render(request, 'partials/htmx/edit_equipment_partial.html', {'form': form, 'equipment':equipment})
             messages.error(request, 'Please correct the errors below.')
-    else:
-        form = EquipmentForm(instance=equipment)
-    return render(request, 'equipments/equipment_form.html', {'form': form})
+
+    return  redirect('inventory:equipment_list')
+
+
+# for htmx
+def admin_update_equipment_form(request, pk):
+    equipment = get_object_or_404(Equipment, pk=pk)
+    form =  EquipmentForm(instance=equipment)
+    return render(request, 'partials/htmx/edit_equipment_partial.html', {'form': form, 'equipment': equipment})
 
 
 def equipment_delete(request, pk):
@@ -196,18 +233,30 @@ def consumable_item_create(request):
 
 
 def consumable_item_update(request, pk):
-    consumable_item = get_object_or_404(Item, pk=pk)
+    item = get_object_or_404(Item, pk=pk)
     if request.method == 'POST':
-        form = ItemForm(request.POST, instance=consumable_item)
+        form = ItemForm(request.POST, instance=item)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Consumable item updated successfully.')
-            return redirect('inventory:consumable_item_list')
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': 'item updated successfully!'}, status=200)
+
+            messages.success(request, 'Item updated successfully.')
+            return redirect ('inventory:consumable_item_list')
+
         else:
+            if request.htmx:
+                return render(request, 'partials/htmx/edit_item_partial.html', {'form': form, 'item':item})
             messages.error(request, 'Please correct the errors below.')
-    else:
-        form = ItemForm(instance=consumable_item)
-    return render(request, 'pages/consumable_item_form.html', {'form': form})
+
+    return redirect ('inventory:consumable_item_list')
+
+
+# for htmx
+def admin_update_item_form(request, pk):
+    item = get_object_or_404(Item, pk=pk)
+    form =  ItemForm(instance=item)
+    return render(request, 'partials/htmx/edit_item_partial.html', {'form': form, 'item': item})
 
 
 def consumable_item_delete(request, pk):
@@ -252,13 +301,27 @@ def amenity_item_update(request, pk):
         form = AmenityForm(request.POST, instance=amenity)
         if form.is_valid():
             form.save()
+            if request.htmx:
+                return JsonResponse({'success': True, 'message': 'Amenity updated successfully!'}, status=200)
+
             messages.success(request, 'Amenity updated successfully.')
-            return redirect('inventory:amenity_item_list')
+            return  redirect('inventory:equipment_list')
+
         else:
+          
+            if request.htmx:
+              
+                return render(request, 'partials/htmx/edit_amenity_partial.html', {'form': form, 'amenity':amenity})
             messages.error(request, 'Please correct the errors below.')
-    else:
-        form = ItemForm(instance=amenity)
-    return render(request, 'pages/amenity_item_form.html', {'form': form})
+
+    return  redirect('inventory:equipment_list')
+
+
+# for htmx
+def admin_update_amenity_form(request, pk):
+    amenity = get_object_or_404(Amenity, pk=pk)
+    form =  AmenityForm(instance=amenity)
+    return render(request, 'partials/htmx/edit_amenity_partial.html', {'form': form, 'amenity': amenity})
 
 
 def amenity_item_delete(request, pk):
@@ -269,6 +332,7 @@ def amenity_item_delete(request, pk):
         return redirect('inventory:amenity_item_list')
     messages.error(request, 'Unable to delete item something went wrong.')
     return redirect('inventory:amenity_item_list')
+
 
 
 def move_product(request):

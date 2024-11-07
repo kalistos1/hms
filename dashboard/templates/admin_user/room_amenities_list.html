@@ -72,7 +72,15 @@
                                                     <td>{{amenity.status }}</td>
 
                                                     <td>
-                                                        <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#edit-amenity"><i class="fa fa-pencil-square fa-2x"></i></button>
+                                                        <button type="button"
+                                                                class="btn"
+                                                                hx-get="{% url 'dashboard:admin_update_room_amenity_form' amenity.pk %}"
+                                                                hx-target="#edit-amenity .offcanvas-body"
+                                                                hx-trigger="click"
+                                                                data-bs-toggle="offcanvas"
+                                                                data-bs-target="#edit-amenity">
+                                                            <i class="fa fa-pencil-square fa-2x"></i>
+                                                        </button>
                                                         <a href="#" data-url="{% url 'dashboard:admin_delete_room_amenity' 0 %}" onclick="deleteAmenity(event, {{ amenity.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
 
                                                     </td>
@@ -144,50 +152,18 @@
                 </div>
             </div>
 
-<!-- Edit Booking-->
-            <div
-                class="modal fade"
-                id="edit-amenity"
-                tabindex="-1"
-                aria-hidden="true"
-            >
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title fs-5">Edit amenity</h1>
-                            <button
-                                type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"
-                            ></button>
-                        </div>
-                        <div class="modal-body">
-                            <form>
-                                <div class="form-group">
-                                    <label class="form-label text-muted">Booking Type Name</label>
-                                    <input type="text" class="form-control" value="Advance" />
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button
-                                type="button"
-                                class="btn btn-secondary"
-                                data-bs-dismiss="modal"
-                            >
-                                Close
-                            </button>
-                            <button type="button" class="btn btn-primary">
-                                Update changes
-                            </button>
-                        </div>
-                    </div>
+<!-- Edit amenity-->
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="edit-amenity" aria-labelledby="edit-amenity">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">Edit Room amenity</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+        <!-- HTMX will load the form content here -->
+
+
                 </div>
             </div>
-
-{% comment %} modals end {% endcomment %}
-
 
    {% comment %} body content ends {% endcomment %}
 
@@ -218,6 +194,28 @@
                     }
                 });
             }
+
+
+
+
+             // update reload 
+            document.addEventListener('htmx:afterRequest', (event) => {
+                if (event.detail.xhr && event.detail.xhr.response) {
+                    const response = JSON.parse(event.detail.xhr.response);
+                    if (response.success) {
+                        // Close the offcanvas
+                        const offcanvas = document.querySelector('#edit-amenity');
+                        if (offcanvas) {
+                            const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
+                            if (offcanvasInstance) {
+                                offcanvasInstance.hide();
+                            }
+                        }
+                        // Reload the page
+                        location.reload();
+                    }
+                }
+            });
         </script>
     </main>
 {% endblock %}

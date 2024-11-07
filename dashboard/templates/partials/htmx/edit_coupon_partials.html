@@ -1,0 +1,7 @@
+<form method="post" action="{% url 'dashboard:admin_update_coupon' coupon.pk %}" enctype="multipart/form-data" hx-post="{% url 'dashboard:admin_update_coupon' coupon.pk %}" hx-target="#edit-coupon .offcanvas-body" hx-swap="innerHTML">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="d-flex">
+        <button type="submit" class="btn w-100 ms-1 py-2 btn-primary">Update</button>
+    </div>
+</form>
