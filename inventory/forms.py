@@ -121,7 +121,7 @@ class EquipmentForm(forms.ModelForm):
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
-        fields = ['stock_type','category','name', 'description', 'stock_quantity', 'unit_price', 'purchase_receipt', 'supplier','purchase_date','equipment']
+        fields = ['stock_type','category','name', 'description', 'stock_quantity', 'unit_price', 'purchase_receipt','item_image','supplier','purchase_date','equipment']
         widgets = {
             'stock_type': forms.Select(attrs={'class': 'form-control','placeholder':'Srock type',}),
             'category': forms.Select(attrs={'class': 'form-control','placeholder':'item Category',}),
@@ -132,6 +132,7 @@ class ItemForm(forms.ModelForm):
             'supplier': forms.Select(attrs={'class': 'form-control','placeholder':'Supplier',}),
             'equipment': forms.Select(attrs={'class': 'form-control', 'type': 'date','placeholder':'Equipment',}),
             'purchase_receipt': forms.ClearableFileInput(attrs={'class': 'form-control', 'placeholder': 'Upload Receipt'}),
+            'item_image': forms.ClearableFileInput(attrs={'class': 'form-control', 'placeholder': 'Upload Receipt'}),
             'purchase_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder':'Purchase Date',}),
             
         }

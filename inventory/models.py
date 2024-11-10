@@ -103,6 +103,7 @@ class Item(models.Model):
     stock_quantity = models.PositiveIntegerField(default=0)
     unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     purchase_receipt = models.ImageField(upload_to="consumable_receipts", blank=True, null=True)
+    item_image = models.ImageField(upload_to="item_images", blank=True, null=True)
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True, related_name='consumable', db_index=True)
     purchase_date = models.DateField()
     equipment = models.OneToOneField('Equipment', on_delete=models.CASCADE, null=True, blank=True, related_name='equimentitem')  # Link to Equipment model
@@ -354,6 +355,7 @@ class StockReceipt(models.Model):
                     department_location=self.department_location,
                     defaults={
                         'price': self.selling_price_per_item,
+                        'image':self.product_received.item_image,
                         'stock_quantity': self.quantity_received,
                         'description': self.product_received.description,
                         'category': self.product_sales_category, 
