@@ -76,14 +76,14 @@
 
                                                     <td>
                                                         <button type="button"
-                                                        class="btn"
-                                                        hx-get="{% url 'inventory:admin_update_item_form' item.pk %}"
-                                                        hx-target="#edit-item .offcanvas-body"
-                                                        hx-trigger="click"
-                                                        data-bs-toggle="offcanvas"
-                                                        data-bs-target="#edit-item">
-                                                    <i class="fa fa-pencil-square fa-2x"></i>
-                                                </button>
+                                                                class="btn"
+                                                                hx-get="{% url 'inventory:admin_update_item_form' item.pk %}"
+                                                                hx-target="#edit-item .offcanvas-body"
+                                                                hx-trigger="click"
+                                                                data-bs-toggle="offcanvas"
+                                                                data-bs-target="#edit-item">
+                                                            <i class="fa fa-pencil-square fa-2x"></i>
+                                                        </button>
                                                         <a href="#" data-url="{% url 'inventory:consumable_item_delete' 0 %}" onclick="deleteItem(event, {{ item.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
 
                                                     </td>
@@ -156,16 +156,16 @@
             </div>
 
 <!-- Edit item-->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="edit-item" aria-labelledby="edit-item">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title">supplier</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body">
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="edit-item" aria-labelledby="edit-item">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">supplier</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
 <!-- HTMX will load the form content here -->
-    </div>
-</div>
-       
+                </div>
+            </div>
+
 
 {% comment %} modals end {% endcomment %}
 

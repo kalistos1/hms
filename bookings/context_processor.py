@@ -1,4 +1,4 @@
-from . models import Notification
+from .models import Notification
 
 def default(request):
     if 'selection_data_obj' in request.session:
@@ -14,4 +14,13 @@ def default(request):
     return {
         "total_selected_items": total_selected_items,
         "noti": noti,
+    }
+
+
+def cart_data(request):
+    cart = request.session.get('cart', {})
+    total_items = sum(item['quantity'] for item in cart.values())
+    return {
+        'cart': cart,
+        'total_cart_items': total_items
     }

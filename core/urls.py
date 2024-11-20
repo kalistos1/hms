@@ -18,7 +18,7 @@ urlpatterns = [
     path("checkout/<booking_id>/", views.checkout, name="checkout"),
     path("invoice/<booking_id>/", views.invoice, name="invoice"),
     
-    path("selected_rooms/", views.selected_rooms, name="selected_rooms"),
+    # path("selected_rooms/", views.selected_rooms, name="selected_rooms"),
     path("update_room_status/", views.update_room_status, name="update_room_status"),
     
         # Payment API

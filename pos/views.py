@@ -71,11 +71,20 @@ def get_user_cart(request):
     return cart
 
 
+
 @required_roles('is_admin','is_pos_officer','is_supervisor')
 def add_to_cart(request, pk):
     product = get_object_or_404(Product, pk=pk)
+    
+    # Check if product is in stock
+    if product.stock_quantity <= 0:
+        # If out of stock, send a message to the template
+        error_message = f'<div style="padding:20px;"><p style="color:red; font-weight:bold; font-size:14px;" class="alert alert-danger alert-dismissible fade show" role="alert">Sorry, the product "{product.name}" is out of stock!</p></div>'
+        return HttpResponse(error_message)
+
     cart = get_user_cart(request)
     
+    # Add product to cart
     cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product, price=product.price)
     if not created:
         cart_item.quantity += 1
@@ -274,10 +283,16 @@ def process_checkout(request):
             order.order_status = 'COMPLETED'
             order.save()
 
+            receipt_url = reverse('pos:print_receipt', args=[order.id])
+            messages.success(
+                request,
+                f'Checkout completed successfully! <a href="{receipt_url}" target="_blank">Print Receipt</a>'
+            )
+
         # Clear the cart after processing
         cart_items.delete()
         
-        messages.success(request, 'Checkout completed successfully!')
+        # messages.success(request, 'Checkout completed successfully!')
 
         # Create an HttpResponse to tell HTMX to redirect to the pos:products page
         response = HttpResponse()
@@ -286,6 +301,21 @@ def process_checkout(request):
         return response
 
     return HttpResponse('Invalid request method', status=400)
+
+
+@required_roles('is_admin','is_pos_officer','is_supervisor')
+def print_receipt(request, order_id):
+    # Fetch the order details
+    order = get_object_or_404(Order, id=order_id)
+    items = order.items.all()
+    payment = order.pospayment_set.first()
+
+    # Render the receipt template
+    return render(request, 'pages/pos_receipt.html', {
+        'order': order,
+        'items': items,
+        'payment': payment,
+    })
 
 
 @required_roles('is_admin','is_pos_officer','is_supervisor')

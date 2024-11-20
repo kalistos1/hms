@@ -207,7 +207,7 @@ class Cart(models.Model):
 
     @property
     def taxes(self):
-        return self.subtotal * 0.06  # Assuming a 6% tax rate
+        return self.subtotal * 0.0  # Assuming a 6% tax rate
 
     @property
     def total(self):

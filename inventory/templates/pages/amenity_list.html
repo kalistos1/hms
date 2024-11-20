@@ -76,14 +76,14 @@
 
                                                     <td>
                                                         <button type="button"
-                                                        class="btn"
-                                                        hx-get="{% url 'inventory:admin_update_amenity_form' amenity.pk %}"
-                                                        hx-target="#edit-amenity .offcanvas-body"
-                                                        hx-trigger="click"
-                                                        data-bs-toggle="offcanvas"
-                                                        data-bs-target="#edit-amenity">
-                                                    <i class="fa fa-pencil-square fa-2x"></i>
-                                                </button>
+                                                                class="btn"
+                                                                hx-get="{% url 'inventory:admin_update_amenity_form' amenity.pk %}"
+                                                                hx-target="#edit-amenity .offcanvas-body"
+                                                                hx-trigger="click"
+                                                                data-bs-toggle="offcanvas"
+                                                                data-bs-target="#edit-amenity">
+                                                            <i class="fa fa-pencil-square fa-2x"></i>
+                                                        </button>
                                                         <a href="#" data-url="{% url 'inventory:amenity_item_delete' 0 %}" onclick="deleteItem(event, {{ amenity.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
 
                                                     </td>
@@ -156,15 +156,15 @@
             </div>
 
 <!-- Edit Booking-->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="edit-amenity" aria-labelledby="edit-amenity">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title">Edit Amenity</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body">
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="edit-amenity" aria-labelledby="edit-amenity">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">Edit Amenity</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
 <!-- HTMX will load the form content here -->
-    </div>
-</div>
+                </div>
+            </div>
 
 {% comment %} modals end {% endcomment %}
 
@@ -201,7 +201,7 @@
 
 
              // update reload 
-             document.addEventListener('htmx:afterRequest', (event) => {
+            document.addEventListener('htmx:afterRequest', (event) => {
                 if (event.detail.xhr && event.detail.xhr.response) {
                     const response = JSON.parse(event.detail.xhr.response);
                     if (response.success) {

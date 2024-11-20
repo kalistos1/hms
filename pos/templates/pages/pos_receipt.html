@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt - Order {{ order.id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .receipt {
+            width: 80mm; /* Typical thermal printer width */
+            margin: auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+        .receipt h2 {
+            text-align: center;
+            font-size: 16px;
+            margin: 0;
+            padding: 5px 0;
+        }
+        .receipt .details {
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        .receipt .details p {
+            margin: 2px 0;
+        }
+        .receipt table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .receipt table th, .receipt table td {
+            border-bottom: 1px dashed #000;
+            text-align: left;
+            padding: 5px;
+        }
+        .receipt .total {
+            font-size: 14px;
+            text-align: right;
+            margin-top: 10px;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .print-button {
+                display: none;
+            }
+            .receipt {
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt">
+        <h2>Order Receipt</h2>
+        <p><strong>Order ID:</strong> {{ order.id }}</p>
+        <p><strong>Date:</strong> {{ order.created_at|date:"Y-m-d H:i" }}</p>
+        <p><strong>Processed By:</strong> {{ order.staff }}</p>
+        <p><strong>Payment Method:</strong> {{ payment.payment_method }}</p>
+        
+        <div class="details">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.price }}</td>
+                        <td>{{ item.get_total_price }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <p class="total">
+            <strong>Total Items:</strong> {{ items|length }}<br>
+            <strong>Total Amount:</strong> {{ order.total_amount }}
+        </p>
+        
+        <button class="print-button" onclick="window.print()">Print Receipt</button>
+    </div>
+</body>
+</html>

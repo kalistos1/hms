@@ -107,7 +107,7 @@ def warehouse_setup(request):
         return redirect('dashboard:warehouse_info') 
 
 
-@required_roles('is_admin','supervisor')
+@required_roles('is_admin','is_supervisor')
 def warehouse_info(request):
     # inventory data
     total_quantity = Item.objects.aggregate(total=Sum('stock_quantity'))['total']
@@ -973,15 +973,15 @@ def account_dashboard(request):
 
             # Sum orders for the active session in this department
             total_pos_orders_active_session = Order.objects.filter(
-                staff=pos_active_session.employee.user,
-                staff__employee_profile__department_location__in=department_locations,
+                staff=pos_active_session.employee,
+                staff__department_location__in=department_locations,
                 created_at__gte=session_start
             ).aggregate(total=Sum(F('total_amount')))['total'] or 0
 
             # Sum payments for the active session in this department
             total_pos_payments_active_session = PosPayment.objects.filter(
-                order__staff=pos_active_session.employee.user,
-                order__staff__employee_profile__department_location__in=department_locations,
+                order__staff=pos_active_session.employee,
+                order__staff__department_location__in=department_locations,
                 payment_date__gte=session_start
             ).aggregate(total=Sum(F('amount_paid')))['total'] or 0
 
@@ -1035,7 +1035,7 @@ def account_dashboard(request):
     # Summarize last session and active session total payments
     last_session_payment_sum = last_session_payments.aggregate(total=Sum('amount'))['total'] if last_session_payments else 0.00
     last_session_payment_completion_sum = last_session_payment_completions.aggregate(total=Sum('amount'))['total'] if last_session_payment_completions else 0.00
-    last_session_total_payments = last_session_payment_sum + last_session_payment_completion_sum
+    last_session_total_payments = Decimal(last_session_payment_sum )+ Decimal (last_session_payment_completion_sum)
 
     active_session_payment_sum = active_session_payments.aggregate(total=Sum('amount'))['total'] if active_session_payments else 0.00
     active_session_payment_completion_sum = active_session_payment_completions.aggregate(total=Sum('amount'))['total'] if active_session_payment_completions else 0.00
@@ -1698,7 +1698,7 @@ def frontdesk_checkout_payment_view(request, pk):
 #========================================================================================================
 #=======================================================================================================
 
-@required_roles(' is_pos_officer',)
+@required_roles('is_pos_officer',)
 def pos_user_dashboard(request):
     template = 'pos_officer/dashboard.html'
 
@@ -1809,7 +1809,7 @@ def pos_user_dashboard(request):
     return render(request, template, {'error': 'No active attendance or schedule found.'})
 
 
-@required_roles(' is_pos_officer',)
+@required_roles('is_pos_officer',)
 def pos_orders(request):
     template = "pos_officer/orders.html"
     if request.user.is_pos_officer:
@@ -1849,7 +1849,7 @@ def pos_orders(request):
         return redirect('dashboard:pos_orders')
 
 
-@required_roles(' is_pos_officer',)
+@required_roles('is_pos_officer',)
 def user_update_received_stock(request):
     template = 'pos_officer/daily_stock_received.html'
 
@@ -1931,7 +1931,7 @@ def user_update_received_stock(request):
         return redirect('dashboard:received_stock')  # Redirect unauthorized users
  
 
-@required_roles(' is_pos_officer',)
+@required_roles('is_pos_officer',)
 def mark_product_as_received(request,pk):
     stock = get_object_or_404(StockReceipt, pk=pk)
     if request.method =="POST":

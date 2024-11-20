@@ -34,6 +34,7 @@
                         <a href="#" data-bs-dismiss="modal" class="btn-close position-absolute top-0 end-0 m-4"></a>
                         <div class="modal-pos-product">
                             <div class="modal-pos-product-img">
+                                
                                 <div class="img" style="background-image: url('{% static "frontpage/pos/assets/img/pos/product-1.jpg" %}');"></div>
 
                             </div>
@@ -42,13 +43,9 @@
                                 <div class="fs-6 text-body text-opacity-50 mb-2">
                                     chicken, egg, mushroom, salad
                                 </div>
-                                <div class="fs-3 fw-bolder mb-3">$10.99</div>
+                                <p> <span class=" fs-2 fw-bolder mb-3">&#8358</span> <span class="fs-3 fw-bolder mb-3 d-inline"> 10.99</span></p>
                                 <div class="option-row">
-                                    <div class="d-flex mb-3">
-                                        <a href="#" class="btn btn-default d-flex align-items-center"><i class="fa fa-minus"></i></a>
-                                        <input type="text" class="form-control w-30px fw-bold fs-5 px-0 mx-2 text-center border-0" name="qty" value="1">
-                                        <a href="#" class="btn btn-default d-flex align-items-center"><i class="fa fa-plus"></i></a>
-                                    </div>
+                                    
                                 </div>
                                 <hr/>
 
@@ -59,7 +56,7 @@
                                         <a href="#" class="btn btn-default fs-14px rounded-3 fw-bold mb-0 d-block py-3" data-bs-dismiss="modal">Cancel</a>
                                     </div>
                                     <div class="col-8">
-                                        <button class="addToCart btn btn-info btn-lg py-3 " hx-get="{% url 'pos:add_to_cart' 0 %}" hx-target=".pos-sidebar" hx-swap="innerHTML">Add to Cart</button>
+                                        <button class="addToCart btn btn-info btn-lg py-3 " hx-get="{% url 'pos:add_to_cart' 0 %}" hx-target=".pos-sidebar" hx-swap="innerHTML" data-bs-dismiss="modal">Add to Cart</button>
 
                                     </div>
                                 </div>
@@ -93,7 +90,7 @@
 
 
         <script>
-            function UpdateModal(event, productId, productName, productDescription, productPrice, productImage) {
+            {% comment %} function UpdateModal(event, productId, productName, productDescription, productPrice, productImage) {
                 event.preventDefault();
 
                 // Update modal image
@@ -110,7 +107,7 @@
 
                 // Update modal price
                 const modalPrice = document.querySelector('#modalPos .modal-pos-product-info .fs-3');
-                modalPrice.textContent = `$${productPrice}`;
+                modalPrice.textContent = `${productPrice}`;
 
                 // Update modal URL
                 const addToCartButton = document.querySelector('#modalPos .gx-3 .col-8 button');
@@ -126,9 +123,49 @@
         <script>
             document.body.addEventListener('htmx:configRequest', function(event) {
                 event.detail.headers['X-CSRFToken'] = "{{ csrf_token }}";
+            }); {% endcomment %}
+
+
+            function UpdateModal(event, productId, productName, productDescription, productPrice, productImage) {
+                event.preventDefault();
+            
+                // Set a default image URL if productImage is null or empty
+                const defaultImage = "{% static 'frontpage/pos/assets/img/default-product.jpg' %}";
+                const imageToShow = productImage && productImage.trim() ? productImage : defaultImage;
+            
+                // Update modal image
+                const modalImg = document.querySelector('#modalPos .modal-pos-product-img .img');
+                modalImg.style.backgroundImage = `url('${imageToShow}')`;
+            
+                // Update modal product name
+                const modalTitle = document.querySelector('#modalPos .modal-pos-product-info .fs-4');
+                modalTitle.textContent = productName;
+            
+                // Update modal description
+                const modalDescription = document.querySelector('#modalPos .modal-pos-product-info .fs-6.text-body');
+                modalDescription.textContent = productDescription;
+            
+                // Update modal price
+                const modalPrice = document.querySelector('#modalPos .modal-pos-product-info .fs-3');
+                modalPrice.textContent = `${productPrice}`;
+            
+                // Update modal URL
+                const addToCartButton = document.querySelector('#modalPos .gx-3 .col-8 button');
+                const baseUrl = "{% url 'pos:add_to_cart' 0 %}";
+                const newUrl = baseUrl.replace('/0/', `/${productId}/`);
+                addToCartButton.setAttribute('hx-get', newUrl);
+            
+                // Ensure HTMX reinitializes or updates the button
+                htmx.process(addToCartButton);
+            }
+            
+        </script>
+        
+       <script>
+            document.body.addEventListener('htmx:configRequest', function(event) {
+                event.detail.headers['X-CSRFToken'] = "{{ csrf_token }}";
             });
         </script>
-
     </body>
 
 

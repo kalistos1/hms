@@ -316,31 +316,6 @@ class RoomInventory(models.Model):
 
         return item
 
-class Payment(models.Model):
-    PAYMENT_STATUS_CHOICES = [
-        ('pending', 'pending'),
-        ("processing", "Processing"),
-        ('advance', 'advance'),
-        ('completed', 'completed'),
-        ('failed', 'Failed'),
-        ('refunded', 'refunded'),
-    ]
-    PAYMENT_MODE_CHOICES = [
-        ('cash', 'Cash'),
-        ('transfer', 'Transfer'),
-        ('credit_card', 'Credit Card'),
-        ('paypal', 'PayPal'),
-    ]
-    
-    booking = models.ForeignKey('Booking', related_name='payments', on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
-    mode = models.CharField(max_length=20, choices=PAYMENT_MODE_CHOICES, default='cash')
-    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    date = models.DateTimeField(auto_now_add=True)
-    transaction_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
-
-    def __str__(self):
-        return f"Payment {self.transaction_id} - {self.status}"
     
 
 class Payment(models.Model):
@@ -729,6 +704,27 @@ class Booking(Transaction):
             
             # Proceed with saving the booking
             super().save(*args, **kwargs)
+
+
+    def convert_reservation_to_booking(self, reservation):
+        """Convert a reservation into a booking and optionally apply a coupon if one exists."""
+        self.user = reservation.user
+        self.hotel = reservation.hotel
+        self.room_type = reservation.room_type
+        self.room.set(reservation.room.all())  # Copy the rooms from the reservation
+        self.check_in_date = reservation.check_in_date
+        self.check_out_date = reservation.check_out_date
+        self.num_adults = reservation.num_adults
+        self.num_children = reservation.num_children
+        self.reservation = reservation
+        self.total_amount = reservation.total_amount
+
+        # Apply coupon if any exists in the reservation
+        if reservation.payment and reservation.payment.booking.coupon:
+           self.coupon = reservation.payment.booking.coupon  # Copy the coupon from the reservation if it exists
+
+        self.save()
+
 
 
 class Coupon(models.Model):

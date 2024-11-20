@@ -593,7 +593,9 @@ def supervisor_check_in_employee(request, pk):
 
 @required_roles('is_admin','is_supervisor','is_account_officer', 'is_frontdesk_officer','is_pos_officer','is_worker')
 def check_out(request):
-    import datetime
+    
+    from datetime import datetime
+
     now = timezone.now()  # Timezone-aware current date and time
     today = now.date()    # Current date (timezone-naive, but safe for date comparisons)
     user = request.user
@@ -602,9 +604,12 @@ def check_out(request):
     # Fetch the schedule that spans today
     schedule = StaffSchedules.objects.filter(
         employee=employee,
+        active=True,
         schedule_start_date__lte=today,  # Schedule that started before or on today
         schedule_end_date__gte=today     # Schedule that ends on or after today
     ).first()
+
+ 
 
     # Fetch active attendance record where check-out is not yet recorded
     attendance = Attendance.objects.filter(employee=employee, check_out__isnull=True).first()
@@ -628,28 +633,38 @@ def check_out(request):
         # Check if the employee checks out BEFORE the schedule's end date and time
         if now < schedule_end_datetime:
             # Mark the schedule as 'Ended' since the employee checked out early
+           
             schedule.active = 'Ended'
+            
             schedule.save()
-            messages.warning(request, "You checked out before your scheduled end time.")
+           
 
         # Check if the current time is now or past the schedule's end datetime
         elif now >= schedule_end_datetime:
             # Mark the schedule as 'Ended'
+           
             schedule.active = 'Ended'
+         
             schedule.save()
-
+          
         # Additionally, check if today's date is past the schedule's end date
         elif today > schedule.schedule_end_date:
             # If the current date is past the schedule end date, mark it as 'Ended'
+        
             schedule.active = 'Ended'
+           
             schedule.save()
+          
+          
 
         # Check if attendance is inactive and schedule is still marked active as 'True' (since it's stored as a string)
         elif not attendance.active and schedule.active == 'True':
             # Mark the schedule as 'Ended' for consistency if check-out is done
+          
             schedule.active = 'Ended'
+           
             schedule.save()
-
+            
     # Log out the user after successful check-out
     logout(request)
     messages.success(request, "You have successfully checked out.")

@@ -72,14 +72,14 @@
                                                     <td>{{ supplier.note }}</td>
                                                     <td>
                                                         <button type="button"
-                                                        class="btn"
-                                                        hx-get="{% url 'inventory:admin_update_supplier_form' supplier.pk %}"
-                                                        hx-target="#edit-supplier .offcanvas-body"
-                                                        hx-trigger="click"
-                                                        data-bs-toggle="offcanvas"
-                                                        data-bs-target="#edit-supplier">
-                                                    <i class="fa fa-pencil-square fa-2x"></i>
-                                                </button>
+                                                                class="btn"
+                                                                hx-get="{% url 'inventory:admin_update_supplier_form' supplier.pk %}"
+                                                                hx-target="#edit-supplier .offcanvas-body"
+                                                                hx-trigger="click"
+                                                                data-bs-toggle="offcanvas"
+                                                                data-bs-target="#edit-supplier">
+                                                            <i class="fa fa-pencil-square fa-2x"></i>
+                                                        </button>
                                                         <a href="#" data-url="{% url 'inventory:supplier_delete' 0 %}" onclick="deleteSupplier(event, {{ supplier.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
 
                                                     </td>
@@ -152,17 +152,17 @@
             </div>
 
 <!-- Edit supplier-->
- 
-<div class="offcanvas offcanvas-end" tabindex="-1" id="edit-supplier" aria-labelledby="edit-supplier">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title">supplier</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body">
+
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="edit-supplier" aria-labelledby="edit-supplier">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">supplier</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
 <!-- HTMX will load the form content here -->
-    </div>
-</div>
-            
+                </div>
+            </div>
+
 
 {% comment %} modals end {% endcomment %}
 
@@ -198,9 +198,9 @@
             }
 
 
-            
+
              // update reload 
-             document.addEventListener('htmx:afterRequest', (event) => {
+            document.addEventListener('htmx:afterRequest', (event) => {
                 if (event.detail.xhr && event.detail.xhr.response) {
                     const response = JSON.parse(event.detail.xhr.response);
                     if (response.success) {

@@ -38,7 +38,7 @@ urlpatterns = [
     path('departments/checkout_attendance/<int:pk>/', views.checkout_employee, name='checkout_employee'),
     
     path('check-in/', views.check_in, name='check_in'),
-    path('supervisor_checkin_employee/', views.supervisor_check_in_employee, name='supervisor_check_in_employee'),
+    path('supervisor_checkin_employee/<int:pk>/', views.supervisor_check_in_employee, name='supervisor_check_in_employee'),
     path('check-out/', views.check_out, name='check_out'),
     
     #new

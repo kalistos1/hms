@@ -4,9 +4,9 @@
         {% for product in products %}
             <div class="product-container">
                 <a href="#" class="product" data-bs-toggle="modal" data-bs-target="#modalPos"
-                   onclick="UpdateModal(event, '{{ product.id }}', '{{ product.name }}', '{{ product.description }}', '{{ product.price }}', '{{ product.image.url }}')">
+                   onclick="UpdateModal(event, '{{ product.id }}', '{{ product.name }}', '{{ product.description }}', '{{ product.price }}', '{% if product.image %} {{ product.image.url }} {% endif %}')">
                     {% if product.image %}
-                        <div class="img" style="background-image: url({{ product.image.url }})"></div>
+                        <div class="img" style="background-image: url( {% if product.image %} {{ product.image.url }} {% endif %})"></div>
                     {% else %}
                         <div class="img" style="background-image: url({% static 'frontpage/pos/assets/img/pos/product-1.jpg' %})"></div>
                     {% endif %}

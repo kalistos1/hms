@@ -81,14 +81,14 @@
 
                                                     <td>
                                                         <button type="button"
-                                                        class="btn"
-                                                        hx-get="{% url 'inventory:admin_update_equipment_form' equipment.pk %}"
-                                                        hx-target="#edit-equipment .offcanvas-body"
-                                                        hx-trigger="click"
-                                                        data-bs-toggle="offcanvas"
-                                                        data-bs-target="#edit-equipment">
-                                                    <i class="fa fa-pencil-square fa-2x"></i>
-                                                </button>
+                                                                class="btn"
+                                                                hx-get="{% url 'inventory:admin_update_equipment_form' equipment.pk %}"
+                                                                hx-target="#edit-equipment .offcanvas-body"
+                                                                hx-trigger="click"
+                                                                data-bs-toggle="offcanvas"
+                                                                data-bs-target="#edit-equipment">
+                                                            <i class="fa fa-pencil-square fa-2x"></i>
+                                                        </button>
                                                         <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#edit-amenity">Usage Log</button>
                                                         <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#edit-amenity">Insurance</button>
                                                         <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#edit-amenity">Inspection </button>
@@ -164,15 +164,15 @@
             </div>
 
 <!-- Edit equipment-->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="edit-equipment" aria-labelledby="edit-equipment">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title">Edit Equipment</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body">
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="edit-equipment" aria-labelledby="edit-equipment">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">Edit Equipment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
 <!-- HTMX will load the form content here -->
-    </div>
-</div>
+                </div>
+            </div>
 {% comment %} modals end {% endcomment %}
 
 
@@ -208,7 +208,7 @@
 
 
              // update reload 
-             document.addEventListener('htmx:afterRequest', (event) => {
+            document.addEventListener('htmx:afterRequest', (event) => {
                 if (event.detail.xhr && event.detail.xhr.response) {
                     const response = JSON.parse(event.detail.xhr.response);
                     if (response.success) {

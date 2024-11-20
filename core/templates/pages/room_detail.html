@@ -39,10 +39,12 @@
     </div>
     <div class="section">
         <div class="container">
+
+
             {% if rooms %}
                 {% for room in rooms %}
                     <div class="row">
-                        <div class="col-12 col-sm-12 col-md-6 col-lg-6">
+                        <div class="col-12 col-sm-12 col-md-12 col-lg-12">
                             <div class="room-list card shadow-xs rounded-0 p-0 mb-4">
                                 <div class="card-body">
                                     <div class="media d-block d-md-flex">
@@ -51,7 +53,7 @@
                                                 <img src="{{ room.banner_img.url }}" alt class="img-fluid img-fluid-custome width_200 w-sm-100" width="320">
                                             </a>
                                             <div class="icon-content position-absolute d-flex">
-                                                <a class="zoom-icon mr-2" href="https://hotel.bdtask-demo.com/xainhotel/application/modules/room_setting/assets/images/2021-02-24/b1.jpg" data-fancybox data-caption="Twin Room">
+                                                <a class="zoom-icon mr-2" href="{{ room.banner_img.url }}" data-fancybox data-caption="Twin Room">
                                                     <i class="fas fa-search-plus"></i>
                                                 </a>
                                             </div>
@@ -61,7 +63,7 @@
                                             <div class="d-md-flex justify-content-between">
                                                 <div class="item-overview">
                                                     <h5 class="item-title font-weight-bold mt-0">{{ room.room_type }} // {{ room.room_number }}</h5>
-                                                    <p class="item-description mb-3">Non-refundable, Breakfast included</p>
+
                                                     <div class="star-rating d-flex fs-13 mb-2">
                                                         <div class="star-rating_container text-warning">
                                                             <span class="fas fa-star star_colour"></span>
@@ -95,9 +97,33 @@
                                                     <div>
                                                         <input type="hidden" class="room_id_{{ room.id }}" value="{{ room.id }}" id="room_id">
                                                         <input type="hidden" class="room_number_{{ room.id }}" value="{{ room.room_number }}" id="room_number">
-                                                        <button class="btn btn-info button border add-to-selection" data-index="{{ room.id }}">
+                                                        {% comment %} <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+                                                        <button
+                                                            class="btn btn-info button border add-to-cart"
+                                                            hx-post="{% url 'booking:add_booking_to_cart' %}"
+                                                            hx-trigger="click"
+                                                            hx-target="#cart-count"
+                                                            hx-swap="innerHTML"
+                                                            hx-vals='{"room_id": "{{ room.id }}"}'
+                                                            id="add-to-cart-button">
                                                             <i class="fas fa-shopping-cart"></i> Add To Selection
-                                                        </button>
+                                                        </button> {% endcomment %}
+
+                                                        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+<button
+    class="btn btn-info button border add-to-cart"
+    hx-post="{% url 'booking:add_booking_to_cart' %}"
+    hx-trigger="click"
+    hx-target="#cart-count"
+    hx-swap="innerHTML"
+    hx-vals='{"room_id": "{{ room.id }}"}'
+    id="add-to-cart-button">
+    <i class="fas fa-shopping-cart"></i> Add To Selection
+</button>
+
+
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -108,23 +134,30 @@
                                         <div class="card card-body rounded-0 mt-3">
                                             <h3 class="fs-18 font-weight-bold mb-3">Included Amenities</h3>
                                             <ul class="list-unstyled list-articles mb-3">
-                                                {% for amenity in amenities %}
-                                                    <li><a href="#"><i class="fas fa-gift mr-2"></i> {{ amenity.name }}</a></li>
+                                                {% for room_amenity in room_amenities %}
+                                                    {% if room_amenity.room.id == room.id %}
+                                                        {% for amenity in room_amenity.amenities %}
+                                                            <li>{{ amenity.amenity.name }}</li>
+                                                        {% empty %}
+                                                            <li>No amenities available for this room.</li>
+                                                        {% endfor %}
+                                                    {% endif %}
                                                 {% endfor %}
                                             </ul>
                                             <h3 class="fs-18 font-weight-bold mb-3">Equipment</h3>
                                             <ul class="list-unstyled list-style-2 list-articles mb-0">
-                                                <!-- List equipment here -->
+                                            <!-- List equipment here if available -->
                                             </ul>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
                     </div>
                 {% endfor %}
             {% endif %}
+
+
 
             <input type="hidden" value="{{ hotel.id }}" id="id">
             <input type="hidden" value="{{ hotel.name }}" id="hotel_name">

@@ -113,204 +113,208 @@ def room_list(request,slug):
     return render(request, template, context)
 
 
-
 def room_type_detail(request, slug, rt_slug):
-    hotel = Hotel.objects.get(status="Live", slug=slug)
-    room_type = RoomType.objects.get(hotel=hotel, slug=rt_slug)
+    hotel = get_object_or_404(Hotel, status="Live", slug=slug)
+    room_type = get_object_or_404(RoomType, hotel=hotel, slug=rt_slug)
     rooms = Room.objects.filter(room_type=room_type, is_available=True)
 
-    id = request.GET.get("hotel-id")
-    checkin = request.GET.get("checkin")
-    checkout = request.GET.get("checkout")
-    print('uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu',room_type.base_price)
-    print('uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu',checkout)
-    adult = request.GET.get("adult")
-    children = request.GET.get("children")
-    room_type_ = request.GET.get("room-type")
-
-    print("checkin ======", checkin)
-
-    if not all([checkin, checkout]):
+    booking_data = request.session.get('booking_data')
+    if not booking_data:
         messages.warning(request, "Please enter your booking data to check availability.")
         return redirect("booking:booking_data", hotel.slug)
 
+    request.session.pop('booking_data', None)
+
+    room_amenities = [
+        {
+            'room': room,
+            'amenities': RoomInventory.objects.filter(room=room, amenity__isnull=False).select_related('amenity')
+        }
+        for room in rooms
+    ]
+
+    # Calculate total items in the cart
+    cart = request.session.get('cart', {})
+    total_selected_items = sum(item['quantity'] for item in cart.values())
+
     context = {
-        "hotel":hotel,
-        "room_type":room_type,
-        "rooms":rooms,
-        "id":id,
-        "checkin":checkin,
-        "checkout":checkout,
-        "adult":adult,
-        "children":children,
-        "room_type_":room_type_,
+        "hotel": hotel,
+        "room_type": room_type,
+        "rooms": rooms,
+        "room_amenities": room_amenities,
+        "checkin": booking_data['checkin'],
+        "checkout": booking_data['checkout'],
+        "capacity": booking_data['capacity'],
+        "id": booking_data['hotel_id'],
+        "total_selected_items": total_selected_items,
     }
     return render(request, "pages/room_detail.html", context)
 
 
 
-def selected_rooms(request):
-    #request.session.pop('selection_data_obj', None)
 
-    total = 0
-    room_count = 0
-    total_days = 0
-    adult = 0 
-    children = 0 
-    checkin = "0" 
-    checkout = "" 
-    children = 0 
+
+# def selected_rooms(request):
+#     #request.session.pop('selection_data_obj', None)
+#     total = 0
+#     room_count = 0
+#     total_days = 0
+#     adult = 0 
+#     children = 0 
+#     checkin = "0" 
+#     checkout = "" 
+#     children = 0 
   
     
-    if 'selection_data_obj' in request.session:
+#     if 'selection_data_obj' in request.session:
 
-        selection_data = request.session['selection_data_obj']
-        print("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjSelection Data:", selection_data)  # Print the contents
+#         selection_data = request.session['selection_data_obj']
+#         print("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjSelection Data:", selection_data)  # Print the contents
 
-        if request.method == "POST":
-            for h_id, item in request.session['selection_data_obj'].items():
+#         if request.method == "POST":
+#             for h_id, item in request.session['selection_data_obj'].items():
                 
-                id = int(item['hotel_id'])
-                hotel_id = int(item['hotel_id'])
+#                 id = int(item['hotel_id'])
+#                 hotel_id = int(item['hotel_id'])
 
-                checkin = item["checkin"]
-                checkout = item["checkout"]
-                adult = int(item["adult"])
-                children = int(item["children"])
-                room_type_ = item["room_type"]
-                room_id = int(item["room_id"])
+#                 checkin = item["checkin"]
+#                 checkout = item["checkout"]
+#                 adult = int(item["adult"])
+#                 children = int(item["children"])
+#                 room_type_ = item["room_type"]
+#                 room_id = int(item["room_id"])
                 
-                user = request.user
-                hotel = Hotel.objects.get(id=id)
-                room = Room.objects.get(id=room_id)
-                room_type = RoomType.objects.get(id=room_type_)
+#                 user = request.user
+#                 hotel = Hotel.objects.get(id=id)
+#                 room = Room.objects.get(id=room_id)
+#                 room_type = RoomType.objects.get(id=room_type_)
 
                 
-            date_format = "%Y-%m-%d"
-            checkin_date = datetime.strptime(checkin, date_format)
-            checout_date = datetime.strptime(checkout, date_format)
-            time_difference = checout_date - checkin_date
-            total_days = time_difference.days
+#             date_format = "%Y-%m-%d"
+#             checkin_date = datetime.strptime(checkin, date_format)
+#             checout_date = datetime.strptime(checkout, date_format)
+#             time_difference = checout_date - checkin_date
+#             total_days = time_difference.days
 
-            # Get and parse full name
-            full_name = request.POST.get("full_name")
-            email = request.POST.get("email")
-            phone = request.POST.get("phone")
+#             # Get and parse full name
+#             full_name = request.POST.get("full_name")
+#             email = request.POST.get("email")
+#             phone = request.POST.get("phone")
 
-            # Split the full name to first and last names
-            name_parts = full_name.split()
-            first_name = name_parts[0] if name_parts else ""
-            last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+#             # Split the full name to first and last names
+#             name_parts = full_name.split()
+#             first_name = name_parts[0] if name_parts else ""
+#             last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
 
-            # Create the booking
-            booking = Booking.objects.create(
-                hotel=hotel,
-                room_type=room_type,
-                check_in_date=checkin,
-                check_out_date=checkout,
-                num_adults=adult,
-                num_children=children,
-            )
+#             # Create the booking
+#             booking = Booking.objects.create(
+#                 hotel=hotel,
+#                 room_type=room_type,
+#                 check_in_date=checkin,
+#                 check_out_date=checkout,
+#                 num_adults=adult,
+#                 num_children=children,
+#             )
 
-            if request.user.is_authenticated:
-                booking.user = request.user
-                booking.save()
-            else:
-                user = User.objects.filter(email=email).first() 
+#             if request.user.is_authenticated:
+#                 booking.user = request.user
+#                 booking.save()
+#             else:
+#                 user = User.objects.filter(email=email).first() 
                 
-                if not user:
-                    # If user doesn't exist, create a new one
-                    user = User(email=email, username=email)
-                    user.set_password(phone)  # Set phone number as password
-                    user.first_name = first_name
-                    user.last_name = last_name
-                    user.save()
+#                 if not user:
+#                     # If user doesn't exist, create a new one
+#                     user = User(email=email, username=email)
+#                     user.set_password(phone)  # Set phone number as password
+#                     user.first_name = first_name
+#                     user.last_name = last_name
+#                     user.save()
                     
-                    booking.user = user
-                    booking.save()           
+#                     booking.user = user
+#                     booking.save()           
 
-            for h_id, item in request.session['selection_data_obj'].items():
-                room_id = int(item["room_id"])
-                room = Room.objects.get(id=room_id)
+#             for h_id, item in request.session['selection_data_obj'].items():
+#                 room_id = int(item["room_id"])
+#                 room = Room.objects.get(id=room_id)
                 
-                booking = Booking.objects.create(
-                    hotel=hotel,
-                    room_type=room_type,
-                    room=room,  # Assign a single room per booking
-                    check_in_date=checkin,
-                    check_out_date=checkout,
-                    num_adults=adult,
-                    num_children=children,
-                    user=request.user if request.user.is_authenticated else user
-                )
+#                 booking = Booking.objects.create(
+#                     hotel=hotel,
+#                     room_type=room_type,
+#                     room=room,  # Assign a single room per booking
+#                     check_in_date=checkin,
+#                     check_out_date=checkout,
+#                     num_adults=adult,
+#                     num_children=children,
+#                     user=request.user if request.user.is_authenticated else user
+#                 )
                 
-                # Add total amount calculations if needed
-                days = total_days
-                print('ccccccccccccccccccccccccccccccccccccccccccccccccc', days)
-                price = room_type.base_price if not room.price_override else room.price_override
-                total_amount = price * days
-                print('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy',total_amount)
-                booking.total_amount = total_amount
-                booking.save()
+#                 # Add total amount calculations if needed
+#                 days = total_days
+#                 print('ccccccccccccccccccccccccccccccccccccccccccccccccc', days)
+#                 price = room_type.base_price if not room.price_override else room.price_override
+#                 total_amount = price * days
+#                 print('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy',total_amount)
+#                 booking.total_amount = total_amount
+#                 booking.save()
                 
-                room_count += 1
-                total += total_amount
-                print('ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',total)
+#                 room_count += 1
+#                 total += total_amount
+#                 print('ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',total)
 
 
-            messages.success(request, "Checkout Now!")
-            return redirect("core:checkout", booking.booking_id)
+#             messages.success(request, "Checkout Now!")
+#             return redirect("core:checkout", booking.booking_id)
 
-        hotel = None
+#         hotel = None
 
-        for h_id, item in request.session['selection_data_obj'].items():
+#         for h_id, item in request.session['selection_data_obj'].items():
                 
-            id = int(item['hotel_id'])
-            hotel_id = int(item['hotel_id'])
+#             id = int(item['hotel_id'])
+#             hotel_id = int(item['hotel_id'])
 
-            checkin = item["checkin"]
-            checkout = item["checkout"]
-            adult = int(item["adult"])
-            children = int(item["children"])
-            room_type_ = item["room_type"]
+#             checkin = item["checkin"]
+#             checkout = item["checkout"]
+#             adult = int(item["adult"])
+#             children = int(item["children"])
+#             room_type_ = item["room_type"]
            
-            room_id = int(item["room_id"])
+#             room_id = int(item["room_id"])
            
-            room_type = RoomType.objects.get(id=room_type_)
+#             room_type = RoomType.objects.get(id=room_type_)
 
-            date_format = "%Y-%m-%d"
-            checkin_date = datetime.strptime(checkin, date_format)
-            checout_date = datetime.strptime(checkout, date_format)
-            time_difference = checout_date - checkin_date
-            total_days = time_difference.days
+#             date_format = "%Y-%m-%d"
+#             checkin_date = datetime.strptime(checkin, date_format)
+#             checout_date = datetime.strptime(checkout, date_format)
+#             time_difference = checout_date - checkin_date
+#             total_days = time_difference.days
 
-            room_count += 1
-            days = total_days
-            price = room_type.base_price
+#             room_count += 1
+#             days = total_days
+#             price = room_type.base_price
 
-            room_price = price * room_count
-            total = room_price * days
+#             room_price = price * room_count
+#             total = room_price * days
             
-            hotel = Hotel.objects.get(id=id)
+#             hotel = Hotel.objects.get(id=id)
 
-        print("hotel ===", hotel)
-        context = {
-            "data":request.session['selection_data_obj'], 
-            "total_selected_items": len(request.session['selection_data_obj']),
-            "total":total,
-            "total_days":total_days,
-            "adult":adult,
-            "children":children,   
-            "checkin":checkin,   
-            "checkout":checkout,   
-            "hotel":hotel,   
-            'room_type':room_type,
-        }
+#         print("hotel ===", hotel)
+#         context = {
+#             "data":request.session['selection_data_obj'], 
+#             "total_selected_items": len(request.session['selection_data_obj']),
+#             "total":total,
+#             "total_days":total_days,
+#             "adult":adult,
+#             "children":children,   
+#             "checkin":checkin,   
+#             "checkout":checkout,   
+#             "hotel":hotel,   
+#             'room_type':room_type,
+#         }
 
-        return render(request, "pages/selected_rooms.html", context)
-    else:
-        messages.warning(request, "You don't have any room selections yet!")
-        return redirect("/")
+#         return render(request, "pages/selected_rooms.html", context)
+#     else:
+#         messages.warning(request, "You don't have any room selections yet!")
+#         return redirect("/")
 
 
 

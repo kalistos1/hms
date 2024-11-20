@@ -405,7 +405,55 @@
                         </div>
                     </div>
 
-         <!-- move inventory item modal form-->
+                     <!-- move inventory item modal form -->   
+
+                     <div
+                     class="modal fade"
+                     id="move_item2"
+                     tabindex="-1"
+                     aria-hidden="true"
+                 >
+                     <div class="modal-dialog">
+                         <div class="modal-content">
+                             <form action="{% url 'inventory:move_product' %}" method = "post">
+                                 <div class="modal-header">
+                                     <h1 class="modal-title fs-5">Move Item to department</h1>
+                                     <button
+                                         type="button"
+                                         class="btn-close"
+                                         data-bs-dismiss="modal"
+                                         aria-label="Close"
+                                     ></button>
+                                 </div>
+                                 <div class="modal-body">
+
+
+                                     {% csrf_token %}
+                                     <div class="form-group">
+
+                                         {{inventory_form2.as_p}}
+                                     </div>
+
+
+
+                                 </div>
+                                 <div class="modal-footer">
+                                     <button
+                                         type="button"
+                                         class="btn btn-secondary"
+                                         data-bs-dismiss="modal"
+                                     >
+                                         Close
+                                     </button>
+                                     <button type="submit"  name="submit_form2" class="btn btn-primary">Save changes</button>
+                                 </div>
+                             </form>
+                         </div>
+                     </div>
+                 </div>
+
+
+         <!-- move edit ware house -->
 
 
                     <div class="offcanvas offcanvas-end" tabindex="-1" id="edit-warehouse" aria-labelledby="edit-warehouse">

@@ -17,7 +17,7 @@ htmx_views =[
     path('cart/update-total/', views.update_cart_total, name='update_cart_total'),
     path('cart/checkout/', views.checkout_view, name='checkout_view'),
     path('cart/process/', views.process_checkout, name='process_checkout'),
-
+    path('cart/receipt/<int:order_id>/', views.print_receipt, name='print_receipt'),
 ]
 
 urlpatterns += htmx_views

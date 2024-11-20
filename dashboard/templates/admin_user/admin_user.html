@@ -106,14 +106,14 @@
 
                                                     <td>
                                                         <button type="button"
-                                                        class="btn"
-                                                        hx-get="{% url 'dashboard:admin_update_privilaged_user_form' user.pk %}"
-                                                        hx-target="#edit-user .offcanvas-body"
-                                                        hx-trigger="click"
-                                                        data-bs-toggle="offcanvas"
-                                                        data-bs-target="#edit-user">
-                                                    <i class="fa fa-pencil-square fa-2x"></i>
-                                                </button>
+                                                                class="btn"
+                                                                hx-get="{% url 'dashboard:admin_update_privilaged_user_form' user.pk %}"
+                                                                hx-target="#edit-user .offcanvas-body"
+                                                                hx-trigger="click"
+                                                                data-bs-toggle="offcanvas"
+                                                                data-bs-target="#edit-user">
+                                                            <i class="fa fa-pencil-square fa-2x"></i>
+                                                        </button>
                                                         <a href="#" data-url="{% url 'dashboard:admin_delete_privilaged_user' 0 %}" onclick="deleteUser(event, {{ user.id }})" class="btn"><i class="fa fa-trash text-danger fa-2x"></i></a>
                                                     </td>
                                                 </tr>
@@ -384,8 +384,8 @@
             <!-- HTMX will load the form content here -->
                 </div>
             </div>
-            
-            
+
+
 
         </div>
         <script>
@@ -415,7 +415,7 @@
 
 
               // update reload 
-              document.addEventListener('htmx:afterRequest', (event) => {
+            document.addEventListener('htmx:afterRequest', (event) => {
                 if (event.detail.xhr && event.detail.xhr.response) {
                     const response = JSON.parse(event.detail.xhr.response);
                     if (response.success) {
