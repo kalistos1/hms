@@ -3,7 +3,7 @@
 <!-- ================================navbar======================================= -->
 <!-- use this as the navbar.html -->
 <nav class="navbar navbar-expand-lg navbar-light header-sticky shadow-sm bg-dark">
-    <a class="navbar-brand" href="index.html"><img src="{% static 'frontpage/assets/img/boutiquehotel.png' %}" alt width="80px"></a>
+    <a class="navbar-brand" href="{% url 'core:index' %}"><img src="{% static 'frontpage/assets/img/boutiquehotel.png' %}" alt width="80px"></a>
     <div class="d-flex order-lg-last">
         <ul class="navbar-right d-flex align-items-center list-unstyled mb-0">
 
@@ -65,21 +65,22 @@
                 <div class="dropdown-menu animate slideIn" aria-labelledby="navbarDropdown2">
                 </div>
             </li>
-            <li class="nav-item  ">
+            {% comment %} <li class="nav-item  ">
                 <a class="nav-link text-light " href="{% url 'core:gallery' %}">Gallery</a>
                 <div class="dropdown-menu animate slideIn" aria-labelledby="navbarDropdown2">
                 </div>
-            </li>
-            <li class="nav-item  ">
+            </li> {% endcomment %}
+            {% comment %} <li class="nav-item  ">
                 <a class="nav-link text-light " href="#">My Profile</a>
                 <div class="dropdown-menu animate slideIn" aria-labelledby="navbarDropdown2">
                 </div>
-            </li>
+            </li> {% endcomment %}
             <li class="nav-item  ">
                 <a class="nav-link text-light " href="{% url 'pos:products' %}">Orders</a>
                 <div class="dropdown-menu animate slideIn" aria-labelledby="navbarDropdown2">
                 </div>
             </li>
+            <button id="install-button" style="display: none;">Install App</button>
         </ul>
     </div>
 </nav>

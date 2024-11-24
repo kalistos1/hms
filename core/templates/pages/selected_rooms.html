@@ -14,8 +14,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-image: url('{{ room_type.banner_img.url }}');
-            background-size: cover;
+            background-image: url('{{ room.banner_img.url }}');
+            background-size: contain;
             background-position: center;
             box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.5);
         }
@@ -137,7 +137,7 @@
 
     <div class="background">
         <div class="content">
-            <h2 class="text-light">All Room Selection</h2>
+            <h2 class="text-light"> Room Selection</h2>
             <p>Hotel  >>  Rooms  >>  My Selected Room</p>
         </div>
     </div>
@@ -146,7 +146,7 @@
         <div class="row">
             <div class="col-lg-8 col-md-8 utf_listing_payment_section">
                 <div class="card p-4 mb-4">
-                    <h3><i class="fas fa-bed"></i> Selected Rooms</h3>
+                    <h3><i class="fas fa-bed"></i> Selected Rooms {{hotel.id}}</h3>
                     <div class="utf_listing_section">
                         <div class="utf_pricing_list_section">
                             <ul>
@@ -164,48 +164,39 @@
 
                 <div class="utf_booking_listing_section_form card p-4 mb-4">
                     <h3><i class="fas fa-check-circle"></i> Update Selection</h3>
-                    <form method="POST" action="{% url 'booking:check_room_availability' %}">
+                    <form method="POST" action="{% url 'booking:selected_room' room.rid %}">
                         {% csrf_token %}
-                        <input type="hidden" name="hotel-id" value="{{hotel.id}}">
+                        <input type="hidden" name="hotel-id" value="{{ hotel.id }}">
                         <div>
                             <label>Check-in Date</label>
-                            <input type="date" name="checkin" value="{{checkin}}">
+                            <input type="date" name="checkin" value="{{ checkin|date:'Y-m-d' }}">
                         </div>
                         <div>
                             <label>Check-out Date</label>
-                            <input type="date" name="checkout" value="{{checkout}}">
+                            <input type="date" name="checkout" value="{{ checkout|date:'Y-m-d' }}">
                         </div>
-
                         <div>
-                            <div class="col-lg-12 col-md-12">
-                                <a href="#">Guests <span class="qtyTotal" style="visibility: hidden;" name="qtyTotal"></span></a>
-                                <div class="panel-dropdown-content">
-                                    <div class="qtyButtons">
-                                        <div class="qtyTitle">Adults</div>
-                                        <input type="text" name="adult" {% if adult == None %}value="1"{% else %}value="{{adult}}"{% endif %}>
-                                    </div>
-                                    <div class="qtyButtons">
-                                        <div class="qtyTitle">Childrens</div>
-                                        <input type="text" name="children" {% if children == None %}value="1"{% else %}value="{{children}}"{% endif %}>
-                                    </div>
-                                </div>
-                            </div>
+                            <label>Capacity (No of Guest in room)</label>
+                            <input class="form-control" type="number" name="capacity" value="{{ capacity }}" min="1">
                         </div>
-
                         <div>
                             <label>Select Room Type (*required)</label>
                             <select name="room-type">
-                                <option value="">Select Room</option>
-                                {% for r in hotel.hotel_room_types %}
-                                    <option value="{{r.slug}}">{{r.type}}</option>
+                                {% for r in similar_rooms %}
+                                    <option value="{{ r.rid }}" {% if room.rid == r.rid %}selected{% endif %}>
+                                        {{ r.room_number }}
+                                    </option>
+                                {% empty %}
+                                    <option disabled>No other rooms available for this type.</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <button type="submit" class="button">Update Selection</button>
                     </form>
+                    
                 </div>
 
-                <form method="POST" class="utf_booking_listing_section_form card p-4 mb-4">
+                <form method="POST" action="{% url 'booking:create_reservation' %}" class="utf_booking_listing_section_form card p-4 mb-4">
                     {% csrf_token %}
                     <h3><i class="fas fa-user"></i> Billing Information</h3>
                     <div class="row">
@@ -221,11 +212,16 @@
                             <label>Phone</label>
                             <input name="phone" type="text" value="{{request.user.phone}}" placeholder="Phone">
                         </div>
+                        <input type="hidden" name="room_id" value="{{ room.id }}">
+                        <input type="hidden" name="checkin" value="{{ checkin|date:'Y-m-d' }}">
+                        <input type="hidden" name="checkout" value="{{ checkout|date:'Y-m-d' }}">
+                        <input type="hidden" name="capacity" value="{{ capacity }}">
                         <div class="col-lg-12">
-                            <button type="submit" class="button">Continue to checkout <i class="fas fa-right-arrow"></i></button>
+                            <button type="submit" class="button">Continue to Checkout <i class="fas fa-right-arrow"></i></button>
                         </div>
                     </div>
                 </form>
+                
             </div>
 
             <div class="col-lg-4 col-md-4 utf_listing_payment_section">
@@ -233,8 +229,8 @@
                     <div class="listing-item">
 
 
-                        <a href="{{ room_type.banner_img.url }}" class="room-img position-relative d-block" data-fancybox data-caption="Twin Room">
-                            <img src="{{room_type.banner_img.url}}" alt class="img-fluid img-fluid-custome width_200 w-sm-100" width="320">
+                        <a href="{{ room.banner_img.url }}" class="room-img position-relative d-block" data-fancybox data-caption="Twin Room">
+                            <img src="{{room.banner_img.url}}" alt class="img-fluid img-fluid-custome width_200 w-sm-100" width="320">
                         </a>
                         <div class="icon-content position-absolute d-flex">
                             <a class="zoom-icon mr-2" href="https://hotel.bdtask-demo.com/xainhotel/application/modules/room_setting/assets/images/2021-02-24/b1.jpg" data-fancybox data-caption="Twin Room"><i class="fas fa-search-plus"></i></a>
@@ -259,11 +255,11 @@
                     <ul>
                         <li>Check-in <span>{{checkin}}</span></li>
                         <li>Check-out <span>{{checkout}}</span></li>
-                        <li>Total Days <span>{{total_days}} Days</span></li>
-                        <li>Adults <span>{{ adult }} Adult</span></li>
-                        <li>Children <span>{{ children }} Children</span></li>
-                        <li>V.A.T <span>$0.00</span></li>
-                        <li class="total-costs">Total Cost <span>${{ total }}</span></li>
+                        <li>Total Days <span>{{num_days}} Days</span></li>
+                        <li>Capacity <span>{{ capacity }} Guest</span></li>
+                      
+                        {% comment %} <li>V.A.T <span>$0.00</span></li> {% endcomment %}
+                        <li class="total-costs">Total Cost <span> &#8358 {{ total_amount }}</span></li>
                     </ul>
                 </div>
             </div>

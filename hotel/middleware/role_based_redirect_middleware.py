@@ -35,6 +35,13 @@ class RoleBasedRedirectMiddleware(MiddlewareMixin):
         'core:room_type_list',
         'core:room_type_detail',
         'core:selected_rooms',
+        'core:checkout',
+        'core:update_room_status',
+        'core:invoice',
+        'booking:create-reservation',
+        'booking:booking_data',
+        'booking:selected_room',
+        'booking:check_room_availability'
        
     ]
 

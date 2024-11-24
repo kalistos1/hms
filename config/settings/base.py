@@ -4,7 +4,7 @@ from django.contrib import messages
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
+# PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'static', 'serviceworker.js')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-oh4x%-rhg90&a6#475_2zt1^2u3(v*ne69!_l@3=kq(v+zda+-'
@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'django_ckeditor_5',
     'taggit',
     'formtools',
+    'pwa',
     
     #apps
     'accounts',
@@ -83,7 +84,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'bookings.context_processor.cart_data',    
+                # 'bookings.context_processor.cart_data',    
             ],
             
         },
@@ -162,3 +163,79 @@ NOTIFICATION_EMAIL = 'notify@example.com'  # Email to receive notifications
 LOGIN_REDIRECT_URL = 'dashboard:frontdesk_dashboard'
 LOGIN_URL = '/auth/signin/'
 LOGOUT_URL = '/'
+
+
+# PWA Settings
+PWA_APP_NAME = 'Xempire'
+PWA_APP_DESCRIPTION = "Xempire"
+PWA_APP_THEME_COLOR = '#0A0302'
+PWA_APP_BACKGROUND_COLOR = '#ffffff'
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_SCOPE = '/'
+PWA_APP_ORIENTATION = 'any'
+PWA_APP_START_URL = '/'
+PWA_APP_STATUS_BAR_COLOR = 'default'
+PWA_APP_ICONS = [
+    {
+        'src': '/static/xempire_160.png',
+        'sizes': '160x160'
+    }
+]
+PWA_APP_ICONS_APPLE = [
+    {
+        'src': '/static/xempire_160.png',
+        'sizes': '160x160'
+    }
+]
+PWA_APP_SPLASH_SCREEN = [
+    {
+        'src': '/static/xempire_pwa.png',
+        'media': '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)'
+    }
+]
+PWA_APP_DIR = 'ltr'
+PWA_APP_LANG = 'en-US'
+
+PWA_APP_SHORTCUTS = [
+    {
+        'name': 'Shortcut',
+        'url': '/auth/signin/',
+        'description': 'xempire',
+        'icons': [
+            {
+                'src': '/static/xempire_96.png',  # Path to the 96x96 icon
+                'sizes': '96x96',
+                'type': 'image/png'
+            }
+        ]
+    }
+]
+
+PWA_APP_SCREENSHOTS = [
+    {
+      'src': '/static/xempire_750.png',
+      'sizes': '750x1334',
+      "type": "image/png"
+    },
+        {
+        'src': '/static/xempire_1280.png',
+        'sizes': '1280x720',
+        'type': 'image/png'
+    },
+    {
+        'src': '/static/xempire_1920.png',
+        'sizes': '1920x1080',
+        'type': 'image/png'
+    }
+]
+
+
+# Stripe 
+STRIPE_PUBLIC_KEY = "erefwfregtreytry454532"
+STRIPE_PRIVATE_KEY = "werwqegregeyreyghfftzs"
+
+# Flutterwave
+FLUTTERWAVE_PUBLIC = "efrerwete6554ytyretwty"
+
+# Website Address
+WEBSITE_ADDRESS = "127.0.0.1:5000"

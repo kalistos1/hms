@@ -3,6 +3,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
+from django.views.decorators.cache import cache_page
+from pwa import views as pwa_views
 
 
 urlpatterns = [
@@ -22,6 +24,9 @@ urlpatterns = [
     
      #accounting
     path('accounting/', include('accounting.urls')),
+
+    #pwa
+    path("", include("pwa.urls")),
 
 ]
 

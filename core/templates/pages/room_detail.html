@@ -90,39 +90,16 @@
                                                             <span class="price h2 font-weight-600 text-danger mb-0">{{ room.room_type.base_price }}</span>
                                                             <span class="h6 align-self-end mb-1">/Night</span>
                                                         </div>
-                                                        <div class="price-refundable">
+                                                        <div class="price-refundable my-2">
                                                             <span>Free cancellation</span>
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <input type="hidden" class="room_id_{{ room.id }}" value="{{ room.id }}" id="room_id">
-                                                        <input type="hidden" class="room_number_{{ room.id }}" value="{{ room.room_number }}" id="room_number">
-                                                        {% comment %} <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-
-                                                        <button
-                                                            class="btn btn-info button border add-to-cart"
-                                                            hx-post="{% url 'booking:add_booking_to_cart' %}"
-                                                            hx-trigger="click"
-                                                            hx-target="#cart-count"
-                                                            hx-swap="innerHTML"
-                                                            hx-vals='{"room_id": "{{ room.id }}"}'
-                                                            id="add-to-cart-button">
-                                                            <i class="fas fa-shopping-cart"></i> Add To Selection
-                                                        </button> {% endcomment %}
-
-                                                        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-<button
-    class="btn btn-info button border add-to-cart"
-    hx-post="{% url 'booking:add_booking_to_cart' %}"
-    hx-trigger="click"
-    hx-target="#cart-count"
-    hx-swap="innerHTML"
-    hx-vals='{"room_id": "{{ room.id }}"}'
-    id="add-to-cart-button">
-    <i class="fas fa-shopping-cart"></i> Add To Selection
-</button>
-
-
+                                                         
+                                                        <a href="{% url 'booking:selected_room' room.rid %}?checkin={{ checkin }}&checkout={{ checkout }}&capacity={{ capacity }}&room_number={{ room.room_number }}" class="btn btn-info">
+                                                            <i class="fas fa-shopping-cart"></i> Reserve Room
+                                                        </a>
+                                                        
 
                                                     </div>
                                                 </div>
@@ -159,16 +136,7 @@
 
 
 
-            <input type="hidden" value="{{ hotel.id }}" id="id">
-            <input type="hidden" value="{{ hotel.name }}" id="hotel_name">
-            <input type="hidden" value="{{ room_type.type }}" id="room_name">
-            <input type="hidden" value="{{ room_type.base_price }}" id="room_price">
-            <input type="hidden" value="{{ room_type.number_of_beds }}" id="number_of_beds">
-            <input type="hidden" value="{{ room_type.id }}" id="room_type">
-            <input type="hidden" value="{{ checkin }}" id="checkin">
-            <input type="hidden" value="{{ checkout }}" id="checkout">
-            <input type="hidden" value="{{ adult }}" id="adult">
-            <input type="hidden" value="{{ children }}" id="children">
+            
         </div>
     </div>
 

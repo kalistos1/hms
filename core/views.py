@@ -15,8 +15,9 @@ from datetime import datetime
 from decimal import Decimal
 import stripe
 import json
-from .decorators import required_roles
-
+from django.utils.timezone import now
+from .decorators import required_roles  
+# from bookings.utils import get_total_selected_items
 # Create your views here.
 
 
@@ -27,9 +28,12 @@ def index(request):
     hotel = Hotel.objects.filter(status='Live').first()
     
     room_types = RoomType.objects.all()
+
+    # total_selected_items = get_total_selected_items(request.session)
     context = {
         'hotel':hotel,
         'room_types':room_types,
+        # 'total_selected_items': total_selected_items, 
     }
     
     return render(request, template, context)
@@ -45,7 +49,7 @@ def about_us(request):
 #contac view
 def contact_us(request):
     template ='pages/contact_us.html'
-    
+   
     return render(request, template)
 
 #gallery view
@@ -54,8 +58,14 @@ def gallery(request):
     
     roomtypes = RoomType.objects.all()
     room_gallery = Room.objects.all()
-    
-    return render(request, template, {"room":roomtypes, "room_gallery":room_gallery})
+    # total_selected_items = get_total_selected_items(request.session)
+    context = {
+        "room":roomtypes, 
+        "room_gallery":room_gallery,
+        # 'total_selected_items': total_selected_items, 
+    }
+    return render(request, template, context)
+
 
 def gallery_filter(request, foo):
     template ='pages/gallery.html'
@@ -74,8 +84,6 @@ def gallery_filter(request, foo):
     return render(request, template, context)
     
     
-    
-    
 
 def all_rooms(request):
     
@@ -83,12 +91,15 @@ def all_rooms(request):
     hotel = Hotel.objects.filter(status='Live').first()
     
     rooms = Room.objects.all()
+    # total_selected_items = get_total_selected_items(request.session)
     context = {
     'hotel':hotel,
     'rooms': rooms,
+    # 'total_selected_items': total_selected_items, 
      }
     
     return render(request, template, context)
+
 
 
 #rooms by category view
@@ -100,17 +111,62 @@ def room_list(request,slug):
    
     room_type = get_object_or_404(RoomType, slug=slug)
     rooms = Room.objects.filter(room_type=room_type)
-    amenities = room_type.amenities.all()
-  
     
+  
+    # total_selected_items = get_total_selected_items(request.session)
     context = {
      'hotel':hotel,
      'room_type': room_type,
      'rooms': rooms,
-     'amenities': amenities
+   
+    #  'total_selected_items': total_selected_items, 
      }
     
     return render(request, template, context)
+
+
+
+# def room_type_detail(request, slug, rt_slug):
+#     hotel = get_object_or_404(Hotel, status="Live", slug=slug)
+#     room_type = get_object_or_404(RoomType, hotel=hotel, slug=rt_slug)
+#     rooms = Room.objects.filter(room_type=room_type, is_available=True)
+
+#     booking_data = request.session.get('booking_data')
+#     if not booking_data:
+#         messages.warning(request, "Please enter your booking data to check availability.")
+#         return redirect("booking:booking_data", hotel.slug)
+
+#     request.session.pop('booking_data', None)
+
+#     room_amenities = [
+#         {
+#             'room': room,
+#             'amenities': RoomInventory.objects.filter(room=room, amenity__isnull=False).select_related('amenity')
+#         }
+#         for room in rooms
+#     ]
+
+#     # Calculate total items in the cart
+#     # cart = request.session.get('cart', {})
+
+#     # for room in rooms:
+#     #     room.in_cart = str(room.id) in cart
+
+#     # total_selected_items = sum(item['quantity'] for item in cart.values())
+
+#     context = {
+#         "hotel": hotel,
+#         "room_type": room_type,
+#         "rooms": rooms,
+#         "room_amenities": room_amenities,
+#         "checkin": booking_data['checkin'],
+#         "checkout": booking_data['checkout'],
+#         "capacity": booking_data['capacity'],
+#         "id": booking_data['hotel_id'],
+#         # "total_selected_items": total_selected_items,
+#     }
+#     return render(request, "pages/room_detail.html", context)
+
 
 
 def room_type_detail(request, slug, rt_slug):
@@ -133,10 +189,6 @@ def room_type_detail(request, slug, rt_slug):
         for room in rooms
     ]
 
-    # Calculate total items in the cart
-    cart = request.session.get('cart', {})
-    total_selected_items = sum(item['quantity'] for item in cart.values())
-
     context = {
         "hotel": hotel,
         "room_type": room_type,
@@ -146,11 +198,9 @@ def room_type_detail(request, slug, rt_slug):
         "checkout": booking_data['checkout'],
         "capacity": booking_data['capacity'],
         "id": booking_data['hotel_id'],
-        "total_selected_items": total_selected_items,
+
     }
     return render(request, "pages/room_detail.html", context)
-
-
 
 
 
@@ -318,72 +368,63 @@ def room_type_detail(request, slug, rt_slug):
 
 
 
-def checkout(request, booking_id):
-    try:
-        # Retrieve the booking and the latest payment attempt
-        booking = Booking.objects.get(booking_id=booking_id)
-        latest_payment = booking.payments.order_by('-date').first()
 
-        # Check if the latest payment was completed
-        if latest_payment and latest_payment.status == "completed":
-            messages.success(request, "This order has already been paid for!")
-            return redirect("/")
-        elif latest_payment:
-            latest_payment.status = "processing"
-            latest_payment.save()
 
-        # Handle coupon application if form is submitted
-        now = timezone.now()
-        if request.method == "POST":
-            code = request.POST.get('code')
+
+def checkout(request, reservation_id):
+    # Retrieve the reservation
+    reservation = get_object_or_404(Reservation, reservation_id=reservation_id)
+    
+    # Check if a payment has already been completed
+    latest_payment = reservation.payment
+    if latest_payment and latest_payment.status == "completed":
+        messages.success(request, "This reservation has already been paid for!")
+        return redirect("/")
+    
+    # Update the latest payment status to processing if applicable
+    if latest_payment:
+        latest_payment.status = "processing"
+        latest_payment.save()
+    
+    if request.method == "POST":
+        code = request.POST.get("code", "").strip()
+        
+        if code:
+            # Validate and apply the coupon
             try:
-                # Validate and retrieve the coupon
                 coupon = Coupon.objects.get(
                     code__iexact=code,
-                    valid_from__lte=now,
-                    valid_to__gte=now,
-                    active=True
+                    valid_from__lte=now(),
+                    valid_to__gte=now(),
+                    active=True,
                 )
-                # Check if coupon is already applied to this booking
-                if coupon in booking.coupons.all():
-                    messages.warning(request, "Coupon already activated for this booking.")
-                    return redirect("hotel:checkout", booking_id=booking.id)
-                
-                # Apply the coupon and create a record in CouponUsers
-                CouponUsers.objects.create(
-                    booking=booking,
-                    coupon=coupon,
-                    full_name=booking.full_name,
-                    email=booking.email,
-                    mobile=booking.phone,
-                )
-                
-                # Calculate and apply the discount based on coupon type
-                discount = (booking.total * coupon.discount / 100) if coupon.type == "Percentage" else coupon.discount
-                booking.coupons.add(coupon)
-                booking.total -= discount
-                booking.saved += discount
-                booking.save()
+                if reservation.coupon == coupon:
+                   messages.warning(request, "Coupon already applied to this reservation.")
+                else:
+                    # Apply the coupon
+                    discount = reservation.apply_discount(coupon)
 
-                messages.success(request, "Coupon found and activated!")
-                return redirect("hotel:checkout", booking_id=booking.id)
+                    CouponUsers.objects.create(
+                        coupon=coupon,
+                        booking=reservation,
+                        email=reservation.user.email,
+                    )
 
+                    messages.success(request, f"Coupon applied! You saved {discount}.")
             except Coupon.DoesNotExist:
-                messages.error(request, "Coupon not found or expired.")
-                return redirect("hotel:checkout", booking_id=booking.id)
+                messages.error(request, "Invalid or expired coupon.")
+        
+        return redirect("core:checkout", reservation_id=reservation.id)
 
-        # Context for rendering the checkout page
-        context = {
-            "booking": booking,
-            "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
-            "flutterwave_public_key": settings.FLUTTERWAVE_PUBLIC,
-            "website_address": settings.WEBSITE_ADDRESS,
-        }
-        return render(request, "pages/checkout.html", context)
+    # Render the checkout page
+    context = {
+        "reservation": reservation,
+        "stripe_publishable_key":settings.STRIPE_PUBLIC_KEY,
+        "flutter_publick_key":settings.FLUTTERWAVE_PUBLIC,
+        "website_address":settings.WEBSITE_ADDRESS,
+    }
+    return render(request, "pages/checkout.html", context)
 
-    except Booking.DoesNotExist:
-        messages.error(request, "Booking not found.")
-        return redirect("/")
 
 
 @csrf_exempt
@@ -419,6 +460,8 @@ def create_checkout_session(request, booking_id):
     print("checkout_session ==============", checkout_session)
     return JsonResponse({'sessionId': checkout_session.id})
 
+def pay_later(request):
+    pass
 
 def payment_success(request, booking_id):
     success_id = request.GET.get('success_id')

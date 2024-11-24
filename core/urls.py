@@ -15,15 +15,15 @@ urlpatterns = [
     path('roomtype/room_list/<slug:slug>/', views.room_list, name='room_type_list'),
     path("detail/<slug:slug>/room-type/<slug:rt_slug>/", views.room_type_detail, name="room_type_detail"),
     
-    path("checkout/<booking_id>/", views.checkout, name="checkout"),
-    path("invoice/<booking_id>/", views.invoice, name="invoice"),
+    path("checkout/<reservation_id>/", views.checkout, name="checkout"),
+    path("invoice/<reservation_id>/", views.invoice, name="invoice"),
     
     # path("selected_rooms/", views.selected_rooms, name="selected_rooms"),
     path("update_room_status/", views.update_room_status, name="update_room_status"),
     
         # Payment API
-    path('api/checkout-session/<booking_id>/', views.create_checkout_session, name='api_checkout_session'),
-    path('success/<booking_id>/', views.payment_success, name='success'),
-    path('failed/<booking_id>/', views.payment_failed, name='failed'),
+    path('api/checkout-session/<reservation_id>/', views.create_checkout_session, name='api_checkout_session'),
+    path('success/<reservation_id>/', views.payment_success, name='success'),
+    path('failed/<reservation_id>/', views.payment_failed, name='failed'),
     
 ]

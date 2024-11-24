@@ -215,11 +215,11 @@
                         <div class="col-lg-4 col-md-4 col-sm-6">
                             <div class="card border-0 box-shadow rounded-0 mb-4">
                                 <a href="{% url 'core:room_type_list' room_type.slug %}" class="card-img position-relative">
-                                    <img src="{{ room_type.img.url }}" class="img-fluid wd_xs_100" alt="...">
+                                    <img src="{{ room_type.banner_img.url }}" class="img-fluid wd_xs_100" alt="...">
                                     <button type="button" class="position-absolute btn btn-sm " style="background-color: #ffee27;">Book Now</button>
                                 </a>
                                 <div class="card-body">
-                                    <h3 class="text-center card-title mb-0 weeklyoffer-title  "><a href="#" class="text-dark fw-bolder">{{ room_type.type }}</a></h3>
+                                    <h5 class=" text-center fw-bolder card-title mb-0 weeklyoffer-title  "><a href="#" class="text-dark fw-bolder">{{ room_type.type }} ({{room_type.base_price}} Per Night)</a></h5>
                                 </div>
                             </div>
                         </div>

@@ -2,8 +2,11 @@
 
 <!DOCTYPE html>
 <html lang="en">
+    {% load pwa %}
+   
 
     <head>
+        {% progressive_web_app_meta %}
         <title>{% block title %} X-Empire : Hotel Management Admin Dashboard {% endblock %} </title>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=Edge">
@@ -12,6 +15,7 @@
         <meta name="keyword" content="bootstrap admin template">
 
 	<!--[ Favicon]-->
+       <link rel="manifest" href="{% static 'manifest.json' %}">
         <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
         <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png">
         <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
@@ -27,7 +31,63 @@
         <link href="{% static 'frontpage/website_assets/plugins/fontawesome/css/all.min.css' %}" rel="stylesheet">
         <link rel="stylesheet" href="{% static 'dashboard/assets/css/style.min.css' %}">
         <link rel="stylesheet" href="{% static 'dashboard/assets/css/Theme.min.css' %}">
-
+        <style>
+            /* Styling the install button */
+            #install-button {
+                display: none;
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #0A0302, #d32f2f);
+                color: #fff;
+                border: none;
+                border-radius: 50px;
+                padding: 15px 30px;
+                font-size: 18px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+                z-index: 1000;
+            }
+    
+            /* Hover effect */
+            #install-button:hover {
+                transform: translateY(-5px);
+                box-shadow: 0px 8px 12px rgba(0, 0, 0, 0.2);
+            }
+    
+            /* Pop-up animation */
+            #install-button.pop {
+                animation: pop-in 0.5s ease-out;
+            }
+    
+            @keyframes pop-in {
+                0% {
+                    transform: scale(0.8);
+                    opacity: 0;
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+    
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                #install-button {
+                    padding: 10px 20px;
+                    font-size: 16px;
+                }
+            }
+    
+            @media (max-width: 480px) {
+                #install-button {
+                    padding: 8px 16px;
+                    font-size: 14px;
+                }
+            }
+        </style>
 
     </head>
 
@@ -171,6 +231,40 @@
             });
         </script>
 
+
+        
+        <script>
+            let deferredPrompt;
+    
+            // Detect the beforeinstallprompt event
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent the mini-infobar from appearing
+                e.preventDefault();
+    
+                // Save the event for triggering it later
+                deferredPrompt = e;
+    
+                // Show and animate the install button
+                const installButton = document.getElementById('install-button');
+                installButton.style.display = 'block';
+                installButton.classList.add('pop');
+    
+                // Add click event to trigger install prompt
+                installButton.addEventListener('click', async () => {
+                    installButton.style.display = 'none'; // Hide the button
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt(); // Show the install prompt
+    
+                        // Wait for the user to respond to the prompt
+                        const { outcome } = await deferredPrompt.userChoice;
+                        console.log(`User choice: ${outcome}`);
+    
+                        // Clear the deferred prompt
+                        deferredPrompt = null;
+                    }
+                });
+            });
+        </script>
     </body>
 
 </html>

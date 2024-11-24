@@ -1,0 +1,30 @@
+from django.core.management.base import BaseCommand
+from django.utils.timezone import now
+from your_app.models import Reservation
+
+class Command(BaseCommand):
+    help = "Mark expired reservations as canceled and release associated rooms."
+
+    def handle(self, *args, **options):
+        # Get all reservations that are expired and not yet canceled
+        expired_reservations = Reservation.objects.filter(
+            expiration_date__lt=now(), is_cancelled=False
+        )
+
+        count = 0  # Counter for logging how many reservations were processed
+        for reservation in expired_reservations:
+            # Mark the reservation as canceled
+            reservation.is_cancelled = True
+            reservation.cancel_date = now()
+            reservation.save()
+
+            # Release associated rooms (if any)
+            if reservation.room:
+                reservation.room.is_available = True
+                reservation.room.save()
+
+            count += 1
+
+        self.stdout.write(
+            self.style.SUCCESS(f"Successfully marked {count} expired reservations as canceled and released rooms.")
+        )

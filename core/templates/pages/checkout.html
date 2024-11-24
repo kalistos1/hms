@@ -135,12 +135,12 @@
         }
     </style>
 
-    <div class="py-5 bg-gray background" style="background-image: url('{% for r in booking.room.all %}{{ r.room_type.banner_img.url }} {%  endfor %}'); background-size: cover; background-position: center;" >
+    <div class="py-5 bg-gray background" style="background-image: url('{{ reservation.room.banner_img.url }} '); background-size: contain; background-position: center;" >
         <div class="overlay"></div>
         <div class="container">
             <div class="content text-center text-light">
-                <h2 style="color:white;">{{room_type.type}} Room</h2>
-                <p>{{rooms.count}} Available Rooms</p>
+                <h2 style="color:white;">{{reservation.room.room_type.type}} Room</h2>
+                
             </div>
         </div>
     </div>
@@ -157,13 +157,13 @@
                     <div class="utf_listing_section">
                         <div class="utf_pricing_list_section">
                             <ul>
-                                {% for r in booking.room.all %}
+                                {% if reservation %}
                                     <li>
-                                        <h5>Room: {{r.room_type.type}} </h5>
-                                        <p><strong>Beds :</strong> {{r.number_of_beds}}  </p>
-                                        <span>${{r.room_type.price}} </span>
+                                        <h5>Room: {{reservation.room.room_type.type}}   {{reservation.room.room_number}}</h5>
+                                        <p><strong>Beds :</strong> {{reservation.room.room_type.number_of_beds}}  </p>
+                                        <span> &#8358 {{reservation.room.room_type.base_price}} </span>
                                     </li>
-                                {% endfor %}
+                                {% endif %}
                             </ul>
                         </div>
                     </div>
@@ -174,18 +174,18 @@
                     <div class="row">
                         <div class="col-md-12">
                             <label>First Name</label>
-                            <input name="full_name" type="text" value="{{booking.full_name}}" readonly placeholder="First Name">
+                            <input name="full_name" type="text" value="{{reservation.user.get_full_name}}" readonly placeholder="First Name">
                         </div>
                         <div class="col-md-6">
                             <div class="medium-icons">
                                 <label>E-Mail</label>
-                                <input name="email" id="email" type="text" value="{{booking.email}}" readonly placeholder="Email">
+                                <input name="email" id="email" type="text" value="{{reservation.user.email}}" readonly placeholder="Email">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="medium-icons">
                                 <label>Phone</label>
-                                <input name="phone" type="text" value="{{booking.phone}}" readonly >
+                                <input name="phone" type="text" value="{{reservation.user.phone}}" readonly >
                             </div>
                         </div>
                         <div class="col-lg-12">
@@ -199,8 +199,8 @@
                 <div class="utf_booking_listing_item_container compact utf_order_summary_widget_section">
                     <div class="listing-item">
 
-                        <a href="{{ booking.room_type.banner_img.url }}" class="room-img position-relative d-block" data-fancybox data-caption="Twin Room">
-                            <img src="{{booking.room_type.banner_img.url}}" alt class="img-fluid img-fluid-custome width_200 w-sm-100" width="320">
+                        <a href="{{ reservatiom.room.banner_img.url }}" class="room-img position-relative d-block" data-fancybox data-caption="Twin Room">
+                            <img src="{{reservation.room.banner_img.url}}" alt class="img-fluid img-fluid-custome width_200 w-sm-100" width="320">
                         </a>
                         <div class="icon-content position-absolute d-flex">
                             <a class="zoom-icon mr-2" href="https://hotel.bdtask-demo.com/xainhotel/application/modules/room_setting/assets/images/2021-02-24/b1.jpg" data-fancybox data-caption="Twin Room"><i class="fas fa-search-plus"></i></a>
@@ -210,7 +210,9 @@
 
                         <div class="utf_listing_item_content">
                             <br>
-                            <h3 class="text-light">{{booking.hotel.name}}</h3>
+                            
+                            <h3 class="text-light">{{reservation.hotel}}</h3>
+                           
 
                             <div class="utf_star_rating_section" data-rating="4.5">
                                 <div class="utf_counter_star_rating">(18) Reviews</div>
@@ -221,18 +223,16 @@
                 <div class="boxed-widget opening-hours summary margin-top-0">
                     <h3><i class="fa fa-calendar-check-o"></i> Booking Summary</h3>
                     <ul>
-                        <li>Check-in <span>{{booking.check_in_date}}</span></li>
-                        <li>Check-out <span>{{booking.check_out_date}}</span></li>
-                        <li>Adults <span>{{ booking.num_adults }} Adults</span></li>
-                        <li>Children <span>{{ booking.num_children }} Children</span></li>
-                        <li>V.A.T <span>$0.00</span></li>
+                        <li>Check-in <span>{{reservation.check_in_date}}</span></li>
+                        <li>Check-out <span>{{reservation.check_out_date}}</span></li>
+                        <li>Capacity <span>{{ reservation.num_adults }} Guests</span></li>                   
 
-                        {% if booking.saved != 0.00 %}
-                            <li>Discount<span>-${{booking.saved}}</span></li>
+                        {% if reservation.coupon != 0.00 %}
+                            <li>Discount<span>- &#8358 {{reservation.reservations}}</span></li>
                         {% endif %}
 
                         <li class="total-costs">
-                            <form action="" method="POST">
+                            {% comment %} <form action="" method="POST">
                                 {% csrf_token %}
                                 <div class="col-md-8">
                                     <input id="couponCode" name="code" placeholder="Have a coupon enter here..." required="" type="text">
@@ -240,25 +240,50 @@
                                 <div class="col-md-4">
                                     <input type="submit" class="coupon_code" value="Apply">
                                 </div>
-                            </form>
+                            </form> {% endcomment %}
                             <div class="clearfix"></div>
                         </li>
-                        <li class="total-costs">Total Cost <span>${{booking.total}}</span></li>
+                        {% for payment in reservation.payments.all %}
+                        <li class="total-costs">Total Cost <span>  &#8358 {{payment.amount}}</span></li>
+                        {% endfor %}
                     </ul>
+                    <button id="pay_later" class="btn btn-dark utf_booking_confirmation_button margin-top-10 margin-bottom-10 w-100">
+                        Pay Later
+                    </button>
+                    
                     <form method="POST" action="https://checkout.flutterwave.com/v3/hosted/pay">
                         <input type="hidden" name="public_key" value="FLWPUBK_TEST-a2c377d3cf56b37b9e660f85e26d2f8f-X" />
-                        <input type="hidden" name="customer[email]" value="{{booking.email}}" />
-                        <input type="hidden" name="customer[name]" value="{{booking.full_name}}" />
-                        <input type="hidden" name="tx_ref" value="ID-{{booking.booking_id}}" />
-                        <input type="hidden" name="amount" value="{{booking.total}}" />
+                        <input type="hidden" name="customer[email]" value="{{reservation.user.email}}" />
+                        <input type="hidden" name="customer[name]" value="{{reservation.user.get_full_name}}" />
+                        <input type="hidden" name="tx_ref" value="ID-{{reservation.reservation_id}}" />
+                        {% for payment in reservation.payments.all %}
+                        <input type="hidden" name="amount" value="{{payment.amount}}" />
+                        {% endfor %}
+
                         <input type="hidden" name="currency" value="USD" />
                         <input type="hidden" name="meta[token]" value="54" />
-                        <input type="hidden" name="redirect_url" value="{{website_address}}/success/{{booking.booking_id}}/?success_id={{booking.success_id}}&booking_total={{booking.total}}" />
+                        <input type="hidden" name="redirect_url" value="{{website_address}}/success/{{reservation.reservation_id}}/?success_id={{reservation.success_id}}&reservation_total={% for payment in reservation.payments.all %} {{payment.amount}}  {% endfor %}" />
 
-                        <button id="flutter-btn" class="button utf_booking_confirmation_button margin-top-20 w-100 " style="background-color: orange; color: rgb(37, 28, 3);">Pay with Flutterwave <img src="https://asset.brandfetch.io/iddYbQIdlK/idmlgmHt_3.png" style="width: 40px;" alt=""></button>
+                        {% comment %} <button id="flutter-btn" class="button disable utf_booking_confirmation_button margin-top-20 w-100 " style="background-color: orange; color: rgb(37, 28, 3);">Pay with Flutterwave <img src="https://asset.brandfetch.io/iddYbQIdlK/idmlgmHt_3.png" style="width: 40px;" alt=""></button> {% endcomment %}
+                        
+                        <button id="flutter-btn" 
+                                class="button disable utf_booking_confirmation_button margin-top-20 w-100" 
+                                style="background-color: orange; color: rgb(37, 28, 3);" 
+                                disabled>
+                            Pay with Flutterwave 
+                            <img src="https://asset.brandfetch.io/iddYbQIdlK/idmlgmHt_3.png" 
+                                style="width: 40px;" 
+                                alt="">
+                        </button>
                     </form>
-                    <button id="checkout-button" class="button utf_booking_confirmation_button margin-top-10 margin-bottom-10 w-100">Pay with Stripe <i class="fas fa-credit-card"></i></button>
-                    <div id="paypal-button-container"></div>
+  
+                    <button id="checkout-button" 
+                            class="button utf_booking_confirmation_button margin-top-10 margin-bottom-10 w-100" 
+                            disabled>
+                        Pay with Stripe <i class="fas fa-credit-card"></i>
+                    </button>
+                    {% comment %} <button id="checkout-button" class="button  utf_booking_confirmation_button margin-top-10 margin-bottom-10 w-100">Pay with Stripe <i class="fas fa-credit-card"></i></button> {% endcomment %}
+                    {% comment %} <div id="paypal-button-container"></div> {% endcomment %}
                 </div>
             </div>
         </div>
@@ -287,7 +312,7 @@
 
             checkoutButton.innerHTML = "Starting..."
 
-            fetch("{% url 'core:api_checkout_session' booking_id=booking.booking_id %}", {
+            fetch("{% url 'core:api_checkout_session' reservation_id=reservation.reservation_id %}", {
                 method: 'POST',
                 body: JSON.stringify(
                     { email: email }
@@ -311,10 +336,10 @@
 
 
     <script>
-        booking_id = "{{booking.booking_id}}"
-        booking_total = "{{booking.total}}"
-        success_id = "{{booking.success_id}}"
-        id = "{{booking.id}}"
+        reservation_id = "{{reservation.reservation_id}}"
+        reservation_total = "{{reservation.total}}"
+        success_id = "{{reservation.success_id}}"
+        id = "{{reservation.id}}"
 
         paypal.Buttons({
 
@@ -322,7 +347,7 @@
                 return actions.order.create({
                     purchase_units: [{
                         amount: {
-                            value: booking_total
+                            value: reservation_total
                         }
                     }]
                 })
@@ -330,7 +355,7 @@
 
             onApprove: function(data, actions) {
                 return actions.order.capture().then(function(Details){
-                    window.location.href = "/success/"+ booking_id +"/?PayerID="+ id +"&success_id=" + success_id + "&booking_total=" + booking_total + "/" ;
+                    window.location.href = "/success/"+ reservation_id +"/?PayerID="+ id +"&success_id=" + success_id + "&reservation_total=" + reservation_total + "/" ;
                 })
             }
 
@@ -342,6 +367,29 @@
         flutter_btn.addEventListener("click", function(){
             flutter_btn.innerHTML = "Starting..."
         })
+    </script>
+
+    <script>
+        document.getElementById('pay_later').addEventListener('click', function () {
+            Swal.fire({
+                title: 'Room Reserved!',
+                text: 'The room has been reserved for 24 hours.',
+                icon: 'success', // 'info', 'warning', 'error', or 'success'
+                confirmButtonText: 'Go to Home Page',
+                confirmButtonColor: '#3085d6',
+                background: '#fffbe6',
+                color: '#444',
+                timer: 5000, // Auto-dismiss after 5 seconds (optional)
+                backdrop: `rgba(0,0,123,0.4)` // Slightly transparent background
+            }).then((result) => {
+                // Redirect to the home page when the user clicks the button
+                if (result.isConfirmed) {
+                    window.location.href = '/'; // Replace '/' with your actual home page URL
+                }
+            });
+        });
+        
+        
     </script>
 
 {% endblock content %}

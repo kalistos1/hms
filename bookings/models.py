@@ -332,7 +332,8 @@ class Payment(models.Model):
         ('paypal', 'PayPal'),
     ]
     
-    booking = models.ForeignKey('Booking', related_name='payments', on_delete=models.CASCADE)
+    booking = models.ForeignKey('Booking', related_name='payments', on_delete=models.CASCADE, null=True, blank=True)
+    online_reservation = models.ForeignKey('Reservation', related_name='payments', on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
     mode = models.CharField(max_length=20, choices=PAYMENT_MODE_CHOICES, default='cash')
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
@@ -423,31 +424,46 @@ class Transaction(models.Model):
         return f" {self.room_type.type} Transaction"
     
 
+
 class Reservation(Transaction):
     reservation_id = ShortUUIDField(unique=True, length=10, max_length=20, alphabet="abcdefghijklmnopqrstuvxyz")
     expiration_date = models.DateTimeField(null=True, blank=True)
     is_cancelled = models.BooleanField(default=False)
+    coupon = models.ForeignKey('Coupon', related_name="reservations", on_delete=models.SET_NULL, blank=True, null=True)
+    success_id = ShortUUIDField(length=300, max_length=505, alphabet="abcdefghijklmnopqrstuvxyz1234567890")
     cancel_date = models.DateTimeField(null=True, blank=True)
     payment = models.ForeignKey('Payment', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"Reservation {self.reservation_id} by {self.user.username if self.user else 'Guest'}"
     
+    def is_expired(self):
+        """Check if the reservation has expired."""
+        return timezone.now() > self.expiration_date if self.expiration_date else False
+
     def cancel_reservation(self):
-        if not self.expiration_date:
-            raise ValueError("Expiration date is not set.")
-        
-        # Check if the current time is past the expiration date and payment status is pending
-        if not self.is_cancelled and self.payment and self.payment.status == "pending" and timezone.now() > self.expiration_date:
+        """Cancel the reservation if it's expired or user-initiated."""
+        if self.is_expired() or not self.is_cancelled:
             self.is_cancelled = True
             self.cancel_date = timezone.now()
             self.save()
+    
+    def apply_discount(self, coupon):
+        if coupon.is_valid():
+            discount_amount = coupon.get_discount_amount(self.total_amount)
+            self.total_amount -= discount_amount
+            self.coupon = coupon  # Set the coupon for this reservation
+            self.save()
+            return discount_amount
+        return 0
+
 
     def save(self, *args, **kwargs):
-        # Set a default expiration date if it's not provided
         if not self.expiration_date:
-            self.expiration_date = self.date_created + timezone.timedelta(days=3)
+            # Default expiration is 15 minutes from creation for online payments
+            self.expiration_date = timezone.now() + timezone.timedelta(minutes=15)
         super(Reservation, self).save(*args, **kwargs)
+
 
 
 class Booking(Transaction):
@@ -455,7 +471,7 @@ class Booking(Transaction):
     is_active = models.BooleanField(default=True)
     checked_in = models.BooleanField(default=False)
     checked_out = models.BooleanField(default=False)
-    reservation = models.OneToOneField('Reservation', on_delete=models.SET_NULL, null=True, blank=True)
+    reservation = models.ForeignKey('Reservation', on_delete=models.SET_NULL, null=True, blank=True)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True, blank=True)  # ForeignKey instead of M2M
     date = models.DateTimeField(auto_now_add=True)
     coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True)
@@ -464,7 +480,6 @@ class Booking(Transaction):
         return f"Booking {self.booking_id} by {self.user.username if self.user else 'Guest'}"
     
 
-    
     def get_total_due(self):
         total = self.calculate_total()  # Ensure this is your method to calculate the regular total
         if self.coupon:
@@ -706,24 +721,43 @@ class Booking(Transaction):
             super().save(*args, **kwargs)
 
 
-    def convert_reservation_to_booking(self, reservation):
-        """Convert a reservation into a booking and optionally apply a coupon if one exists."""
+def convert_reservation_to_booking(self, reservation):
+    """Convert a reservation into a booking."""
+    if reservation.is_expired():
+        raise ValueError("Cannot convert an expired reservation.")
+
+    with transaction.atomic():
+        # Copy details from reservation to booking
         self.user = reservation.user
         self.hotel = reservation.hotel
         self.room_type = reservation.room_type
-        self.room.set(reservation.room.all())  # Copy the rooms from the reservation
+        self.room = reservation.room  # Assuming room is a ForeignKey now
         self.check_in_date = reservation.check_in_date
         self.check_out_date = reservation.check_out_date
         self.num_adults = reservation.num_adults
         self.num_children = reservation.num_children
         self.reservation = reservation
         self.total_amount = reservation.total_amount
+        self.is_active = True  # Activate the booking
+        self.checked_in = True
+        self.checked_out = False
 
-        # Apply coupon if any exists in the reservation
-        if reservation.payment and reservation.payment.booking.coupon:
-           self.coupon = reservation.payment.booking.coupon  # Copy the coupon from the reservation if it exists
+        # Apply coupon from reservation
+        if reservation.coupon:
+            self.coupon = reservation.coupon
 
+        # Reassign payment
+        if reservation.payment:
+            reservation.payment.booking = self
+            reservation.payment.online_reservation = None
+            reservation.payment.save()
+
+        # Save the booking
         self.save()
+
+        # Mark the reservation as cancelled after conversion
+        reservation.is_cancelled = True
+        reservation.save()
 
 
 

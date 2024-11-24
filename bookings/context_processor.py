@@ -17,10 +17,10 @@ def default(request):
     }
 
 
-def cart_data(request):
-    cart = request.session.get('cart', {})
-    total_items = sum(item['quantity'] for item in cart.values())
-    return {
-        'cart': cart,
-        'total_cart_items': total_items
-    }
+# def cart_data(request):
+#     cart = request.session.get('cart', {})
+#     total_items = sum(item['quantity'] for item in cart.values())
+#     return {
+#         'cart': cart,
+#         'total_cart_items': total_items
+#     }

@@ -1,8 +1,11 @@
+
+from django.contrib.auth import authenticate, login
+from accounts.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse,Http404
 from django.urls import reverse
 from django.template.loader import render_to_string
-from .models import Hotel, Room, Booking, RoomServices, HotelGallery, HotelFeatures, RoomType
+from .models import Hotel, Room, Booking, RoomServices, HotelGallery, HotelFeatures, RoomType, Reservation, Payment
 from datetime import datetime
 from decimal import Decimal
 from core.decorators import required_roles
@@ -11,7 +14,7 @@ from django.db.models import Q, Exists, OuterRef
 from django.utils.dateparse import parse_date
 from datetime import timedelta
 from django.views.decorators.csrf import csrf_exempt
-
+# from .utils import get_total_selected_items
 
 
 
@@ -73,159 +76,212 @@ def check_room_availability(request):
     return redirect("core:index")
 
 
+
+
 def booking_data(request, slug):
     template ='pages/roomlist.html'
     hotel = Hotel.objects.filter(status='Live').first()
     rooms = Room.objects.all()
     room_types =RoomType.objects.all()
-    
+    # total_selected_items = get_total_selected_items(request.session)
     context = {
      'hotel':hotel,
      'rooms': rooms,
      'room_types':room_types,
+    #  'total_selected_items': total_selected_items, 
      }
     return render(request, template, context)
 
 
 
+# # @csrf_exempt
+# def add_room_to_cart(request):
+#     room_id = request.POST.get('room_id')
+#     room = get_object_or_404(Room, id=room_id)
 
-# @csrf_exempt
-def add_room_to_cart(request):
-    room_id = request.POST.get('room_id')
-    room = get_object_or_404(Room, id=room_id)
-
-    # Initialize cart in the session if not present
-    if 'cart' not in request.session:
-        request.session['cart'] = {}
+#     # Initialize cart in the session if not present
+#     if 'cart' not in request.session:
+#         request.session['cart'] = {}
     
-    # Add or increment room count in the cart session data
-    cart = request.session['cart']
-    if room_id in cart:
-        cart[room_id]['quantity'] += 1
-    else:
-        cart[room_id] = {
-            'room_number': room.room_number,
-            'quantity': 1,
+#     # Add or increment room count in the cart session data
+#     cart = request.session['cart']
+#     if room_id in cart:
+#         cart[room_id]['quantity'] += 1
+#     else:
+#         cart[room_id] = {
+#             'room_number': room.room_number,
+#             'quantity': 1,
+#         }
+
+#     # Save updated cart back to the session
+#     request.session['cart'] = cart
+#     request.session.modified = True
+    
+#     # Calculate total items and render the cart count HTML snippet
+#     total_items = sum(item['quantity'] for item in cart.values())
+    
+#     html = render_to_string("partials/htmx/cart_count.html", {"total_selected_items": total_items})
+#     return HttpResponse(html, content_type="text/html")
+
+
+def selected_room(request, rid):
+    room = get_object_or_404(Room, rid=rid)
+    room_type = room.room_type
+    hotel = room_type.hotel
+    similar_rooms = Room.objects.filter(room_type=room_type)#.exclude(id=room.id)
+
+    if request.method == "POST":
+        checkin_str = request.POST.get("checkin")
+        checkout_str = request.POST.get("checkout")
+        capacity = request.POST.get("capacity")
+        selected_room_rid = request.POST.get("room-type")
+
+        # Validate and parse dates
+        try:
+            checkin = datetime.strptime(checkin_str, "%Y-%m-%d").date()
+            checkout = datetime.strptime(checkout_str, "%Y-%m-%d").date()
+        except ValueError:
+            messages.error(request, "Invalid date format.")
+            return redirect("booking:selected_room", rid=rid)
+
+        # Ensure valid date range
+        num_days = (checkout - checkin).days
+        if num_days <= 0:
+            messages.error(request, "Check-out date must be after check-in.")
+            return redirect("booking:selected_room", rid=rid)
+
+        # Get the selected room
+        selected_room = Room.objects.filter(rid=selected_room_rid).first()
+        if not selected_room:
+            messages.error(request, "Invalid room selection.")
+            return redirect("booking:selected_room", rid=rid)
+
+        # Calculate total cost
+        room_price = selected_room.price_override or selected_room.room_type.base_price
+        total_amount = Decimal(room_price) * Decimal(num_days)
+
+        # Updated context
+        context = {
+            'hotel': hotel,
+            'room': selected_room,
+            'checkin': checkin,
+            'checkout': checkout,
+            'capacity': capacity,
+            'num_days': num_days,
+            'total_amount': total_amount,
+            'similar_rooms': similar_rooms,
         }
 
-    # Save updated cart back to the session
-    request.session['cart'] = cart
-    request.session.modified = True
+        return render(request, "pages/selected_rooms.html", context)
+
+    # Handle initial GET request
+    checkin_str = request.GET.get("checkin")
+    checkout_str = request.GET.get("checkout")
+    capacity = request.GET.get("capacity")
+
+    if not checkin_str or not checkout_str or not capacity:
+        messages.error(request, "Room availability information is missing.")
+        return redirect("booking:booking_data", slug=room.room_type.slug)
+
+    try:
+        checkin = datetime.strptime(checkin_str, "%Y-%m-%d").date()
+        checkout = datetime.strptime(checkout_str, "%Y-%m-%d").date()
+    except ValueError:
+        messages.error(request, "Invalid date format.")
+        return redirect("booking:booking_data", slug=room.room_type.slug)
+
+    num_days = (checkout - checkin).days
+    if num_days <= 0:
+        messages.error(request, "Check-out date must be after check-in.")
+        return redirect("booking:booking_data", slug=room.room_type.slug)
+
+    room_price = room.price_override or room.room_type.base_price
+    total_amount = Decimal(room_price) * Decimal(num_days)
+
+    context = {
+        'hotel': hotel,
+        'room': room,
+        'checkin': checkin,
+        'checkout': checkout,
+        'capacity': capacity,
+        'num_days': num_days,
+        'total_amount': total_amount,
+        'similar_rooms': similar_rooms,
+    }
+
+    return render(request, "pages/selected_rooms.html", context)
+
+
+
+
+def create_reservation(request):
+    if request.method == "POST":
+        try:
+            # Extract submitted data
+            room_id = request.POST.get("room_id")
+            checkin_str = request.POST.get("checkin")
+            checkout_str = request.POST.get("checkout")
+            capacity = int(request.POST.get("capacity", 1))  # Default to 1 adult
+            full_name = request.POST.get("full_name")
+            email = request.POST.get("email")
+            phone = request.POST.get("phone")
+
+            # Process full name into first and last name
+            name_parts = full_name.strip().split()
+            first_name = name_parts[0]
+            last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+
+            # Retrieve or create the user
+            user, created = User.objects.get_or_create(email=email, defaults={
+                "username": email,
+                "first_name": first_name,
+                "last_name": last_name,
+                "phone":phone,
+            })
+            if not created and not user.check_password(phone):
+                raise ValueError("Incorrect phone number for existing user.")
+            user.set_password(phone)  # Update password if created
+            user.t_and_c = True
+            user.active_status = True
+            user.save()
+            login(request, user)
+
+            # Validate room and dates
+            room = get_object_or_404(Room, id=room_id)
+            checkin = datetime.strptime(checkin_str, "%Y-%m-%d").date()
+            checkout = datetime.strptime(checkout_str, "%Y-%m-%d").date()
+            num_days = (checkout - checkin).days
+
+            if num_days <= 0:
+                raise ValueError("Invalid date range.")
+
+            # Calculate total cost
+            total_amount = Decimal(room.price_override or room.room_type.base_price) * Decimal(num_days)
+
+
+            # Create reservation
+            reservation = Reservation.objects.create(
+                room=room,
+                user=user,
+                check_in_date=checkin,
+                check_out_date=checkout,
+                num_adults=capacity,
+                total_amount=total_amount,
+            )
+
+            # Create a pending payment
+            Payment.objects.create(
+                online_reservation=reservation,
+                status='pending',
+                amount=total_amount,
+                mode='cash',  # Default payment mode
+            )
+
+            # Redirect to the checkout page
+            return redirect("core:checkout", reservation.reservation_id)
+
+        except ValueError as e:
+            messages.error(request, f"Error: {str(e)}")
+            return redirect("booking:selected_room", rid=request.POST.get("room_id"))
     
-    # Calculate total items and render the cart count HTML snippet
-    total_items = sum(item['quantity'] for item in cart.values())
-    
-    html = render_to_string("partials/htmx/cart_count.html", {"total_selected_items": total_items})
-    return HttpResponse(html, content_type="text/html")
-
-
-
-
-
-# def selected_rooms(request):
-#     # Get the selected rooms from the cart in session
-#     cart = request.session.get('cart', [])
-#     rooms = Room.objects.filter(id__in=cart)
-    
-#     context = {
-#         'rooms': rooms,
-#     }
-    
-#     return render(request, 'pages/selected_rooms.html', context)
-
-# def add_to_selection(request):
-#     room_selection = {}
-
-#     room_selection[str(request.GET['id'])] = {
-#         'hotel_id': request.GET['hotel_id'],
-#         'hotel_name': request.GET['hotel_name'],
-#         'room_name': request.GET['room_name'],
-#         'room_price': request.GET['room_price'],
-#         'number_of_beds': request.GET['number_of_beds'],
-#         'room_number': request.GET['room_number'],
-#         'room_type': request.GET['room_type'],
-#         'room_id': request.GET['room_id'],
-#         'checkin': request.GET['checkin'],
-#         'checkout': request.GET['checkout'],
-#         'adult': request.GET['adult'],
-#         'children': request.GET['children'],
-#     }
-
-#     if 'selection_data_obj' in request.session:
-#         if str(request.GET['id']) in request.session['selection_data_obj']:
-
-#             selection_data = request.session['selection_data_obj']
-#             selection_data[str(request.GET['id'])]['adult'] = int(room_selection[str(request.GET['id'])]['adult'])
-#             selection_data[str(request.GET['id'])]['children'] = int(room_selection[str(request.GET['id'])]['children'])
-#             request.session['selection_data_obj'] = selection_data
-#         else:
-#             selection_data = request.session['selection_data_obj']
-#             selection_data.update(room_selection)
-#             request.session['selection_data_obj'] = selection_data
-#     else:
-#         request.session['selection_data_obj'] = room_selection
-#     data = {
-#         "data":request.session['selection_data_obj'], 
-#         'total_selected_items': len(request.session['selection_data_obj'])
-#         }
-#     return JsonResponse(data)
-
-
-# def delete_session(request):
-#     request.session.pop('selection_data_obj', None)
-#     return redirect(request.META.get("HTTP_REFERER"))
-
-
-# def delete_selection(request):
-#     hotel_id = str(request.GET['id'])
-#     if 'selection_data_obj' in request.session:
-#         if hotel_id in request.session['selection_data_obj']:
-#             selection_data = request.session['selection_data_obj']
-#             del request.session['selection_data_obj'][hotel_id]
-#             request.session['selection_data_obj'] = selection_data
-
-
-#     total = 0
-#     total_days = 0
-#     room_count = 0
-#     adult = 0 
-#     children = 0 
-#     checkin = "" 
-#     checkout = "" 
-#     children = 0 
-#     hotel = None
-
-#     if 'selection_data_obj' in request.session:
-#         for h_id, item in request.session['selection_data_obj'].items():
-                
-#             id = int(item['hotel_id'])
-
-#             checkin = item["checkin"]
-#             checkout = item["checkout"]
-#             adult += int(item["adult"])
-#             children += int(item["children"])
-#             room_type_ = item["room_type"]
-            
-#             hotel = Hotel.objects.get(id=id)
-#             room_type = RoomType.objects.get(id=room_type_)
-
-#             date_format = "%Y-%m-%d"
-#             checkin_date = datetime.strptime(checkin, date_format)
-#             checout_date = datetime.strptime(checkout, date_format)
-#             time_difference = checout_date - checkin_date
-#             total_days = time_difference.days
-
-#             room_count += 1
-#             days = total_days
-#             price = room_type.price
-
-#             room_price = price * room_count
-#             total = room_price * days
-        
-    
-#     context = render_to_string("pages/async/selected_rooms.html", { "data":request.session['selection_data_obj'],  "total_selected_items": len(request.session['selection_data_obj']), "total":total, "total_days":total_days, "adult":adult, "children":children,    "checkin":checkin,    "checkout":checkout,    "hotel":hotel})
-
-#     print("data ======", context)
-    
-#     return JsonResponse({"data": context, 'total_selected_items': len(request.session['selection_data_obj'])})
-
+    return redirect("/")
