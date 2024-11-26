@@ -95,6 +95,9 @@ urlpatterns = [
     path('supervisor/room_status/', views.supervisor_view_roomstatus, name='supervisor_room_status'),
     path('supervisor/check_out_list/', views.supervisor_checkout_list, name='supervisor_checkout_list'),
     path('supervisor/transaction_list/', views.supervisor_transaction_list, name='supervisor_transaction_list'),
+
+    # authroization
+    path('authorization/error/', views.unauthorized, name='unauthorized'),
    
    
 ]

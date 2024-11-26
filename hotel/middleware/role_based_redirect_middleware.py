@@ -41,7 +41,8 @@ class RoleBasedRedirectMiddleware(MiddlewareMixin):
         'booking:create-reservation',
         'booking:booking_data',
         'booking:selected_room',
-        'booking:check_room_availability'
+        'booking:check_room_availability',
+        'dashboard:unauthorized',
        
     ]
 
